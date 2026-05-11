@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>RS Daily Log</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f0f2f5; color: #1a1a2e; min-height: 100vh;
+      font-size: 16px;
+    }
+
+    /* ── LOGIN ── */
+    #loginScreen {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: flex-start;
+      min-height: 100vh; padding: 24px 20px;
+    }
+    .login-box {
+      background: #fff; border-radius: 20px; padding: 32px 24px;
+      width: 100%; max-width: 440px; box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    }
+    .login-box h1 { font-size: 26px; font-weight: 700; margin-bottom: 4px; }
+    .login-box p  { font-size: 16px; color: #888; margin-bottom: 28px; }
+    .input-group  { margin-bottom: 16px; }
+    .input-group label {
+      display: block; font-size: 13px; font-weight: 700; color: #555;
+      margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .input-group input {
+      width: 100%; padding: 16px; border: 2px solid #e0e0e0;
+      border-radius: 12px; font-size: 18px; outline: none;
+      background: #fff; color: #1a1a2e;
+    }
+    .input-group input:focus { border-color: #4a6cf7; }
+    .error-msg { color: #e53935; font-size: 15px; margin-bottom: 12px; display: none; }
+
+    /* ── BUTTONS ── */
+    .btn-primary {
+      width: 100%; padding: 18px; background: #4a6cf7; color: #fff;
+      border: none; border-radius: 12px; font-size: 18px; font-weight: 700; cursor: pointer;
+      -webkit-appearance: none;
+    }
+    .btn-primary:active   { background: #3a5ce6; }
+    .btn-primary:disabled { background: #b0bec5; cursor: not-allowed; }
+    .btn-secondary {
+      flex: 1; padding: 16px; background: #f0f0f0; color: #333;
+      border: none; border-radius: 12px; font-size: 17px; font-weight: 600; cursor: pointer;
+    }
+    .btn-secondary:active { background: #e0e0e0; }
+    .btn-confirm {
+      flex: 2; padding: 16px; background: #4a6cf7; color: #fff;
+      border: none; border-radius: 12px; font-size: 17px; font-weight: 700; cursor: pointer;
+    }
+    .btn-confirm:active   { background: #3a5ce6; }
+    .btn-confirm:disabled { background: #b0bec5; }
+
+    /* ── APP ── */
+    #appScreen { display: none; }
+
+    .top-bar {
+      background: #fff; padding: 16px 20px 12px; border-bottom: 1px solid #e8e8e8;
+      position: sticky; top: 0; z-index: 10;
+    }
+    .top-bar h2   { font-size: 20px; font-weight: 700; }
+    .top-bar .sub { font-size: 14px; color: #888; margin-top: 3px; }
+
+    .controls {
+      background: #fff; padding: 16px; border-bottom: 1px solid #e8e8e8;
+      display: flex; flex-direction: column; gap: 12px;
+    }
+
+    .pill-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .pill {
+      padding: 10px 18px; border: 2px solid #e0e0e0; border-radius: 24px;
+      font-size: 15px; font-weight: 600; background: #fff; color: #555; cursor: pointer;
+      -webkit-appearance: none;
+    }
+    .pill.active   { background: #4a6cf7; border-color: #4a6cf7; color: #fff; }
+    .pill:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .fn-tabs { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
+    .fn-tab {
+      padding: 14px 6px; border: 2px solid #e0e0e0; border-radius: 12px;
+      font-size: 14px; font-weight: 700; background: #fff; color: #555;
+      cursor: pointer; text-align: center; -webkit-appearance: none;
+    }
+    .fn-tab.active { background: #4a6cf7; border-color: #4a6cf7; color: #fff; }
+
+    select {
+      width: 100%; padding: 16px; border: 2px solid #e0e0e0;
+      border-radius: 12px; font-size: 17px; background: #fff; color: #1a1a2e; outline: none;
+      -webkit-appearance: none; appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23aaa' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 16px center;
+      padding-right: 40px;
+    }
+    select:focus { border-color: #4a6cf7; }
+
+    input[type="date"] {
+      width: 100%; padding: 16px; border: 2px solid #e0e0e0;
+      border-radius: 12px; font-size: 17px; background: #fff; color: #1a1a2e; outline: none;
+      -webkit-appearance: none;
+    }
+    input[type="date"]:focus { border-color: #4a6cf7; }
+
+    .max-score-row {
+      display: flex; align-items: center; gap: 12px;
+      background: #f0f4ff; border-radius: 12px; padding: 14px 16px;
+    }
+    .max-score-row label { font-size: 16px; font-weight: 700; color: #4a6cf7; flex: 1; }
+    .max-score-row input {
+      width: 90px; padding: 12px; text-align: center;
+      border: 2px solid #c5d0f7; border-radius: 10px;
+      font-size: 18px; font-weight: 700; color: #4a6cf7; background: #fff; outline: none;
+    }
+
+    /* ── STUDENT LIST ── */
+    .student-list { padding: 12px 16px; display: flex; flex-direction: column; gap: 12px; }
+
+    .student-card {
+      background: #fff; border-radius: 16px; padding: 18px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-left: 5px solid #e0e0e0;
+      cursor: pointer; user-select: none;
+    }
+    .student-card.present  { border-left-color: #43a047; }
+    .student-card.absent   { border-left-color: #e53935; }
+    .student-card.late     { border-left-color: #fb8c00; }
+    .student-card.existing { border-left-color: #9e9e9e; opacity: 0.85; }
+
+    .student-top { display: flex; align-items: center; justify-content: space-between; pointer-events: none; }
+    .student-name { font-size: 18px; font-weight: 700; }
+    .student-nick { font-size: 15px; color: #888; margin-top: 2px; }
+    .existing-label { font-size: 13px; color: #bbb; margin-top: 4px; pointer-events: none; }
+
+    .status-badge {
+      font-size: 14px; font-weight: 700; padding: 8px 14px;
+      border-radius: 24px; background: #f0f0f0; color: #aaa; white-space: nowrap;
+    }
+    .student-card.present .status-badge { background: #e8f5e9; color: #2e7d32; }
+    .student-card.absent  .status-badge { background: #ffebee; color: #c62828; }
+    .student-card.late    .status-badge { background: #fff3e0; color: #e65100; }
+
+    .extra-box { margin-top: 12px; display: none; }
+    .extra-box.visible { display: block; }
+    .extra-box input[type="text"] {
+      width: 100%; padding: 14px; border: 2px solid #e8e8e8;
+      border-radius: 10px; font-size: 16px; color: #333; background: #fafafa; outline: none;
+    }
+    .extra-box input[type="text"]:focus { border-color: #4a6cf7; background: #fff; }
+
+    /* Score cards */
+    .score-card {
+      background: #fff; border-radius: 16px; padding: 18px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-left: 5px solid #e0e0e0;
+    }
+    .score-card.filled { border-left-color: #4a6cf7; }
+    .score-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .score-grade {
+      font-size: 14px; font-weight: 700; padding: 6px 12px;
+      border-radius: 24px; background: #f0f0f0; color: #aaa;
+    }
+    .grade-A { background: #e8f5e9; color: #2e7d32; }
+    .grade-B { background: #e3f2fd; color: #1565c0; }
+    .grade-C { background: #fff3e0; color: #e65100; }
+    .grade-D { background: #ffebee; color: #c62828; }
+
+    .score-inputs { display: flex; gap: 10px; align-items: center; }
+    .score-inputs input[type="number"] {
+      flex: 1; padding: 14px; text-align: center;
+      border: 2px solid #e0e0e0; border-radius: 10px;
+      font-size: 20px; font-weight: 700; color: #1a1a2e; background: #fff; outline: none;
+    }
+    .score-inputs input[type="number"]:focus { border-color: #4a6cf7; }
+    .score-inputs .slash       { font-size: 22px; color: #ccc; font-weight: 300; }
+    .score-inputs .max-display { font-size: 20px; font-weight: 700; color: #aaa; min-width: 32px; text-align: center; }
+    .score-note { margin-top: 10px; }
+    .score-note input {
+      width: 100%; padding: 14px; border: 2px solid #e8e8e8;
+      border-radius: 10px; font-size: 16px; color: #333; background: #fafafa; outline: none;
+    }
+    .score-note input:focus { border-color: #4a6cf7; background: #fff; }
+
+    .no-students { text-align: center; color: #aaa; font-size: 17px; padding: 56px 16px; }
+
+    /* ── SUBMIT BAR ── */
+    .submit-bar {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: #fff; border-top: 1px solid #e8e8e8;
+      padding: 14px 16px; padding-bottom: calc(14px + env(safe-area-inset-bottom));
+    }
+    .submit-bar .summary-line { font-size: 14px; color: #888; margin-bottom: 10px; text-align: center; }
+
+    /* ── CONFIRM ── */
+    #confirmScreen {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.5); z-index: 100;
+      align-items: flex-end; justify-content: center;
+    }
+    #confirmScreen.visible { display: flex; }
+    .confirm-sheet {
+      background: #fff; border-radius: 24px 24px 0 0; padding: 28px 20px;
+      padding-bottom: calc(28px + env(safe-area-inset-bottom)); width: 100%; max-width: 540px;
+    }
+    .confirm-sheet h3 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+    .conf-sub         { font-size: 15px; color: #888; margin-bottom: 20px; }
+    .confirm-stats    { display: flex; gap: 10px; margin-bottom: 20px; }
+    .conf-stat        { flex: 1; text-align: center; padding: 16px 8px; border-radius: 14px; }
+    .conf-stat.p { background: #e8f5e9; } .conf-stat.a { background: #ffebee; }
+    .conf-stat.l { background: #fff3e0; } .conf-stat.s { background: #e3f2fd; }
+    .conf-stat .num { font-size: 30px; font-weight: 700; }
+    .conf-stat.p .num { color: #2e7d32; } .conf-stat.a .num { color: #c62828; }
+    .conf-stat.l .num { color: #e65100; } .conf-stat.s .num { color: #1565c0; }
+    .conf-stat .lbl { font-size: 13px; color: #888; margin-top: 4px; }
+    .confirm-details {
+      font-size: 15px; color: #555; margin-bottom: 24px;
+      line-height: 2; max-height: 160px; overflow-y: auto;
+    }
+    .confirm-btns { display: flex; gap: 12px; }
+
+    /* ── SUCCESS ── */
+    #successScreen {
+      display: none; position: fixed; inset: 0; background: #fff; z-index: 200;
+      flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; padding: 32px;
+    }
+    #successScreen.visible { display: flex; }
+    .success-icon { font-size: 72px; margin-bottom: 20px; }
+    #successScreen h2 { font-size: 26px; font-weight: 700; margin-bottom: 10px; }
+    #successScreen p  { font-size: 17px; color: #888; margin-bottom: 36px; white-space: pre-line; }
+
+    .spinner {
+      display: inline-block; width: 20px; height: 20px;
+      border: 3px solid rgba(255,255,255,0.4); border-top-color: #fff;
+      border-radius: 50%; animation: spin 0.7s linear infinite;
+      vertical-align: middle; margin-right: 8px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spacer-bottom { height: 100px; }
+
+    /* ── PC overrides — tighten things up on wide screens ── */
+    @media (min-width: 600px) {
+      body { font-size: 15px; }
+      .login-box { padding: 40px 36px; }
+      .controls { max-width: 600px; margin: 0 auto; }
+      .student-list { max-width: 600px; margin: 0 auto; }
+      .submit-bar { left: 50%; transform: translateX(-50%); width: 600px; border-radius: 16px 16px 0 0; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══ LOGIN ══ -->
+<div id="loginScreen">
+  <div class="login-box">
+    <h1>📋 RS Daily Log</h1>
+    <p>Reading Star LMS</p>
+    <div class="input-group">
+      <label>Password</label>
+      <input type="password" id="pwInput" placeholder="••••••••"
+             autocomplete="off" inputmode="numeric" autofocus>
+    </div>
+    <div class="error-msg" id="loginError">Incorrect password. Try again.</div>
+    <button class="btn-primary" id="loginBtn" onclick="doLogin()">Sign In</button>
+  </div>
+</div>
+
+<!-- ══ APP ══ -->
+<div id="appScreen">
+  <div class="top-bar">
+    <h2 id="topTitle">📋 RS Daily Log</h2>
+    <div class="sub" id="topSubtitle">Select a class to begin</div>
+  </div>
+
+  <div class="controls">
+    <div class="pill-row" id="timeFilter">
+      <button class="pill" data-slot="P" onclick="setTimeSlot('P')">P Time</button>
+      <button class="pill" data-slot="Q" onclick="setTimeSlot('Q')">Q Time</button>
+      <button class="pill" data-slot="R" onclick="setTimeSlot('R')">R Time</button>
+      <button class="pill" data-slot="ALL" onclick="setTimeSlot('ALL')">All</button>
+    </div>
+
+    <select id="classSelect" onchange="onClassChange()">
+      <option value="">— Select class —</option>
+    </select>
+
+    <div class="fn-tabs" id="fnTabs" style="display:none">
+      <button class="fn-tab active" data-fn="attendance" onclick="setFunction('attendance')">📋 Attendance</button>
+      <button class="fn-tab"        data-fn="test"       onclick="setFunction('test')">📝 Daily Test</button>
+      <button class="fn-tab"        data-fn="homework"   onclick="setFunction('homework')">📚 Homework</button>
+    </div>
+
+    <select id="subjectSelect" style="display:none" onchange="onSubjectChange()">
+      <option value="">— Select subject —</option>
+      <option>PH</option><option>R</option><option>BRW</option><option>BRW1</option>
+      <option>BRW2</option><option>BRG</option><option>W</option><option>ELA</option>
+      <option>BP</option><option>Science</option><option>GR</option><option>Comp</option>
+      <option>NW</option><option>Novel</option><option>ST-R</option><option>ST-S</option>
+      <option>SW-1</option><option>SW-2</option><option>BH</option>
+    </select>
+
+    <div class="max-score-row" id="maxScoreRow" style="display:none">
+      <label>Max Score</label>
+      <input type="number" id="maxScoreInput" min="1" max="200" placeholder="10"
+             inputmode="numeric" oninput="onMaxScoreChange()">
+    </div>
+
+    <input type="date" id="datePicker" onchange="onDateChange()">
+  </div>
+
+  <div class="student-list" id="studentList">
+    <div class="no-students">Select a class above</div>
+  </div>
+  <div class="spacer-bottom"></div>
+
+  <div class="submit-bar">
+    <div class="summary-line" id="summaryLine">—</div>
+    <button class="btn-primary" id="submitBtn" onclick="showConfirm()" disabled>Submit</button>
+  </div>
+</div>
+
+<!-- ══ CONFIRM ══ -->
+<div id="confirmScreen">
+  <div class="confirm-sheet">
+    <h3 id="confTitle">Confirm</h3>
+    <div class="conf-sub" id="confSub"></div>
+    <div class="confirm-stats" id="confStats"></div>
+    <div class="confirm-details" id="confDetails"></div>
+    <div class="confirm-btns">
+      <button class="btn-secondary" onclick="hideConfirm()">Go Back</button>
+      <button class="btn-confirm" id="confirmBtn" onclick="doSubmit()">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SUCCESS ══ -->
+<div id="successScreen">
+  <div class="success-icon">✅</div>
+  <h2>Saved!</h2>
+  <p id="successMsg"></p>
+  <button class="btn-primary" style="max-width:240px" onclick="resetAfterSuccess()">New Entry</button>
+</div>
+
+<script>
+// ── State ───────────────────────────────────────────
+let allClasses  = [];
+let currentSlot = 'P';
+let currentFn   = 'attendance';
+let studentData = [];
+let existingMap = {};
+let maxScore    = null;
+
+// ── Init ────────────────────────────────────────────
+window.onload = () => {
+  document.getElementById('pwInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doLogin();
+  });
+};
+
+// ── Login ────────────────────────────────────────────
+function doLogin() {
+  const pw  = document.getElementById('pwInput').value.trim();
+  const btn = document.getElementById('loginBtn');
+  if (!pw) return;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Signing in...';
+  google.script.run
+    .withSuccessHandler(res => {
+      if (res.ok) {
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('appScreen').style.display   = 'block';
+        initApp(res.classes);
+      } else if (res.locked) {
+        document.getElementById('loginError').textContent =
+          `Too many attempts. Try again in ${res.minsLeft} minute${res.minsLeft > 1 ? 's' : ''}.`;
+        document.getElementById('loginError').style.display = 'block';
+        btn.disabled = false; btn.textContent = 'Sign In';
+      } else {
+        const left = res.remaining;
+        document.getElementById('loginError').textContent =
+          left > 0 ? `Incorrect password. ${left} attempt${left > 1 ? 's' : ''} remaining.` : 'Incorrect password.';
+        document.getElementById('loginError').style.display = 'block';
+        btn.disabled = false; btn.textContent = 'Sign In';
+      }
+    })
+    .withFailureHandler(() => {
+      document.getElementById('loginError').textContent = 'Server error. Try again.';
+      document.getElementById('loginError').style.display = 'block';
+      btn.disabled = false; btn.textContent = 'Sign In';
+    })
+    .attendance_login(pw);
+}
+
+// ── App init ─────────────────────────────────────────
+function initApp(classes) {
+  allClasses = classes;
+  const today = new Date();
+  const yyyy  = today.getFullYear();
+  const mm    = String(today.getMonth()+1).padStart(2,'0');
+  const dd    = String(today.getDate()).padStart(2,'0');
+  document.getElementById('datePicker').value = `${yyyy}-${mm}-${dd}`;
+
+  const h = today.getHours();
+  currentSlot = h < 13 ? 'P' : h < 16 ? 'Q' : 'R';
+
+  if (getDayFilter(`${yyyy}-${mm}-${dd}`) === 'WEEKEND') {
+    document.getElementById('studentList').innerHTML = '<div class="no-students">No classes today</div>';
+    document.getElementById('classSelect').innerHTML = '<option value="">No classes today</option>';
+    document.querySelectorAll('.pill').forEach(b => b.disabled = true);
+    return;
+  }
+  setTimeSlot(currentSlot);
+}
+
+// ── Helpers ──────────────────────────────────────────
+function getClassDay(cls) {
+  if (/매일/.test(cls))   return 'DAILY';
+  if (/월수금/.test(cls)) return 'MWF';
+  if (/화목/.test(cls))   return 'TTH';
+  return 'DAILY';
+}
+
+function getDayFilter(dateStr) {
+  if (!dateStr) return 'ALL';
+  const [y,m,d] = dateStr.split('-').map(Number);
+  const day = new Date(y, m-1, d).getDay();
+  if (day === 0 || day === 6) return 'WEEKEND';
+  if (day === 1 || day === 3 || day === 5) return 'MWF';
+  return 'TTH';
+}
+
+function formatDateDisplay(dateStr) {
+  if (!dateStr) return '';
+  const [y,m,d] = dateStr.split('-');
+  const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  return `${m}/${d} (${days[new Date(Number(y),Number(m)-1,Number(d)).getDay()]})`;
+}
+
+function calcGrade(pct) {
+  if (pct >= 90) return { str: `A · ${pct}%`, cls: 'grade-A' };
+  if (pct >= 80) return { str: `B · ${pct}%`, cls: 'grade-B' };
+  if (pct >= 70) return { str: `C · ${pct}%`, cls: 'grade-C' };
+  return           { str: `D · ${pct}%`, cls: 'grade-D' };
+}
+
+// ── Time slot ─────────────────────────────────────────
+function setTimeSlot(slot) {
+  currentSlot = slot;
+  document.querySelectorAll('.pill[data-slot]').forEach(b =>
+    b.classList.toggle('active', b.dataset.slot === slot));
+
+  const dateStr   = document.getElementById('datePicker').value;
+  const dayFilter = getDayFilter(dateStr);
+  if (dayFilter === 'WEEKEND') return;
+
+  const sel  = document.getElementById('classSelect');
+  const prev = sel.value;
+  sel.innerHTML = '<option value="">— Select class —</option>';
+
+  allClasses
+    .filter(c => {
+      const cd = getClassDay(c.cls);
+      if (cd !== 'DAILY' && cd !== dayFilter) return false;
+      if (slot === 'ALL') return true;
+      const m = c.cls.match(/[PQR](?=\d)/i);
+      return m && m[0].toUpperCase() === slot;
+    })
+    .forEach(c => {
+      const o = document.createElement('option');
+      o.value = o.textContent = c.cls;
+      sel.appendChild(o);
+    });
+
+  sel.value = allClasses.some(c => c.cls === prev) ? prev : '';
+  if (!sel.value) resetBelowClass();
+  else onClassChange();
+}
+
+// ── Class ─────────────────────────────────────────────
+function onClassChange() {
+  if (!document.getElementById('classSelect').value) { resetBelowClass(); return; }
+  document.getElementById('fnTabs').style.display = 'grid';
+  setFunction(currentFn);
+}
+
+function resetBelowClass() {
+  document.getElementById('fnTabs').style.display        = 'none';
+  document.getElementById('subjectSelect').style.display = 'none';
+  document.getElementById('maxScoreRow').style.display   = 'none';
+  clearStudentList();
+}
+
+// ── Function tab ──────────────────────────────────────
+function setFunction(fn) {
+  currentFn = fn;
+  document.querySelectorAll('.fn-tab').forEach(b =>
+    b.classList.toggle('active', b.dataset.fn === fn));
+
+  const subSel = document.getElementById('subjectSelect');
+  const maxRow = document.getElementById('maxScoreRow');
+  document.getElementById('topTitle').textContent =
+    fn === 'attendance' ? '📋 Attendance' :
+    fn === 'test'       ? '📝 Daily Test' : '📚 Homework';
+  document.getElementById('submitBtn').textContent =
+    fn === 'attendance' ? 'Submit Attendance' :
+    fn === 'test'       ? 'Submit Test Scores' : 'Submit Homework';
+
+  if (fn === 'attendance') {
+    subSel.style.display = 'none';
+    maxRow.style.display = 'none';
+    loadStudentList();
+  } else {
+    subSel.style.display = 'block';
+    maxRow.style.display = fn === 'test' ? 'flex' : 'none';
+    clearStudentList();
+    if (subSel.value) loadStudentList();
+  }
+}
+
+function onSubjectChange() {
+  if (!document.getElementById('subjectSelect').value) { clearStudentList(); return; }
+  if (currentFn === 'test') { maxScore = null; document.getElementById('maxScoreInput').value = ''; }
+  loadStudentList();
+}
+
+function onMaxScoreChange() {
+  const v = parseInt(document.getElementById('maxScoreInput').value, 10);
+  maxScore = (!isNaN(v) && v > 0) ? v : null;
+  document.querySelectorAll('.max-display').forEach(el => el.textContent = maxScore || '?');
+  updateSummary();
+}
+
+function onDateChange() {
+  setTimeSlot(currentSlot);
+  if (document.getElementById('classSelect').value) loadStudentList();
+}
+
+// ── Load students ─────────────────────────────────────
+function loadStudentList() {
+  const cls  = document.getElementById('classSelect').value;
+  const date = document.getElementById('datePicker').value;
+  const subj = document.getElementById('subjectSelect').value;
+  if (!cls || !date) { clearStudentList(); return; }
+  if ((currentFn === 'test' || currentFn === 'homework') && !subj) { clearStudentList(); return; }
+
+  const info = allClasses.find(c => c.cls === cls);
+  if (!info) { clearStudentList(); return; }
+
+  let sub = `${cls} · ${formatDateDisplay(date)}`;
+  if (subj) sub += ` · ${subj}`;
+  document.getElementById('topSubtitle').textContent = sub;
+
+  if (currentFn === 'attendance') {
+    google.script.run
+      .withSuccessHandler(existing => {
+        existingMap = {};
+        (existing||[]).forEach(e => { existingMap[e.name] = e; });
+        renderAttendance(info.students);
+      })
+      .withFailureHandler(() => { existingMap = {}; renderAttendance(info.students); })
+      .attendance_getExisting(cls, date);
+  } else {
+    renderScoreList(info.students);
+  }
+}
+
+function clearStudentList() {
+  document.getElementById('topSubtitle').textContent = 'Select a class to begin';
+  document.getElementById('studentList').innerHTML   = '<div class="no-students">Select a class above</div>';
+  document.getElementById('submitBtn').disabled      = true;
+  document.getElementById('summaryLine').textContent = '—';
+  studentData = [];
+}
+
+// ── Attendance render ─────────────────────────────────
+function renderAttendance(students) {
+  studentData = students.map(s => ({
+    name: s.name, nick: s.nick, status: null, reason: '',
+    existingStatus: existingMap[s.name]?.status || null,
+    existingReason: existingMap[s.name]?.reason || ''
+  }));
+
+  const list = document.getElementById('studentList');
+  list.innerHTML = '';
+  if (!studentData.length) {
+    list.innerHTML = '<div class="no-students">No students in this class</div>';
+    document.getElementById('submitBtn').disabled = true;
+    return;
+  }
+
+  studentData.forEach((s, i) => {
+    const card = document.createElement('div');
+    card.className = 'student-card' + (s.existingStatus ? ' existing' : '');
+    card.id = `card-${i}`;
+    card.onclick = () => cycleStatus(i);
+    const existNote = s.existingStatus
+      ? `<div class="existing-label">Already logged: ${s.existingStatus}${s.existingReason ? ' · '+s.existingReason : ''}</div>`
+      : '';
+    card.innerHTML = `
+      <div class="student-top">
+        <div>
+          <div class="student-name">${s.name}</div>
+          <div class="student-nick">${s.nick||''}</div>
+          ${existNote}
+        </div>
+        <div class="status-badge" id="badge-${i}">—</div>
+      </div>
+      <div class="extra-box" id="extra-${i}">
+        <input type="text" placeholder="Reason (optional)"
+               onclick="event.stopPropagation()"
+               oninput="studentData[${i}].reason=this.value">
+      </div>`;
+    list.appendChild(card);
+  });
+
+  document.getElementById('submitBtn').disabled = false;
+  updateSummary();
+}
+
+function cycleStatus(i) {
+  const s = studentData[i];
+  s.status = s.status === null ? 'Present' : s.status === 'Present' ? 'Absent' : s.status === 'Absent' ? 'Late' : null;
+
+  const card  = document.getElementById(`card-${i}`);
+  const badge = document.getElementById(`badge-${i}`);
+  const extra = document.getElementById(`extra-${i}`);
+
+  card.className = 'student-card' + (s.status ? ' '+s.status.toLowerCase() : s.existingStatus ? ' existing' : '');
+  badge.textContent = s.status || '—';
+
+  const need = s.status === 'Absent' || s.status === 'Late';
+  extra.classList.toggle('visible', need);
+  if (!need) { s.reason = ''; extra.querySelector('input').value = ''; }
+  updateSummary();
+}
+
+// ── Score render ──────────────────────────────────────
+function renderScoreList(students) {
+  studentData = students.map(s => ({ name: s.name, nick: s.nick, score: null, note: '' }));
+
+  const list = document.getElementById('studentList');
+  list.innerHTML = '';
+  if (!studentData.length) {
+    list.innerHTML = '<div class="no-students">No students in this class</div>';
+    document.getElementById('submitBtn').disabled = true;
+    return;
+  }
+
+  const isTest = currentFn === 'test';
+  studentData.forEach((s, i) => {
+    const card = document.createElement('div');
+    card.className = 'score-card';
+    card.id = `card-${i}`;
+    const maxDisp = isTest
+      ? `<span class="slash">/</span><span class="max-display">${maxScore||'?'}</span>`
+      : '';
+    card.innerHTML = `
+      <div class="score-top">
+        <div>
+          <div class="student-name">${s.name}</div>
+          <div class="student-nick">${s.nick||''}</div>
+        </div>
+        <div class="score-grade" id="grade-${i}">—</div>
+      </div>
+      <div class="score-inputs">
+        <input type="number" min="0" max="200" placeholder="Score" inputmode="numeric"
+               oninput="setScore(${i},this.value)" onclick="event.stopPropagation()">
+        ${maxDisp}
+      </div>
+      <div class="score-note">
+        <input type="text" placeholder="Note (optional)"
+               oninput="studentData[${i}].note=this.value" onclick="event.stopPropagation()">
+      </div>`;
+    list.appendChild(card);
+  });
+
+  document.getElementById('submitBtn').disabled = false;
+  updateSummary();
+}
+
+function setScore(i, val) {
+  const v = val === '' ? null : parseFloat(val);
+  studentData[i].score = (v === null || isNaN(v)) ? null : v;
+
+  const card  = document.getElementById(`card-${i}`);
+  const grade = document.getElementById(`grade-${i}`);
+
+  if (studentData[i].score === null) {
+    card.className = 'score-card';
+    grade.className = 'score-grade'; grade.textContent = '—';
+    updateSummary(); return;
+  }
+
+  card.className = 'score-card filled';
+  if (currentFn === 'test' && !maxScore) {
+    grade.className = 'score-grade'; grade.textContent = studentData[i].score;
+  } else {
+    const pct = currentFn === 'test' && maxScore
+      ? Math.round(studentData[i].score / maxScore * 100)
+      : Math.min(100, Math.round(studentData[i].score));
+    const g = calcGrade(pct);
+    grade.className = `score-grade ${g.cls}`; grade.textContent = g.str;
+  }
+  updateSummary();
+}
+
+// ── Summary ───────────────────────────────────────────
+function updateSummary() {
+  if (currentFn === 'attendance') {
+    const touched = studentData.filter(s => s.status !== null);
+    const p = touched.filter(s => s.status==='Present').length;
+    const a = touched.filter(s => s.status==='Absent').length;
+    const l = touched.filter(s => s.status==='Late').length;
+    const u = studentData.length - touched.length;
+    const parts = [];
+    if (p) parts.push(`${p} present`);
+    if (a) parts.push(`${a} absent`);
+    if (l) parts.push(`${l} late`);
+    if (u) parts.push(`${u} untouched`);
+    document.getElementById('summaryLine').textContent = parts.join(' · ') || '—';
+  } else {
+    const filled = studentData.filter(s => s.score !== null).length;
+    document.getElementById('summaryLine').textContent = `${filled} / ${studentData.length} entered`;
+  }
+}
+
+// ── Confirm ───────────────────────────────────────────
+function showConfirm() {
+  const cls  = document.getElementById('classSelect').value;
+  const date = document.getElementById('datePicker').value;
+  const subj = document.getElementById('subjectSelect').value;
+
+  document.getElementById('confTitle').textContent =
+    currentFn === 'attendance' ? 'Confirm Attendance' :
+    currentFn === 'test'       ? 'Confirm Test Scores' : 'Confirm Homework';
+  document.getElementById('confSub').textContent =
+    `${cls} · ${formatDateDisplay(date)}` + (subj ? ` · ${subj}` : '');
+
+  const statsEl   = document.getElementById('confStats');
+  const detailsEl = document.getElementById('confDetails');
+
+  if (currentFn === 'attendance') {
+    const t = studentData.filter(s => s.status !== null);
+    const p = t.filter(s=>s.status==='Present').length;
+    const a = t.filter(s=>s.status==='Absent').length;
+    const l = t.filter(s=>s.status==='Late').length;
+    statsEl.innerHTML = `
+      <div class="conf-stat p"><div class="num">${p}</div><div class="lbl">Present</div></div>
+      <div class="conf-stat a"><div class="num">${a}</div><div class="lbl">Absent</div></div>
+      <div class="conf-stat l"><div class="num">${l}</div><div class="lbl">Late</div></div>`;
+    detailsEl.innerHTML = t.filter(s=>s.status!=='Present')
+      .map(s=>`${s.status==='Absent'?'🔴':'🟡'} ${s.name}${s.reason?' — '+s.reason:''}`)
+      .join('<br>') || '<span style="color:#bbb">All present</span>';
+  } else {
+    const filled = studentData.filter(s => s.score !== null);
+    const avgPct = filled.length ? Math.round(filled.reduce((sum,s) => {
+      const p = currentFn==='test' && maxScore ? (s.score/maxScore*100) : Math.min(100,s.score);
+      return sum + p;
+    }, 0) / filled.length) : null;
+    statsEl.innerHTML = `
+      <div class="conf-stat s"><div class="num">${filled.length}/${studentData.length}</div><div class="lbl">Entered</div></div>
+      <div class="conf-stat p"><div class="num">${avgPct!==null?avgPct+'%':'—'}</div><div class="lbl">Avg</div></div>`;
+    detailsEl.innerHTML = filled.map(s => {
+      const pct = currentFn==='test' && maxScore
+        ? Math.round(s.score/maxScore*100) : Math.min(100,Math.round(s.score));
+      return `${s.name}: ${s.score}${currentFn==='test'&&maxScore?'/'+maxScore:''} (${pct}%)${s.note?' — '+s.note:''}`;
+    }).join('<br>') || '<span style="color:#bbb">No scores entered</span>';
+  }
+
+  document.getElementById('confirmScreen').classList.add('visible');
+}
+
+function hideConfirm() {
+  document.getElementById('confirmScreen').classList.remove('visible');
+}
+
+// ── Submit ────────────────────────────────────────────
+function doSubmit() {
+  const cls  = document.getElementById('classSelect').value;
+  const date = document.getElementById('datePicker').value;
+  const subj = document.getElementById('subjectSelect').value;
+  const hr   = (allClasses.find(c=>c.cls===cls)||{}).hr || '';
+  const btn  = document.getElementById('confirmBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Saving...';
+
+  const onOk = () => {
+    hideConfirm();
+    let msg = `${cls} · ${formatDateDisplay(date)}`;
+    if (subj) msg += ` · ${subj}`;
+    document.getElementById('successMsg').textContent = msg;
+    document.getElementById('successScreen').classList.add('visible');
+    btn.disabled = false; btn.textContent = 'Confirm';
+  };
+  const onErr = err => {
+    alert('Error saving: ' + (err.message||err));
+    btn.disabled = false; btn.textContent = 'Confirm';
+  };
+
+  if (currentFn === 'attendance') {
+    const entries = studentData.filter(s=>s.status!==null)
+      .map(s=>({name:s.name,nick:s.nick,status:s.status,reason:s.reason}));
+    google.script.run.withSuccessHandler(onOk).withFailureHandler(onErr)
+      .attendance_submit({cls,date,hr,entries});
+  } else if (currentFn === 'test') {
+    const entries = studentData.filter(s=>s.score!==null).map(s => {
+      const pct = maxScore ? Math.round(s.score/maxScore*100) : null;
+      const g   = pct!==null ? calcGrade(pct).str.split(' ·')[0] : null;
+      return {name:s.name,nick:s.nick,score:s.score,max:maxScore,pct,grade:g,note:s.note};
+    });
+    google.script.run.withSuccessHandler(onOk).withFailureHandler(onErr)
+      .test_submit({cls,date,hr,subject:subj,entries});
+  } else {
+    const entries = studentData.filter(s=>s.score!==null).map(s => {
+      const pct = Math.min(100,Math.round(s.score));
+      const g   = calcGrade(pct).str.split(' ·')[0];
+      return {name:s.name,nick:s.nick,score:s.score,pct,grade:g,note:s.note};
+    });
+    google.script.run.withSuccessHandler(onOk).withFailureHandler(onErr)
+      .homework_submit({cls,date,hr,subject:subj,entries});
+  }
+}
+
+function resetAfterSuccess() {
+  document.getElementById('successScreen').classList.remove('visible');
+  document.getElementById('classSelect').value   = '';
+  document.getElementById('subjectSelect').value = '';
+  document.getElementById('subjectSelect').style.display = 'none';
+  document.getElementById('maxScoreRow').style.display   = 'none';
+  document.getElementById('fnTabs').style.display        = 'none';
+  maxScore = null;
+  clearStudentList();
+}
+</script>
+</body>
+</html>

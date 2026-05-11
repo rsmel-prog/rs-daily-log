@@ -345,6 +345,20 @@
 </div>
 
 <script>
+// ── Apps Script backend URL ──────────────────────────
+const GAS_URL = 'https://script.google.com/a/macros/readingstar.co.kr/s/AKfycbwK3tl8Ky7OP2gJa4ntienDu4b6q5D2gPJxoKs-zZRoL_9zVTQz4pKtXqtPx_EWe8R58g/exec';
+
+async function gasCall(action, params) {
+  const url = GAS_URL + '?action=' + encodeURIComponent(action);
+  const res  = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify(params)
+  });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  return res.json();
+}
+
 // ── State ───────────────────────────────────────────
 let allClasses  = [];
 let currentSlot = 'P';
@@ -367,8 +381,8 @@ function doLogin() {
   if (!pw) return;
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span> Signing in...';
-  google.script.run
-    .withSuccessHandler(res => {
+  gasCall('attendance_login', {pw})
+    .then(res => {
       if (res.ok) {
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('appScreen').style.display   = 'block';
@@ -386,12 +400,11 @@ function doLogin() {
         btn.disabled = false; btn.textContent = 'Sign In';
       }
     })
-    .withFailureHandler(() => {
+    .catch(() => {
       document.getElementById('loginError').textContent = 'Server error. Try again.';
       document.getElementById('loginError').style.display = 'block';
       btn.disabled = false; btn.textContent = 'Sign In';
-    })
-    .attendance_login(pw);
+    });
 }
 
 // ── App init ─────────────────────────────────────────
@@ -554,14 +567,14 @@ function loadStudentList() {
   document.getElementById('topSubtitle').textContent = sub;
 
   if (currentFn === 'attendance') {
-    google.script.run
-      .withSuccessHandler(existing => {
+    renderAttendance(info.students);
+    gasCall('attendance_getExisting', {cls, date})
+      .then(existing => {
         existingMap = {};
         (existing||[]).forEach(e => { existingMap[e.name] = e; });
         renderAttendance(info.students);
       })
-      .withFailureHandler(() => { existingMap = {}; renderAttendance(info.students); })
-      .attendance_getExisting(cls, date);
+      .catch(() => {});
   } else {
     renderScoreList(info.students);
   }
@@ -803,24 +816,21 @@ function doSubmit() {
   if (currentFn === 'attendance') {
     const entries = studentData.filter(s=>s.status!==null)
       .map(s=>({name:s.name,nick:s.nick,status:s.status,reason:s.reason}));
-    google.script.run.withSuccessHandler(onOk).withFailureHandler(onErr)
-      .attendance_submit({cls,date,hr,entries});
+    gasCall('attendance_submit', {cls,date,hr,entries}).then(onOk).catch(onErr);
   } else if (currentFn === 'test') {
     const entries = studentData.filter(s=>s.score!==null).map(s => {
       const pct = maxScore ? Math.round(s.score/maxScore*100) : null;
       const g   = pct!==null ? calcGrade(pct).str.split(' ·')[0] : null;
       return {name:s.name,nick:s.nick,score:s.score,max:maxScore,pct,grade:g,note:s.note};
     });
-    google.script.run.withSuccessHandler(onOk).withFailureHandler(onErr)
-      .test_submit({cls,date,hr,subject:subj,entries});
+    gasCall('test_submit', {cls,date,hr,subject:subj,entries}).then(onOk).catch(onErr);
   } else {
     const entries = studentData.filter(s=>s.score!==null).map(s => {
       const pct = Math.min(100,Math.round(s.score));
       const g   = calcGrade(pct).str.split(' ·')[0];
       return {name:s.name,nick:s.nick,score:s.score,pct,grade:g,note:s.note};
     });
-    google.script.run.withSuccessHandler(onOk).withFailureHandler(onErr)
-      .homework_submit({cls,date,hr,subject:subj,entries});
+    gasCall('homework_submit', {cls,date,hr,subject:subj,entries}).then(onOk).catch(onErr);
   }
 }
 

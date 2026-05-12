@@ -239,7 +239,7 @@
       vertical-align: middle; margin-right: 8px;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .spacer-bottom { height: 200px; }
+    .spacer-bottom { height: 100px; }
 
     /* ── PC overrides — tighten things up on wide screens ── */
     @media (min-width: 600px) {
@@ -615,8 +615,8 @@ function renderAttendance(students) {
     card.innerHTML = `
       <div class="student-top">
         <div>
-          <div class="student-name">${s.name}</div>
-          <div class="student-nick">${s.nick||''}</div>
+          <div class="student-name">${s.nick||s.name}</div>
+          <div class="student-nick">${s.nick?s.name:''}</div>
           ${existNote}
         </div>
         <div class="status-badge" id="badge-${i}">—</div>
@@ -673,8 +673,8 @@ function renderScoreList(students) {
     card.innerHTML = `
       <div class="score-top">
         <div>
-          <div class="student-name">${s.name}</div>
-          <div class="student-nick">${s.nick||''}</div>
+          <div class="student-name">${s.nick||s.name}</div>
+          <div class="student-nick">${s.nick?s.name:''}</div>
         </div>
         <div class="score-grade" id="grade-${i}">—</div>
       </div>

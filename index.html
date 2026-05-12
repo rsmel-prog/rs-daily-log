@@ -320,7 +320,7 @@
 <div id="loginScreen">
   <div class="login-box">
     <h1>📋 RS Daily App</h1>
-    <p>RS Daily App</p>
+    <p>Reading Star Jamsil Campus</p>
     <div class="input-group">
       <label>Password</label>
       <input type="password" id="pwInput" placeholder="••••••••"
@@ -398,11 +398,6 @@
 
 <!-- ══ e-RS ══ -->
 <div id="ersScreen" style="display:none">
-  <div class="main-tabs">
-    <button class="main-tab" onclick="switchMainTab('dailylog')">📋 Daily Log</button>
-    <button class="main-tab active">📖 e-RS</button>
-  </div>
-
   <div class="ers-controls">
     <div class="pill-row" id="ersTimeFilter">
       <button class="pill" data-slot="P" onclick="setErsTimeSlot('P')">P Time</button>
@@ -989,6 +984,16 @@ function switchMainTab(tab) {
   document.getElementById('tabDailyLog').classList.toggle('active',  isDL);
   document.getElementById('tabERS').classList.toggle('active', !isDL);
   if (!isDL && !ersWeeksLoaded) loadErsWeeks();
+}
+
+function loadErsWeeks() {
+  gasCall('ers_getWeeks', {})
+    .then(weeks => {
+      ersWeeks = weeks;
+      ersWeeksLoaded = true;
+      populateErsClasses(null);
+    })
+    .catch(() => {});
 }
 
 // ── e-RS state ────────────────────────────────────────

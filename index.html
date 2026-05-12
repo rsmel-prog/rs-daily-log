@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily Log</title>
+  <title>RS LMS</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
@@ -240,6 +240,69 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
     .spacer-bottom { height: 100px; }
+    /* ── MAIN TABS ── */
+    .main-tabs {
+      display: grid; grid-template-columns: 1fr 1fr;
+      background: #fff; border-bottom: 1px solid #e8e8e8;
+      position: sticky; top: 0; z-index: 11;
+    }
+    .main-tab {
+      padding: 16px; text-align: center; font-size: 16px; font-weight: 700;
+      color: #aaa; border-bottom: 3px solid transparent; cursor: pointer;
+      background: none; border-left: none; border-right: none; border-top: none;
+      -webkit-appearance: none;
+    }
+    .main-tab.active { color: #4a6cf7; border-bottom-color: #4a6cf7; }
+
+    /* ── e-RS ── */
+    #ersScreen { display: none; }
+
+    .ers-controls {
+      background: #fff; padding: 16px; border-bottom: 1px solid #e8e8e8;
+      display: flex; flex-direction: column; gap: 12px;
+    }
+
+    .ratio-section {
+      background: #fff; padding: 16px; border-bottom: 1px solid #e8e8e8;
+    }
+    .ratio-title { font-size: 13px; font-weight: 700; color: #888; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .ratio-row { margin-bottom: 12px; }
+    .ratio-label { display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+    .ratio-bar { height: 14px; border-radius: 7px; background: #f0f0f0; overflow: hidden; display: flex; }
+    .ratio-bar .seg-left  { height: 100%; transition: width 0.4s ease; }
+    .ratio-bar .seg-right { height: 100%; flex: 1; }
+    .fic-color  { background: #e87722; }
+    .nf-color   { background: #b85000; }
+    .pb-color   { background: #7c3aed; }
+    .eb-color   { background: #4c1d95; }
+
+    .ers-student-list { padding: 12px 16px; display: flex; flex-direction: column; gap: 12px; }
+
+    .ers-card {
+      background: #fff; border-radius: 16px; padding: 16px 18px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-left: 5px solid #e0e0e0;
+    }
+    .ers-card.has-alert { border-left-color: #e53935; }
+    .ers-card.no-ers    { border-left-color: #bbb; opacity: 0.7; }
+
+    .ers-card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .ers-name { font-size: 18px; font-weight: 700; }
+    .ers-korean { font-size: 14px; color: #888; margin-top: 2px; }
+    .ers-cum { font-size: 13px; color: #4a6cf7; font-weight: 700; background: #f0f4ff; padding: 4px 10px; border-radius: 12px; }
+
+    .ers-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-bottom: 10px; }
+    .ers-stat { text-align: center; background: #f8f8f8; border-radius: 10px; padding: 8px 4px; }
+    .ers-stat .val { font-size: 18px; font-weight: 700; color: #1a1a2e; }
+    .ers-stat .lbl { font-size: 11px; color: #aaa; margin-top: 2px; }
+
+    .ers-ratio-bar { height: 8px; border-radius: 4px; background: #f0f0f0; overflow: hidden; display: flex; margin-bottom: 8px; }
+    .ers-ratio-bar .seg-left  { height: 100%; }
+    .ers-ratio-bar .seg-right { height: 100%; flex: 1; }
+
+    .ers-alert { font-size: 13px; color: #c62828; background: #ffebee; padding: 8px 12px; border-radius: 8px; line-height: 1.5; }
+
+    .ers-spacer { height: 40px; }
+
 
     /* ── PC overrides — tighten things up on wide screens ── */
     @media (min-width: 600px) {
@@ -270,8 +333,15 @@
 
 <!-- ══ APP ══ -->
 <div id="appScreen">
+  <div class="main-tabs">
+    <button class="main-tab active" id="tabDailyLog" onclick="switchMainTab('dailylog')">📋 Daily Log</button>
+    <button class="main-tab"        id="tabERS"      onclick="switchMainTab('ers')">📖 e-RS</button>
+  </div>
+
+  <!-- DAILY LOG -->
+  <div id="dailyLogScreen">
   <div class="top-bar">
-    <h2 id="topTitle">📋 RS Daily Log</h2>
+    <h2 id="topTitle">📋 Attendance</h2>
     <div class="sub" id="topSubtitle">Select a class to begin</div>
   </div>
 
@@ -320,6 +390,64 @@
     <div class="summary-line" id="summaryLine">—</div>
     <button class="btn-primary" id="submitBtn" onclick="showConfirm()" disabled>Submit</button>
   </div>
+</div>
+
+  </div><!-- end dailyLogScreen -->
+
+</div><!-- end appScreen -->
+
+<!-- ══ e-RS ══ -->
+<div id="ersScreen" style="display:none">
+  <div class="main-tabs">
+    <button class="main-tab" onclick="switchMainTab('dailylog')">📋 Daily Log</button>
+    <button class="main-tab active">📖 e-RS</button>
+  </div>
+
+  <div class="ers-controls">
+    <div class="pill-row" id="ersTimeFilter">
+      <button class="pill" data-slot="P" onclick="setErsTimeSlot('P')">P Time</button>
+      <button class="pill" data-slot="Q" onclick="setErsTimeSlot('Q')">Q Time</button>
+      <button class="pill" data-slot="R" onclick="setErsTimeSlot('R')">R Time</button>
+      <button class="pill" data-slot="ALL" onclick="setErsTimeSlot('ALL')">All</button>
+    </div>
+    <select id="ersClassSelect" onchange="onErsClassChange()">
+      <option value="">— Select class —</option>
+    </select>
+    <select id="ersWeekSelect" style="display:none" onchange="loadErsData()">
+      <option value="">— Select week —</option>
+    </select>
+  </div>
+
+  <div id="ersRatioSection" style="display:none" class="ratio-section">
+    <div class="ratio-title">Class Summary</div>
+    <div class="ratio-row">
+      <div class="ratio-label">
+        <span style="color:#e87722">📖 Fiction</span>
+        <span style="color:#b85000">📚 Nonfiction</span>
+      </div>
+      <div class="ratio-bar">
+        <div class="seg-left fic-color" id="classFicBar"></div>
+        <div class="seg-right nf-color" id="classNFBar"></div>
+      </div>
+      <div id="classFicLabel" style="font-size:13px;color:#888;margin-top:4px;text-align:center"></div>
+    </div>
+    <div class="ratio-row">
+      <div class="ratio-label">
+        <span style="color:#7c3aed">📄 Paper</span>
+        <span style="color:#4c1d95">📱 eBook</span>
+      </div>
+      <div class="ratio-bar">
+        <div class="seg-left pb-color" id="classPBBar"></div>
+        <div class="seg-right eb-color" id="classEBBar"></div>
+      </div>
+      <div id="classPBLabel" style="font-size:13px;color:#888;margin-top:4px;text-align:center"></div>
+    </div>
+  </div>
+
+  <div class="ers-student-list" id="ersStudentList">
+    <div class="no-students">Select a class above</div>
+  </div>
+  <div class="ers-spacer"></div>
 </div>
 
 <!-- ══ CONFIRM ══ -->
@@ -384,8 +512,9 @@ function doLogin() {
   gasCall('attendance_login', {pw})
     .then(res => {
       if (res.ok) {
-        document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('appScreen').style.display   = 'block';
+        document.getElementById('loginScreen').style.display   = 'none';
+        document.getElementById('appScreen').style.display    = 'block';
+        document.getElementById('dailyLogScreen').style.display = 'block';
         initApp(res.classes);
       } else if (res.locked) {
         document.getElementById('loginError').textContent =
@@ -417,7 +546,14 @@ function initApp(classes) {
   document.getElementById('datePicker').value = `${yyyy}-${mm}-${dd}`;
 
   const h = today.getHours();
-  currentSlot = h < 13 ? 'P' : h < 16 ? 'Q' : 'R';
+  const hm = h * 100 + today.getMinutes();
+  if      (hm < 1620) currentSlot = 'P';
+  else if (hm < 1835) currentSlot = 'Q';
+  else                currentSlot = 'R';
+
+  ersSlot = 'ALL';
+  // Set e-RS time pills default
+  document.querySelectorAll('#ersTimeFilter .pill[data-slot="ALL"]').forEach(b => b.classList.add('active'));
 
   if (getDayFilter(`${yyyy}-${mm}-${dd}`) === 'WEEKEND') {
     document.getElementById('studentList').innerHTML = '<div class="no-students">No classes today</div>';
@@ -843,6 +979,176 @@ function resetAfterSuccess() {
   document.getElementById('fnTabs').style.display        = 'none';
   maxScore = null;
   clearStudentList();
+}
+
+// ── Main tab switch ───────────────────────────────────
+function switchMainTab(tab) {
+  const isDL = tab === 'dailylog';
+  document.getElementById('dailyLogScreen').style.display = isDL ? 'block' : 'none';
+  document.getElementById('ersScreen').style.display      = isDL ? 'none'  : 'block';
+  document.getElementById('tabDailyLog').classList.toggle('active',  isDL);
+  document.getElementById('tabERS').classList.toggle('active', !isDL);
+  if (!isDL && !ersWeeksLoaded) loadErsWeeks();
+}
+
+// ── e-RS state ────────────────────────────────────────
+let ersWeeksLoaded = false;
+let ersWeeks       = [];
+let ersSlot        = 'ALL';
+
+function loadErsWeeks() {
+  gasCall('ers_getWeeks', {})
+    .then(weeks => {
+      ersWeeks = weeks;
+      ersWeeksLoaded = true;
+      // Populate class selector (same as daily log, no day filter for e-RS)
+      populateErsClasses();
+    })
+    .catch(() => {});
+}
+
+function populateErsClasses(slot) {
+  const sel = document.getElementById('ersClassSelect');
+  const prev = sel.value;
+  sel.innerHTML = '<option value="">— Select class —</option>';
+  allClasses
+    .filter(c => {
+      if (!slot || slot === 'ALL') return true;
+      const m = c.cls.match(/[PQR](?=\d)/i);
+      return m && m[0].toUpperCase() === slot;
+    })
+    .forEach(c => {
+      const o = document.createElement('option');
+      o.value = o.textContent = c.cls;
+      sel.appendChild(o);
+    });
+  if (allClasses.some(c => c.cls === prev)) sel.value = prev;
+  else sel.value = '';
+}
+
+function setErsTimeSlot(slot) {
+  ersSlot = slot;
+  document.querySelectorAll('#ersTimeFilter .pill').forEach(b =>
+    b.classList.toggle('active', b.dataset.slot === slot));
+  populateErsClasses(slot === 'ALL' ? null : slot);
+  if (!document.getElementById('ersClassSelect').value) {
+    document.getElementById('ersWeekSelect').style.display = 'none';
+    document.getElementById('ersRatioSection').style.display = 'none';
+    document.getElementById('ersStudentList').innerHTML = '<div class="no-students">Select a class above</div>';
+  }
+}
+
+function onErsClassChange() {
+  const cls = document.getElementById('ersClassSelect').value;
+  if (!cls) {
+    document.getElementById('ersWeekSelect').style.display = 'none';
+    document.getElementById('ersRatioSection').style.display = 'none';
+    document.getElementById('ersStudentList').innerHTML = '<div class="no-students">Select a class above</div>';
+    return;
+  }
+
+  // Populate weeks
+  const wSel = document.getElementById('ersWeekSelect');
+  wSel.innerHTML = '<option value="">— Select week —</option>';
+  ersWeeks.forEach(w => {
+    const o = document.createElement('option');
+    o.value = w.key; o.textContent = w.label;
+    wSel.appendChild(o);
+  });
+  // Default to last week
+  if (ersWeeks.length) wSel.value = ersWeeks[ersWeeks.length - 1].key;
+  wSel.style.display = 'block';
+  loadErsData();
+}
+
+function loadErsData() {
+  const cls     = document.getElementById('ersClassSelect').value;
+  const weekKey = document.getElementById('ersWeekSelect').value;
+  if (!cls || !weekKey) return;
+
+  document.getElementById('ersStudentList').innerHTML =
+    '<div class="no-students">Loading...</div>';
+
+  gasCall('ers_getData', { cls, weekKey })
+    .then(data => renderErsData(data, cls, weekKey))
+    .catch(() => {
+      document.getElementById('ersStudentList').innerHTML =
+        '<div class="no-students">Error loading data</div>';
+    });
+}
+
+function renderErsData(data, cls, weekKey) {
+  const { students, classFic, classNF, classPB, classEB } = data;
+
+  // Class ratio bars
+  const totalFN = classFic + classNF;
+  const totalPE = classPB + classEB;
+  const ficPct  = totalFN ? Math.round(classFic / totalFN * 100) : 0;
+  const pbPct   = totalPE ? Math.round(classPB  / totalPE * 100) : 0;
+
+  document.getElementById('classFicBar').style.width = ficPct + '%';
+  document.getElementById('classFicLabel').textContent =
+    totalFN ? `Fiction ${classFic} (${ficPct}%) · Nonfiction ${classNF} (${100-ficPct}%)` : 'No data';
+
+  document.getElementById('classPBBar').style.width = pbPct + '%';
+  document.getElementById('classPBLabel').textContent =
+    totalPE ? `Paper ${classPB} (${pbPct}%) · eBook ${classEB} (${100-pbPct}%)` : 'No data';
+
+  document.getElementById('ersRatioSection').style.display = 'block';
+
+  // Student list
+  const list = document.getElementById('ersStudentList');
+  list.innerHTML = '';
+
+  if (!students.length) {
+    list.innerHTML = '<div class="no-students">No data for this week</div>';
+    return;
+  }
+
+  students.forEach(s => {
+    const hasAlert = s.alert && s.alert.trim();
+    const noErs    = s.books === 0;
+
+    const card = document.createElement('div');
+    card.className = 'ers-card' + (hasAlert ? ' has-alert' : '') + (noErs ? ' no-ers' : '');
+
+    const totalFNs = s.fic + s.nf;
+    const totalPEs = s.pb  + s.eb;
+    const sFicPct  = totalFNs ? Math.round(s.fic / totalFNs * 100) : 0;
+    const sPbPct   = totalPEs ? Math.round(s.pb  / totalPEs * 100) : 0;
+
+    // Alert icons
+    const alertIcons = [];
+    if (s.alert.includes('No eRS'))       alertIcons.push('📭 No e-RS');
+    if (s.alert.includes('Binge'))        alertIcons.push('⚡ Binge Reading');
+    if (s.alert.includes('Book Loop'))    alertIcons.push(s.alert.includes('🔴') ? '🔴 Book Loop' : '🟡 Book Loop');
+
+    card.innerHTML = \`
+      <div class="ers-card-top">
+        <div>
+          <div class="ers-name">\${s.nick||s.name}</div>
+          <div class="ers-korean">\${s.nick?s.name:''} · \${s.days}일</div>
+        </div>
+        <div class="ers-cum">누적 \${s.cum}</div>
+      </div>
+      <div class="ers-stats">
+        <div class="ers-stat"><div class="val">\${s.books}</div><div class="lbl">Books</div></div>
+        <div class="ers-stat"><div class="val">\${s.pass}</div><div class="lbl">Pass</div></div>
+        <div class="ers-stat"><div class="val" style="color:#e87722">\${s.fic}</div><div class="lbl">Fiction</div></div>
+        <div class="ers-stat"><div class="val" style="color:#b85000">\${s.nf}</div><div class="lbl">Nonfic</div></div>
+      </div>
+      \${totalFNs ? \`<div class="ers-ratio-bar">
+        <div class="seg-left fic-color" style="width:\${sFicPct}%"></div>
+        <div class="seg-right nf-color"></div>
+      </div>\` : ''}
+      \${totalPEs ? \`<div class="ers-ratio-bar">
+        <div class="seg-left pb-color" style="width:\${sPbPct}%"></div>
+        <div class="seg-right eb-color"></div>
+      </div>\` : ''}
+      \${hasAlert ? \`<div class="ers-alert">\${alertIcons.join(' · ')||s.alert}</div>\` : ''}
+    \`;
+    list.appendChild(card);
+  });
 }
 </script>
 </body>

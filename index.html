@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS LMS</title>
+  <title>RS Daily App</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
@@ -319,8 +319,8 @@
 <!-- ══ LOGIN ══ -->
 <div id="loginScreen">
   <div class="login-box">
-    <h1>📋 RS Daily Log</h1>
-    <p>Reading Star LMS</p>
+    <h1>📋 RS Daily App</h1>
+    <p>RS Daily App</p>
     <div class="input-group">
       <label>Password</label>
       <input type="password" id="pwInput" placeholder="••••••••"
@@ -1123,30 +1123,30 @@ function renderErsData(data, cls, weekKey) {
     if (s.alert.includes('Binge'))        alertIcons.push('⚡ Binge Reading');
     if (s.alert.includes('Book Loop'))    alertIcons.push(s.alert.includes('🔴') ? '🔴 Book Loop' : '🟡 Book Loop');
 
-    card.innerHTML = \`
+    card.innerHTML = `
       <div class="ers-card-top">
         <div>
-          <div class="ers-name">\${s.nick||s.name}</div>
-          <div class="ers-korean">\${s.nick?s.name:''} · \${s.days}일</div>
+          <div class="ers-name">${s.nick||s.name}</div>
+          <div class="ers-korean">${s.nick?s.name:''} · ${s.days}일</div>
         </div>
-        <div class="ers-cum">누적 \${s.cum}</div>
+        <div class="ers-cum">누적 ${s.cum}</div>
       </div>
       <div class="ers-stats">
-        <div class="ers-stat"><div class="val">\${s.books}</div><div class="lbl">Books</div></div>
-        <div class="ers-stat"><div class="val">\${s.pass}</div><div class="lbl">Pass</div></div>
-        <div class="ers-stat"><div class="val" style="color:#e87722">\${s.fic}</div><div class="lbl">Fiction</div></div>
-        <div class="ers-stat"><div class="val" style="color:#b85000">\${s.nf}</div><div class="lbl">Nonfic</div></div>
+        <div class="ers-stat"><div class="val">${s.books}</div><div class="lbl">Books</div></div>
+        <div class="ers-stat"><div class="val">${s.pass}</div><div class="lbl">Pass</div></div>
+        <div class="ers-stat"><div class="val" style="color:#e87722">${s.fic}</div><div class="lbl">Fiction</div></div>
+        <div class="ers-stat"><div class="val" style="color:#b85000">${s.nf}</div><div class="lbl">Nonfic</div></div>
       </div>
-      \${totalFNs ? \`<div class="ers-ratio-bar">
-        <div class="seg-left fic-color" style="width:\${sFicPct}%"></div>
+      ${totalFNs ? `<div class="ers-ratio-bar">
+        <div class="seg-left fic-color" style="width:${sFicPct}%"></div>
         <div class="seg-right nf-color"></div>
-      </div>\` : ''}
-      \${totalPEs ? \`<div class="ers-ratio-bar">
-        <div class="seg-left pb-color" style="width:\${sPbPct}%"></div>
+      </div>` : ''}
+      ${totalPEs ? `<div class="ers-ratio-bar">
+        <div class="seg-left pb-color" style="width:${sPbPct}%"></div>
         <div class="seg-right eb-color"></div>
-      </div>\` : ''}
-      \${hasAlert ? \`<div class="ers-alert">\${alertIcons.join(' · ')||s.alert}</div>\` : ''}
-    \`;
+      </div>` : ''}
+      ${hasAlert ? `<div class="ers-alert">${alertIcons.join(' · ')||s.alert}</div>` : ''}
+    `;
     list.appendChild(card);
   });
 }

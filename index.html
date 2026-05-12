@@ -320,7 +320,7 @@
 <div id="loginScreen">
   <div class="login-box">
     <h1>📋 RS Daily App</h1>
-    <p>Reading Star Jamsil Campus</p>
+    <p>RS Daily App</p>
     <div class="input-group">
       <label>Password</label>
       <input type="password" id="pwInput" placeholder="••••••••"
@@ -398,6 +398,11 @@
 
 <!-- ══ e-RS ══ -->
 <div id="ersScreen" style="display:none">
+  <div class="main-tabs">
+    <button class="main-tab" onclick="switchMainTab('dailylog')">📋 Daily Log</button>
+    <button class="main-tab active">📖 e-RS</button>
+  </div>
+
   <div class="ers-controls">
     <div class="pill-row" id="ersTimeFilter">
       <button class="pill" data-slot="P" onclick="setErsTimeSlot('P')">P Time</button>
@@ -546,9 +551,9 @@ function initApp(classes) {
   else if (hm < 1835) currentSlot = 'Q';
   else                currentSlot = 'R';
 
-  ersSlot = currentSlot;
-  document.querySelectorAll('#ersTimeFilter .pill').forEach(b =>
-    b.classList.toggle('active', b.dataset.slot === currentSlot));
+  ersSlot = 'ALL';
+  // Set e-RS time pills default
+  document.querySelectorAll('#ersTimeFilter .pill[data-slot="ALL"]').forEach(b => b.classList.add('active'));
 
   if (getDayFilter(`${yyyy}-${mm}-${dd}`) === 'WEEKEND') {
     document.getElementById('studentList').innerHTML = '<div class="no-students">No classes today</div>';
@@ -625,8 +630,25 @@ function setTimeSlot(slot) {
 
 // ── Class ─────────────────────────────────────────────
 function onClassChange() {
-  if (!document.getElementById('classSelect').value) { resetBelowClass(); return; }
+  const cls = document.getElementById('classSelect').value;
+  if (!cls) { resetBelowClass(); return; }
   document.getElementById('fnTabs').style.display = 'grid';
+
+  // Load subjects for this class from Subject_Map
+  gasCall('attendance_getSubjects', { cls })
+    .then(subjects => {
+      const sel  = document.getElementById('subjectSelect');
+      const prev = sel.value;
+      sel.innerHTML = '<option value="">— Select subject —</option>';
+      (subjects || []).forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = opt.textContent = s;
+        sel.appendChild(opt);
+      });
+      if ((subjects || []).includes(prev)) sel.value = prev;
+    })
+    .catch(() => {});
+
   setFunction(currentFn);
 }
 
@@ -984,16 +1006,6 @@ function switchMainTab(tab) {
   document.getElementById('tabDailyLog').classList.toggle('active',  isDL);
   document.getElementById('tabERS').classList.toggle('active', !isDL);
   if (!isDL && !ersWeeksLoaded) loadErsWeeks();
-}
-
-function loadErsWeeks() {
-  gasCall('ers_getWeeks', {})
-    .then(weeks => {
-      ersWeeks = weeks;
-      ersWeeksLoaded = true;
-      populateErsClasses(ersSlot);
-    })
-    .catch(() => {});
 }
 
 // ── e-RS state ────────────────────────────────────────

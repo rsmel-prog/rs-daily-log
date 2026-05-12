@@ -546,9 +546,9 @@ function initApp(classes) {
   else if (hm < 1835) currentSlot = 'Q';
   else                currentSlot = 'R';
 
-  ersSlot = 'ALL';
-  // Set e-RS time pills default
-  document.querySelectorAll('#ersTimeFilter .pill[data-slot="ALL"]').forEach(b => b.classList.add('active'));
+  ersSlot = currentSlot;
+  document.querySelectorAll('#ersTimeFilter .pill').forEach(b =>
+    b.classList.toggle('active', b.dataset.slot === currentSlot));
 
   if (getDayFilter(`${yyyy}-${mm}-${dd}`) === 'WEEKEND') {
     document.getElementById('studentList').innerHTML = '<div class="no-students">No classes today</div>';
@@ -991,7 +991,7 @@ function loadErsWeeks() {
     .then(weeks => {
       ersWeeks = weeks;
       ersWeeksLoaded = true;
-      populateErsClasses(null);
+      populateErsClasses(ersSlot);
     })
     .catch(() => {});
 }

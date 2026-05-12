@@ -6,11 +6,12 @@
   <title>RS Daily App</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    input, select, textarea { font-size: 16px !important; }
+    input:focus, select:focus, textarea:focus { font-size: 16px !important; }
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #f0f2f5; color: #1a1a2e; min-height: 100vh;
-      font-size: 16px;
+      background: #f0f2f5; color: #1a1a2e; min-height: 100vh; font-size: 16px;
     }
 
     /* ── LOGIN ── */
@@ -32,8 +33,7 @@
     }
     .input-group input {
       width: 100%; padding: 16px; border: 2px solid #e0e0e0;
-      border-radius: 12px; font-size: 18px; outline: none;
-      background: #fff; color: #1a1a2e;
+      border-radius: 12px; outline: none; background: #fff; color: #1a1a2e;
     }
     .input-group input:focus { border-color: #4a6cf7; }
     .error-msg { color: #e53935; font-size: 15px; margin-bottom: 12px; display: none; }
@@ -58,12 +58,28 @@
     .btn-confirm:active   { background: #3a5ce6; }
     .btn-confirm:disabled { background: #b0bec5; }
 
+    /* ── MAIN TABS ── */
+    .main-tabs {
+      display: grid; grid-template-columns: 1fr 1fr;
+      background: #fff; border-bottom: 1px solid #e8e8e8;
+      position: sticky; top: 0; z-index: 11;
+    }
+    .main-tab {
+      padding: 16px; text-align: center; font-size: 16px; font-weight: 700;
+      color: #aaa; border-bottom: 3px solid transparent; cursor: pointer;
+      background: none; border-left: none; border-right: none; border-top: none;
+      -webkit-appearance: none;
+    }
+    .main-tab.active { color: #4a6cf7; border-bottom-color: #4a6cf7; }
+
     /* ── APP ── */
     #appScreen { display: none; }
+    #dailyLogScreen { display: none; }
+    #ersScreen { display: none; }
 
     .top-bar {
       background: #fff; padding: 16px 20px 12px; border-bottom: 1px solid #e8e8e8;
-      position: sticky; top: 0; z-index: 10;
+      position: sticky; top: 49px; z-index: 10;
     }
     .top-bar h2   { font-size: 20px; font-weight: 700; }
     .top-bar .sub { font-size: 14px; color: #888; margin-top: 3px; }
@@ -92,18 +108,16 @@
 
     select {
       width: 100%; padding: 16px; border: 2px solid #e0e0e0;
-      border-radius: 12px; font-size: 17px; background: #fff; color: #1a1a2e; outline: none;
+      border-radius: 12px; background: #fff; color: #1a1a2e; outline: none;
       -webkit-appearance: none; appearance: none;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23aaa' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-      background-repeat: no-repeat; background-position: right 16px center;
-      padding-right: 40px;
+      background-repeat: no-repeat; background-position: right 16px center; padding-right: 40px;
     }
     select:focus { border-color: #4a6cf7; }
 
     input[type="date"] {
       width: 100%; padding: 16px; border: 2px solid #e0e0e0;
-      border-radius: 12px; font-size: 17px; background: #fff; color: #1a1a2e; outline: none;
-      -webkit-appearance: none;
+      border-radius: 12px; background: #fff; color: #1a1a2e; outline: none; -webkit-appearance: none;
     }
     input[type="date"]:focus { border-color: #4a6cf7; }
 
@@ -115,7 +129,7 @@
     .max-score-row input {
       width: 90px; padding: 12px; text-align: center;
       border: 2px solid #c5d0f7; border-radius: 10px;
-      font-size: 18px; font-weight: 700; color: #4a6cf7; background: #fff; outline: none;
+      font-weight: 700; color: #4a6cf7; background: #fff; outline: none;
     }
 
     /* ── STUDENT LIST ── */
@@ -148,7 +162,7 @@
     .extra-box.visible { display: block; }
     .extra-box input[type="text"] {
       width: 100%; padding: 14px; border: 2px solid #e8e8e8;
-      border-radius: 10px; font-size: 16px; color: #333; background: #fafafa; outline: none;
+      border-radius: 10px; color: #333; background: #fafafa; outline: none;
     }
     .extra-box input[type="text"]:focus { border-color: #4a6cf7; background: #fff; }
 
@@ -159,10 +173,7 @@
     }
     .score-card.filled { border-left-color: #4a6cf7; }
     .score-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-    .score-grade {
-      font-size: 14px; font-weight: 700; padding: 6px 12px;
-      border-radius: 24px; background: #f0f0f0; color: #aaa;
-    }
+    .score-grade { font-size: 14px; font-weight: 700; padding: 6px 12px; border-radius: 24px; background: #f0f0f0; color: #aaa; }
     .grade-A { background: #e8f5e9; color: #2e7d32; }
     .grade-B { background: #e3f2fd; color: #1565c0; }
     .grade-C { background: #fff3e0; color: #e65100; }
@@ -172,7 +183,7 @@
     .score-inputs input[type="number"] {
       flex: 1; padding: 14px; text-align: center;
       border: 2px solid #e0e0e0; border-radius: 10px;
-      font-size: 20px; font-weight: 700; color: #1a1a2e; background: #fff; outline: none;
+      font-size: 20px !important; font-weight: 700; color: #1a1a2e; background: #fff; outline: none;
     }
     .score-inputs input[type="number"]:focus { border-color: #4a6cf7; }
     .score-inputs .slash       { font-size: 22px; color: #ccc; font-weight: 300; }
@@ -180,7 +191,7 @@
     .score-note { margin-top: 10px; }
     .score-note input {
       width: 100%; padding: 14px; border: 2px solid #e8e8e8;
-      border-radius: 10px; font-size: 16px; color: #333; background: #fafafa; outline: none;
+      border-radius: 10px; color: #333; background: #fafafa; outline: none;
     }
     .score-note input:focus { border-color: #4a6cf7; background: #fff; }
 
@@ -193,6 +204,53 @@
       padding: 14px 16px; padding-bottom: calc(14px + env(safe-area-inset-bottom));
     }
     .submit-bar .summary-line { font-size: 14px; color: #888; margin-bottom: 10px; text-align: center; }
+    .spacer-bottom { height: 200px; }
+
+    /* ── e-RS ── */
+    .ers-controls {
+      background: #fff; padding: 16px; border-bottom: 1px solid #e8e8e8;
+      display: flex; flex-direction: column; gap: 12px;
+    }
+
+    .ratio-section {
+      background: #fff; padding: 16px; border-bottom: 1px solid #e8e8e8;
+    }
+    .ratio-title { font-size: 13px; font-weight: 700; color: #888; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .ratio-row { margin-bottom: 12px; }
+    .ratio-label { display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+    .ratio-bar { height: 14px; border-radius: 7px; background: #f0f0f0; overflow: hidden; display: flex; }
+    .ratio-bar .seg-left  { height: 100%; transition: width 0.4s ease; }
+    .ratio-bar .seg-right { height: 100%; flex: 1; }
+    .fic-color { background: #e87722; }
+    .nf-color  { background: #b85000; }
+    .pb-color  { background: #7c3aed; }
+    .eb-color  { background: #4c1d95; }
+
+    .ers-student-list { padding: 12px 16px; display: flex; flex-direction: column; gap: 12px; }
+
+    .ers-card {
+      background: #fff; border-radius: 16px; padding: 16px 18px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-left: 5px solid #e0e0e0;
+    }
+    .ers-card.has-alert { border-left-color: #e53935; }
+    .ers-card.no-ers    { border-left-color: #bbb; opacity: 0.7; }
+
+    .ers-card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .ers-name  { font-size: 18px; font-weight: 700; }
+    .ers-korean { font-size: 14px; color: #888; margin-top: 2px; }
+    .ers-cum { font-size: 13px; color: #4a6cf7; font-weight: 700; background: #f0f4ff; padding: 4px 10px; border-radius: 12px; white-space: nowrap; }
+
+    .ers-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-bottom: 10px; }
+    .ers-stat { text-align: center; background: #f8f8f8; border-radius: 10px; padding: 8px 4px; }
+    .ers-stat .val { font-size: 18px; font-weight: 700; color: #1a1a2e; }
+    .ers-stat .lbl { font-size: 11px; color: #aaa; margin-top: 2px; }
+
+    .ers-ratio-bar { height: 8px; border-radius: 4px; background: #f0f0f0; overflow: hidden; display: flex; margin-bottom: 6px; }
+    .ers-ratio-bar .seg-left  { height: 100%; }
+    .ers-ratio-bar .seg-right { height: 100%; flex: 1; }
+
+    .ers-alert { font-size: 13px; color: #c62828; background: #ffebee; padding: 8px 12px; border-radius: 8px; line-height: 1.6; margin-top: 6px; }
+    .ers-spacer { height: 40px; }
 
     /* ── CONFIRM ── */
     #confirmScreen {
@@ -215,10 +273,7 @@
     .conf-stat.p .num { color: #2e7d32; } .conf-stat.a .num { color: #c62828; }
     .conf-stat.l .num { color: #e65100; } .conf-stat.s .num { color: #1565c0; }
     .conf-stat .lbl { font-size: 13px; color: #888; margin-top: 4px; }
-    .confirm-details {
-      font-size: 15px; color: #555; margin-bottom: 24px;
-      line-height: 2; max-height: 160px; overflow-y: auto;
-    }
+    .confirm-details { font-size: 15px; color: #555; margin-bottom: 24px; line-height: 2; max-height: 160px; overflow-y: auto; }
     .confirm-btns { display: flex; gap: 12px; }
 
     /* ── SUCCESS ── */
@@ -239,77 +294,11 @@
       vertical-align: middle; margin-right: 8px;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .spacer-bottom { height: 100px; }
-    /* ── MAIN TABS ── */
-    .main-tabs {
-      display: grid; grid-template-columns: 1fr 1fr;
-      background: #fff; border-bottom: 1px solid #e8e8e8;
-      position: sticky; top: 0; z-index: 11;
-    }
-    .main-tab {
-      padding: 16px; text-align: center; font-size: 16px; font-weight: 700;
-      color: #aaa; border-bottom: 3px solid transparent; cursor: pointer;
-      background: none; border-left: none; border-right: none; border-top: none;
-      -webkit-appearance: none;
-    }
-    .main-tab.active { color: #4a6cf7; border-bottom-color: #4a6cf7; }
 
-    /* ── e-RS ── */
-    #ersScreen { display: none; }
-
-    .ers-controls {
-      background: #fff; padding: 16px; border-bottom: 1px solid #e8e8e8;
-      display: flex; flex-direction: column; gap: 12px;
-    }
-
-    .ratio-section {
-      background: #fff; padding: 16px; border-bottom: 1px solid #e8e8e8;
-    }
-    .ratio-title { font-size: 13px; font-weight: 700; color: #888; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
-    .ratio-row { margin-bottom: 12px; }
-    .ratio-label { display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; margin-bottom: 6px; }
-    .ratio-bar { height: 14px; border-radius: 7px; background: #f0f0f0; overflow: hidden; display: flex; }
-    .ratio-bar .seg-left  { height: 100%; transition: width 0.4s ease; }
-    .ratio-bar .seg-right { height: 100%; flex: 1; }
-    .fic-color  { background: #e87722; }
-    .nf-color   { background: #b85000; }
-    .pb-color   { background: #7c3aed; }
-    .eb-color   { background: #4c1d95; }
-
-    .ers-student-list { padding: 12px 16px; display: flex; flex-direction: column; gap: 12px; }
-
-    .ers-card {
-      background: #fff; border-radius: 16px; padding: 16px 18px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-left: 5px solid #e0e0e0;
-    }
-    .ers-card.has-alert { border-left-color: #e53935; }
-    .ers-card.no-ers    { border-left-color: #bbb; opacity: 0.7; }
-
-    .ers-card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-    .ers-name { font-size: 18px; font-weight: 700; }
-    .ers-korean { font-size: 14px; color: #888; margin-top: 2px; }
-    .ers-cum { font-size: 13px; color: #4a6cf7; font-weight: 700; background: #f0f4ff; padding: 4px 10px; border-radius: 12px; }
-
-    .ers-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-bottom: 10px; }
-    .ers-stat { text-align: center; background: #f8f8f8; border-radius: 10px; padding: 8px 4px; }
-    .ers-stat .val { font-size: 18px; font-weight: 700; color: #1a1a2e; }
-    .ers-stat .lbl { font-size: 11px; color: #aaa; margin-top: 2px; }
-
-    .ers-ratio-bar { height: 8px; border-radius: 4px; background: #f0f0f0; overflow: hidden; display: flex; margin-bottom: 8px; }
-    .ers-ratio-bar .seg-left  { height: 100%; }
-    .ers-ratio-bar .seg-right { height: 100%; flex: 1; }
-
-    .ers-alert { font-size: 13px; color: #c62828; background: #ffebee; padding: 8px 12px; border-radius: 8px; line-height: 1.5; }
-
-    .ers-spacer { height: 40px; }
-
-
-    /* ── PC overrides — tighten things up on wide screens ── */
     @media (min-width: 600px) {
       body { font-size: 15px; }
       .login-box { padding: 40px 36px; }
-      .controls { max-width: 600px; margin: 0 auto; }
-      .student-list { max-width: 600px; margin: 0 auto; }
+      .controls, .ers-controls, .student-list, .ers-student-list, .ratio-section { max-width: 600px; margin-left: auto; margin-right: auto; }
       .submit-bar { left: 50%; transform: translateX(-50%); width: 600px; border-radius: 16px 16px 0 0; }
     }
   </style>
@@ -338,116 +327,93 @@
     <button class="main-tab"        id="tabERS"      onclick="switchMainTab('ers')">📖 e-RS</button>
   </div>
 
-  <!-- DAILY LOG -->
+  <!-- ── DAILY LOG ── -->
   <div id="dailyLogScreen">
-  <div class="top-bar">
-    <h2 id="topTitle">📋 Attendance</h2>
-    <div class="sub" id="topSubtitle">Select a class to begin</div>
-  </div>
-
-  <div class="controls">
-    <div class="pill-row" id="timeFilter">
-      <button class="pill" data-slot="P" onclick="setTimeSlot('P')">P Time</button>
-      <button class="pill" data-slot="Q" onclick="setTimeSlot('Q')">Q Time</button>
-      <button class="pill" data-slot="R" onclick="setTimeSlot('R')">R Time</button>
-      <button class="pill" data-slot="ALL" onclick="setTimeSlot('ALL')">All</button>
+    <div class="top-bar">
+      <h2 id="topTitle">📋 Attendance</h2>
+      <div class="sub" id="topSubtitle">Select a class to begin</div>
     </div>
-
-    <select id="classSelect" onchange="onClassChange()">
-      <option value="">— Select class —</option>
-    </select>
-
-    <div class="fn-tabs" id="fnTabs" style="display:none">
-      <button class="fn-tab active" data-fn="attendance" onclick="setFunction('attendance')">📋 Attendance</button>
-      <button class="fn-tab"        data-fn="test"       onclick="setFunction('test')">📝 Daily Test</button>
-      <button class="fn-tab"        data-fn="homework"   onclick="setFunction('homework')">📚 Homework</button>
-    </div>
-
-    <select id="subjectSelect" style="display:none" onchange="onSubjectChange()">
-      <option value="">— Select subject —</option>
-      <option>PH</option><option>R</option><option>BRW</option><option>BRW1</option>
-      <option>BRW2</option><option>BRG</option><option>W</option><option>ELA</option>
-      <option>BP</option><option>Science</option><option>GR</option><option>Comp</option>
-      <option>NW</option><option>Novel</option><option>ST-R</option><option>ST-S</option>
-      <option>SW-1</option><option>SW-2</option><option>BH</option>
-    </select>
-
-    <div class="max-score-row" id="maxScoreRow" style="display:none">
-      <label>Max Score</label>
-      <input type="number" id="maxScoreInput" min="1" max="200" placeholder="10"
-             inputmode="numeric" oninput="onMaxScoreChange()">
-    </div>
-
-    <input type="date" id="datePicker" onchange="onDateChange()">
-  </div>
-
-  <div class="student-list" id="studentList">
-    <div class="no-students">Select a class above</div>
-  </div>
-  <div class="spacer-bottom"></div>
-
-  <div class="submit-bar">
-    <div class="summary-line" id="summaryLine">—</div>
-    <button class="btn-primary" id="submitBtn" onclick="showConfirm()" disabled>Submit</button>
-  </div>
-</div>
-
-  </div><!-- end dailyLogScreen -->
-
-</div><!-- end appScreen -->
-
-<!-- ══ e-RS ══ -->
-<div id="ersScreen" style="display:none">
-  <div class="main-tabs">
-    <button class="main-tab" onclick="switchMainTab('dailylog')">📋 Daily Log</button>
-    <button class="main-tab active">📖 e-RS</button>
-  </div>
-
-  <div class="ers-controls">
-    <div class="pill-row" id="ersTimeFilter">
-      <button class="pill" data-slot="P" onclick="setErsTimeSlot('P')">P Time</button>
-      <button class="pill" data-slot="Q" onclick="setErsTimeSlot('Q')">Q Time</button>
-      <button class="pill" data-slot="R" onclick="setErsTimeSlot('R')">R Time</button>
-      <button class="pill" data-slot="ALL" onclick="setErsTimeSlot('ALL')">All</button>
-    </div>
-    <select id="ersClassSelect" onchange="onErsClassChange()">
-      <option value="">— Select class —</option>
-    </select>
-    <select id="ersWeekSelect" style="display:none" onchange="loadErsData()">
-      <option value="">— Select week —</option>
-    </select>
-  </div>
-
-  <div id="ersRatioSection" style="display:none" class="ratio-section">
-    <div class="ratio-title">Class Summary</div>
-    <div class="ratio-row">
-      <div class="ratio-label">
-        <span style="color:#e87722">📖 Fiction</span>
-        <span style="color:#b85000">📚 Nonfiction</span>
+    <div class="controls">
+      <div class="pill-row" id="timeFilter">
+        <button class="pill" data-slot="P" onclick="setTimeSlot('P')">P Time</button>
+        <button class="pill" data-slot="Q" onclick="setTimeSlot('Q')">Q Time</button>
+        <button class="pill" data-slot="R" onclick="setTimeSlot('R')">R Time</button>
+        <button class="pill" data-slot="ALL" onclick="setTimeSlot('ALL')">All</button>
       </div>
-      <div class="ratio-bar">
-        <div class="seg-left fic-color" id="classFicBar"></div>
-        <div class="seg-right nf-color" id="classNFBar"></div>
+      <select id="classSelect" onchange="onClassChange()">
+        <option value="">— Select class —</option>
+      </select>
+      <div class="fn-tabs" id="fnTabs" style="display:none">
+        <button class="fn-tab active" data-fn="attendance" onclick="setFunction('attendance')">📋 Attendance</button>
+        <button class="fn-tab"        data-fn="test"       onclick="setFunction('test')">📝 Daily Test</button>
+        <button class="fn-tab"        data-fn="homework"   onclick="setFunction('homework')">📚 Homework</button>
       </div>
-      <div id="classFicLabel" style="font-size:13px;color:#888;margin-top:4px;text-align:center"></div>
+      <select id="subjectSelect" style="display:none" onchange="onSubjectChange()">
+        <option value="">— Select subject —</option>
+      </select>
+      <div class="max-score-row" id="maxScoreRow" style="display:none">
+        <label>Max Score</label>
+        <input type="number" id="maxScoreInput" min="1" max="200" placeholder="10"
+               inputmode="numeric" oninput="onMaxScoreChange()">
+      </div>
+      <input type="date" id="datePicker" onchange="onDateChange()">
     </div>
-    <div class="ratio-row">
-      <div class="ratio-label">
-        <span style="color:#7c3aed">📄 Paper</span>
-        <span style="color:#4c1d95">📱 eBook</span>
-      </div>
-      <div class="ratio-bar">
-        <div class="seg-left pb-color" id="classPBBar"></div>
-        <div class="seg-right eb-color" id="classEBBar"></div>
-      </div>
-      <div id="classPBLabel" style="font-size:13px;color:#888;margin-top:4px;text-align:center"></div>
+    <div class="student-list" id="studentList">
+      <div class="no-students">Select a class above</div>
+    </div>
+    <div class="spacer-bottom"></div>
+    <div class="submit-bar">
+      <div class="summary-line" id="summaryLine">—</div>
+      <button class="btn-primary" id="submitBtn" onclick="showConfirm()" disabled>Submit</button>
     </div>
   </div>
 
-  <div class="ers-student-list" id="ersStudentList">
-    <div class="no-students">Select a class above</div>
+  <!-- ── e-RS ── -->
+  <div id="ersScreen">
+    <div class="ers-controls">
+      <div class="pill-row" id="ersTimeFilter">
+        <button class="pill" data-slot="P" onclick="setErsTimeSlot('P')">P Time</button>
+        <button class="pill" data-slot="Q" onclick="setErsTimeSlot('Q')">Q Time</button>
+        <button class="pill" data-slot="R" onclick="setErsTimeSlot('R')">R Time</button>
+        <button class="pill" data-slot="ALL" onclick="setErsTimeSlot('ALL')">All</button>
+      </div>
+      <select id="ersClassSelect" onchange="onErsClassChange()">
+        <option value="">— Select class —</option>
+      </select>
+      <select id="ersWeekSelect" style="display:none" onchange="loadErsData()">
+        <option value="">— Select week —</option>
+      </select>
+    </div>
+    <div id="ersRatioSection" style="display:none" class="ratio-section">
+      <div class="ratio-title">Class Summary</div>
+      <div class="ratio-row">
+        <div class="ratio-label">
+          <span style="color:#e87722">📖 Fiction</span>
+          <span style="color:#b85000">📚 Nonfiction</span>
+        </div>
+        <div class="ratio-bar">
+          <div class="seg-left fic-color" id="classFicBar" style="width:0%"></div>
+          <div class="seg-right nf-color"></div>
+        </div>
+        <div id="classFicLabel" style="font-size:13px;color:#888;margin-top:4px;text-align:center"></div>
+      </div>
+      <div class="ratio-row">
+        <div class="ratio-label">
+          <span style="color:#7c3aed">📄 Paper</span>
+          <span style="color:#4c1d95">📱 eBook</span>
+        </div>
+        <div class="ratio-bar">
+          <div class="seg-left pb-color" id="classPBBar" style="width:0%"></div>
+          <div class="seg-right eb-color"></div>
+        </div>
+        <div id="classPBLabel" style="font-size:13px;color:#888;margin-top:4px;text-align:center"></div>
+      </div>
+    </div>
+    <div class="ers-student-list" id="ersStudentList">
+      <div class="no-students">Select a class above</div>
+    </div>
+    <div class="ers-spacer"></div>
   </div>
-  <div class="ers-spacer"></div>
 </div>
 
 <!-- ══ CONFIRM ══ -->
@@ -473,36 +439,34 @@
 </div>
 
 <script>
-// ── Apps Script backend URL ──────────────────────────
 const GAS_URL = 'https://script.google.com/a/macros/readingstar.co.kr/s/AKfycbwK3tl8Ky7OP2gJa4ntienDu4b6q5D2gPJxoKs-zZRoL_9zVTQz4pKtXqtPx_EWe8R58g/exec';
 
 async function gasCall(action, params) {
   const url = GAS_URL + '?action=' + encodeURIComponent(action);
-  const res  = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain' },
-    body: JSON.stringify(params)
-  });
+  const res  = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(params) });
   if (!res.ok) throw new Error('HTTP ' + res.status);
   return res.json();
 }
 
-// ── State ───────────────────────────────────────────
+// ── State ──────────────────────────────────────────────
 let allClasses  = [];
 let currentSlot = 'P';
 let currentFn   = 'attendance';
 let studentData = [];
 let existingMap = {};
 let maxScore    = null;
+let ersWeeksLoaded = false;
+let ersWeeks    = [];
+let ersSlot     = 'ALL';
 
-// ── Init ────────────────────────────────────────────
+// ── Init ───────────────────────────────────────────────
 window.onload = () => {
   document.getElementById('pwInput').addEventListener('keydown', e => {
     if (e.key === 'Enter') doLogin();
   });
 };
 
-// ── Login ────────────────────────────────────────────
+// ── Login ──────────────────────────────────────────────
 function doLogin() {
   const pw  = document.getElementById('pwInput').value.trim();
   const btn = document.getElementById('loginBtn');
@@ -512,8 +476,8 @@ function doLogin() {
   gasCall('attendance_login', {pw})
     .then(res => {
       if (res.ok) {
-        document.getElementById('loginScreen').style.display   = 'none';
-        document.getElementById('appScreen').style.display    = 'block';
+        document.getElementById('loginScreen').style.display    = 'none';
+        document.getElementById('appScreen').style.display     = 'block';
         document.getElementById('dailyLogScreen').style.display = 'block';
         initApp(res.classes);
       } else if (res.locked) {
@@ -536,7 +500,7 @@ function doLogin() {
     });
 }
 
-// ── App init ─────────────────────────────────────────
+// ── App init ───────────────────────────────────────────
 function initApp(classes) {
   allClasses = classes;
   const today = new Date();
@@ -551,20 +515,20 @@ function initApp(classes) {
   else if (hm < 1835) currentSlot = 'Q';
   else                currentSlot = 'R';
 
-  ersSlot = 'ALL';
-  // Set e-RS time pills default
-  document.querySelectorAll('#ersTimeFilter .pill[data-slot="ALL"]').forEach(b => b.classList.add('active'));
+  ersSlot = currentSlot;
+  document.querySelectorAll('#ersTimeFilter .pill').forEach(b =>
+    b.classList.toggle('active', b.dataset.slot === currentSlot));
 
   if (getDayFilter(`${yyyy}-${mm}-${dd}`) === 'WEEKEND') {
     document.getElementById('studentList').innerHTML = '<div class="no-students">No classes today</div>';
     document.getElementById('classSelect').innerHTML = '<option value="">No classes today</option>';
-    document.querySelectorAll('.pill').forEach(b => b.disabled = true);
+    document.querySelectorAll('#timeFilter .pill').forEach(b => b.disabled = true);
     return;
   }
   setTimeSlot(currentSlot);
 }
 
-// ── Helpers ──────────────────────────────────────────
+// ── Helpers ────────────────────────────────────────────
 function getClassDay(cls) {
   if (/매일/.test(cls))   return 'DAILY';
   if (/월수금/.test(cls)) return 'MWF';
@@ -595,10 +559,20 @@ function calcGrade(pct) {
   return           { str: `D · ${pct}%`, cls: 'grade-D' };
 }
 
-// ── Time slot ─────────────────────────────────────────
+// ── Main tab switch ────────────────────────────────────
+function switchMainTab(tab) {
+  const isDL = tab === 'dailylog';
+  document.getElementById('dailyLogScreen').style.display = isDL ? 'block' : 'none';
+  document.getElementById('ersScreen').style.display      = isDL ? 'none'  : 'block';
+  document.getElementById('tabDailyLog').classList.toggle('active',  isDL);
+  document.getElementById('tabERS').classList.toggle('active', !isDL);
+  if (!isDL && !ersWeeksLoaded) loadErsWeeks();
+}
+
+// ── Time slot (Daily Log) ──────────────────────────────
 function setTimeSlot(slot) {
   currentSlot = slot;
-  document.querySelectorAll('.pill[data-slot]').forEach(b =>
+  document.querySelectorAll('#timeFilter .pill[data-slot]').forEach(b =>
     b.classList.toggle('active', b.dataset.slot === slot));
 
   const dateStr   = document.getElementById('datePicker').value;
@@ -628,13 +602,12 @@ function setTimeSlot(slot) {
   else onClassChange();
 }
 
-// ── Class ─────────────────────────────────────────────
+// ── Class (Daily Log) ──────────────────────────────────
 function onClassChange() {
   const cls = document.getElementById('classSelect').value;
   if (!cls) { resetBelowClass(); return; }
   document.getElementById('fnTabs').style.display = 'grid';
 
-  // Load subjects for this class from Subject_Map
   gasCall('attendance_getSubjects', { cls })
     .then(subjects => {
       const sel  = document.getElementById('subjectSelect');
@@ -659,7 +632,7 @@ function resetBelowClass() {
   clearStudentList();
 }
 
-// ── Function tab ──────────────────────────────────────
+// ── Function tab ───────────────────────────────────────
 function setFunction(fn) {
   currentFn = fn;
   document.querySelectorAll('.fn-tab').forEach(b =>
@@ -704,7 +677,7 @@ function onDateChange() {
   if (document.getElementById('classSelect').value) loadStudentList();
 }
 
-// ── Load students ─────────────────────────────────────
+// ── Load students ──────────────────────────────────────
 function loadStudentList() {
   const cls  = document.getElementById('classSelect').value;
   const date = document.getElementById('datePicker').value;
@@ -741,7 +714,7 @@ function clearStudentList() {
   studentData = [];
 }
 
-// ── Attendance render ─────────────────────────────────
+// ── Attendance render ──────────────────────────────────
 function renderAttendance(students) {
   studentData = students.map(s => ({
     name: s.name, nick: s.nick, status: null, reason: '',
@@ -789,24 +762,20 @@ function renderAttendance(students) {
 function cycleStatus(i) {
   const s = studentData[i];
   s.status = s.status === null ? 'Present' : s.status === 'Present' ? 'Absent' : s.status === 'Absent' ? 'Late' : null;
-
   const card  = document.getElementById(`card-${i}`);
   const badge = document.getElementById(`badge-${i}`);
   const extra = document.getElementById(`extra-${i}`);
-
   card.className = 'student-card' + (s.status ? ' '+s.status.toLowerCase() : s.existingStatus ? ' existing' : '');
   badge.textContent = s.status || '—';
-
   const need = s.status === 'Absent' || s.status === 'Late';
   extra.classList.toggle('visible', need);
   if (!need) { s.reason = ''; extra.querySelector('input').value = ''; }
   updateSummary();
 }
 
-// ── Score render ──────────────────────────────────────
+// ── Score render ───────────────────────────────────────
 function renderScoreList(students) {
   studentData = students.map(s => ({ name: s.name, nick: s.nick, score: null, note: '' }));
-
   const list = document.getElementById('studentList');
   list.innerHTML = '';
   if (!studentData.length) {
@@ -814,15 +783,12 @@ function renderScoreList(students) {
     document.getElementById('submitBtn').disabled = true;
     return;
   }
-
   const isTest = currentFn === 'test';
   studentData.forEach((s, i) => {
     const card = document.createElement('div');
     card.className = 'score-card';
     card.id = `card-${i}`;
-    const maxDisp = isTest
-      ? `<span class="slash">/</span><span class="max-display">${maxScore||'?'}</span>`
-      : '';
+    const maxDisp = isTest ? `<span class="slash">/</span><span class="max-display">${maxScore||'?'}</span>` : '';
     card.innerHTML = `
       <div class="score-top">
         <div>
@@ -842,7 +808,6 @@ function renderScoreList(students) {
       </div>`;
     list.appendChild(card);
   });
-
   document.getElementById('submitBtn').disabled = false;
   updateSummary();
 }
@@ -850,16 +815,12 @@ function renderScoreList(students) {
 function setScore(i, val) {
   const v = val === '' ? null : parseFloat(val);
   studentData[i].score = (v === null || isNaN(v)) ? null : v;
-
   const card  = document.getElementById(`card-${i}`);
   const grade = document.getElementById(`grade-${i}`);
-
   if (studentData[i].score === null) {
-    card.className = 'score-card';
-    grade.className = 'score-grade'; grade.textContent = '—';
+    card.className = 'score-card'; grade.className = 'score-grade'; grade.textContent = '—';
     updateSummary(); return;
   }
-
   card.className = 'score-card filled';
   if (currentFn === 'test' && !maxScore) {
     grade.className = 'score-grade'; grade.textContent = studentData[i].score;
@@ -873,7 +834,7 @@ function setScore(i, val) {
   updateSummary();
 }
 
-// ── Summary ───────────────────────────────────────────
+// ── Summary ────────────────────────────────────────────
 function updateSummary() {
   if (currentFn === 'attendance') {
     const touched = studentData.filter(s => s.status !== null);
@@ -893,21 +854,18 @@ function updateSummary() {
   }
 }
 
-// ── Confirm ───────────────────────────────────────────
+// ── Confirm ────────────────────────────────────────────
 function showConfirm() {
   const cls  = document.getElementById('classSelect').value;
   const date = document.getElementById('datePicker').value;
   const subj = document.getElementById('subjectSelect').value;
-
   document.getElementById('confTitle').textContent =
     currentFn === 'attendance' ? 'Confirm Attendance' :
     currentFn === 'test'       ? 'Confirm Test Scores' : 'Confirm Homework';
   document.getElementById('confSub').textContent =
     `${cls} · ${formatDateDisplay(date)}` + (subj ? ` · ${subj}` : '');
-
-  const statsEl   = document.getElementById('confStats');
+  const statsEl = document.getElementById('confStats');
   const detailsEl = document.getElementById('confDetails');
-
   if (currentFn === 'attendance') {
     const t = studentData.filter(s => s.status !== null);
     const p = t.filter(s=>s.status==='Present').length;
@@ -918,7 +876,7 @@ function showConfirm() {
       <div class="conf-stat a"><div class="num">${a}</div><div class="lbl">Absent</div></div>
       <div class="conf-stat l"><div class="num">${l}</div><div class="lbl">Late</div></div>`;
     detailsEl.innerHTML = t.filter(s=>s.status!=='Present')
-      .map(s=>`${s.status==='Absent'?'🔴':'🟡'} ${s.name}${s.reason?' — '+s.reason:''}`)
+      .map(s=>`${s.status==='Absent'?'🔴':'🟡'} ${s.nick||s.name}${s.reason?' — '+s.reason:''}`)
       .join('<br>') || '<span style="color:#bbb">All present</span>';
   } else {
     const filled = studentData.filter(s => s.score !== null);
@@ -930,12 +888,10 @@ function showConfirm() {
       <div class="conf-stat s"><div class="num">${filled.length}/${studentData.length}</div><div class="lbl">Entered</div></div>
       <div class="conf-stat p"><div class="num">${avgPct!==null?avgPct+'%':'—'}</div><div class="lbl">Avg</div></div>`;
     detailsEl.innerHTML = filled.map(s => {
-      const pct = currentFn==='test' && maxScore
-        ? Math.round(s.score/maxScore*100) : Math.min(100,Math.round(s.score));
-      return `${s.name}: ${s.score}${currentFn==='test'&&maxScore?'/'+maxScore:''} (${pct}%)${s.note?' — '+s.note:''}`;
+      const pct = currentFn==='test' && maxScore ? Math.round(s.score/maxScore*100) : Math.min(100,Math.round(s.score));
+      return `${s.nick||s.name}: ${s.score}${currentFn==='test'&&maxScore?'/'+maxScore:''} (${pct}%)${s.note?' — '+s.note:''}`;
     }).join('<br>') || '<span style="color:#bbb">No scores entered</span>';
   }
-
   document.getElementById('confirmScreen').classList.add('visible');
 }
 
@@ -943,7 +899,7 @@ function hideConfirm() {
   document.getElementById('confirmScreen').classList.remove('visible');
 }
 
-// ── Submit ────────────────────────────────────────────
+// ── Submit ─────────────────────────────────────────────
 function doSubmit() {
   const cls  = document.getElementById('classSelect').value;
   const date = document.getElementById('datePicker').value;
@@ -952,7 +908,6 @@ function doSubmit() {
   const btn  = document.getElementById('confirmBtn');
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span> Saving...';
-
   const onOk = () => {
     hideConfirm();
     let msg = `${cls} · ${formatDateDisplay(date)}`;
@@ -965,7 +920,6 @@ function doSubmit() {
     alert('Error saving: ' + (err.message||err));
     btn.disabled = false; btn.textContent = 'Confirm';
   };
-
   if (currentFn === 'attendance') {
     const entries = studentData.filter(s=>s.status!==null)
       .map(s=>({name:s.name,nick:s.nick,status:s.status,reason:s.reason}));
@@ -998,41 +952,36 @@ function resetAfterSuccess() {
   clearStudentList();
 }
 
-// ── Main tab switch ───────────────────────────────────
-function switchMainTab(tab) {
-  const isDL = tab === 'dailylog';
-  document.getElementById('dailyLogScreen').style.display = isDL ? 'block' : 'none';
-  document.getElementById('ersScreen').style.display      = isDL ? 'none'  : 'block';
-  document.getElementById('tabDailyLog').classList.toggle('active',  isDL);
-  document.getElementById('tabERS').classList.toggle('active', !isDL);
-  if (!isDL && !ersWeeksLoaded) loadErsWeeks();
+// ── e-RS ───────────────────────────────────────────────
+function setErsTimeSlot(slot) {
+  ersSlot = slot;
+  document.querySelectorAll('#ersTimeFilter .pill').forEach(b =>
+    b.classList.toggle('active', b.dataset.slot === slot));
+  populateErsClasses();
+  document.getElementById('ersWeekSelect').style.display = 'none';
+  document.getElementById('ersRatioSection').style.display = 'none';
+  document.getElementById('ersStudentList').innerHTML = '<div class="no-students">Select a class above</div>';
 }
-
-// ── e-RS state ────────────────────────────────────────
-let ersWeeksLoaded = false;
-let ersWeeks       = [];
-let ersSlot        = 'ALL';
 
 function loadErsWeeks() {
   gasCall('ers_getWeeks', {})
     .then(weeks => {
       ersWeeks = weeks;
       ersWeeksLoaded = true;
-      // Populate class selector (same as daily log, no day filter for e-RS)
       populateErsClasses();
     })
     .catch(() => {});
 }
 
-function populateErsClasses(slot) {
+function populateErsClasses() {
   const sel = document.getElementById('ersClassSelect');
   const prev = sel.value;
   sel.innerHTML = '<option value="">— Select class —</option>';
   allClasses
     .filter(c => {
-      if (!slot || slot === 'ALL') return true;
+      if (!ersSlot || ersSlot === 'ALL') return true;
       const m = c.cls.match(/[PQR](?=\d)/i);
-      return m && m[0].toUpperCase() === slot;
+      return m && m[0].toUpperCase() === ersSlot;
     })
     .forEach(c => {
       const o = document.createElement('option');
@@ -1043,18 +992,6 @@ function populateErsClasses(slot) {
   else sel.value = '';
 }
 
-function setErsTimeSlot(slot) {
-  ersSlot = slot;
-  document.querySelectorAll('#ersTimeFilter .pill').forEach(b =>
-    b.classList.toggle('active', b.dataset.slot === slot));
-  populateErsClasses(slot === 'ALL' ? null : slot);
-  if (!document.getElementById('ersClassSelect').value) {
-    document.getElementById('ersWeekSelect').style.display = 'none';
-    document.getElementById('ersRatioSection').style.display = 'none';
-    document.getElementById('ersStudentList').innerHTML = '<div class="no-students">Select a class above</div>';
-  }
-}
-
 function onErsClassChange() {
   const cls = document.getElementById('ersClassSelect').value;
   if (!cls) {
@@ -1063,8 +1000,6 @@ function onErsClassChange() {
     document.getElementById('ersStudentList').innerHTML = '<div class="no-students">Select a class above</div>';
     return;
   }
-
-  // Populate weeks
   const wSel = document.getElementById('ersWeekSelect');
   wSel.innerHTML = '<option value="">— Select week —</option>';
   ersWeeks.forEach(w => {
@@ -1072,7 +1007,6 @@ function onErsClassChange() {
     o.value = w.key; o.textContent = w.label;
     wSel.appendChild(o);
   });
-  // Default to last week
   if (ersWeeks.length) wSel.value = ersWeeks[ersWeeks.length - 1].key;
   wSel.style.display = 'block';
   loadErsData();
@@ -1082,22 +1016,16 @@ function loadErsData() {
   const cls     = document.getElementById('ersClassSelect').value;
   const weekKey = document.getElementById('ersWeekSelect').value;
   if (!cls || !weekKey) return;
-
-  document.getElementById('ersStudentList').innerHTML =
-    '<div class="no-students">Loading...</div>';
-
+  document.getElementById('ersStudentList').innerHTML = '<div class="no-students">Loading...</div>';
   gasCall('ers_getData', { cls, weekKey })
-    .then(data => renderErsData(data, cls, weekKey))
+    .then(data => renderErsData(data))
     .catch(() => {
-      document.getElementById('ersStudentList').innerHTML =
-        '<div class="no-students">Error loading data</div>';
+      document.getElementById('ersStudentList').innerHTML = '<div class="no-students">Error loading data</div>';
     });
 }
 
-function renderErsData(data, cls, weekKey) {
+function renderErsData(data) {
   const { students, classFic, classNF, classPB, classEB } = data;
-
-  // Class ratio bars
   const totalFN = classFic + classNF;
   const totalPE = classPB + classEB;
   const ficPct  = totalFN ? Math.round(classFic / totalFN * 100) : 0;
@@ -1106,18 +1034,15 @@ function renderErsData(data, cls, weekKey) {
   document.getElementById('classFicBar').style.width = ficPct + '%';
   document.getElementById('classFicLabel').textContent =
     totalFN ? `Fiction ${classFic} (${ficPct}%) · Nonfiction ${classNF} (${100-ficPct}%)` : 'No data';
-
   document.getElementById('classPBBar').style.width = pbPct + '%';
   document.getElementById('classPBLabel').textContent =
     totalPE ? `Paper ${classPB} (${pbPct}%) · eBook ${classEB} (${100-pbPct}%)` : 'No data';
-
   document.getElementById('ersRatioSection').style.display = 'block';
 
-  // Student list
   const list = document.getElementById('ersStudentList');
   list.innerHTML = '';
 
-  if (!students.length) {
+  if (!students || !students.length) {
     list.innerHTML = '<div class="no-students">No data for this week</div>';
     return;
   }
@@ -1125,8 +1050,7 @@ function renderErsData(data, cls, weekKey) {
   students.forEach(s => {
     const hasAlert = s.alert && s.alert.trim();
     const noErs    = s.books === 0;
-
-    const card = document.createElement('div');
+    const card     = document.createElement('div');
     card.className = 'ers-card' + (hasAlert ? ' has-alert' : '') + (noErs ? ' no-ers' : '');
 
     const totalFNs = s.fic + s.nf;
@@ -1134,11 +1058,20 @@ function renderErsData(data, cls, weekKey) {
     const sFicPct  = totalFNs ? Math.round(s.fic / totalFNs * 100) : 0;
     const sPbPct   = totalPEs ? Math.round(s.pb  / totalPEs * 100) : 0;
 
-    // Alert icons
-    const alertIcons = [];
-    if (s.alert.includes('No eRS'))       alertIcons.push('📭 No e-RS');
-    if (s.alert.includes('Binge'))        alertIcons.push('⚡ Binge Reading');
-    if (s.alert.includes('Book Loop'))    alertIcons.push(s.alert.includes('🔴') ? '🔴 Book Loop' : '🟡 Book Loop');
+    const alertParts = [];
+    if (s.alert.includes('No eRS'))    alertParts.push('📭 No e-RS');
+    if (s.alert.includes('Binge'))     alertParts.push('⚡ Binge Reading');
+    if (s.alert.includes('Book Loop')) alertParts.push(s.alert.includes('🔴') ? '🔴 Book Loop' : '🟡 Book Loop');
+
+    const ficBar = totalFNs ? `<div class="ers-ratio-bar">
+      <div class="seg-left fic-color" style="width:${sFicPct}%"></div>
+      <div class="seg-right nf-color"></div>
+    </div>` : '';
+    const pbBar = totalPEs ? `<div class="ers-ratio-bar">
+      <div class="seg-left pb-color" style="width:${sPbPct}%"></div>
+      <div class="seg-right eb-color"></div>
+    </div>` : '';
+    const alertHtml = hasAlert ? `<div class="ers-alert">${alertParts.join(' · ')||s.alert}</div>` : '';
 
     card.innerHTML = `
       <div class="ers-card-top">
@@ -1154,16 +1087,7 @@ function renderErsData(data, cls, weekKey) {
         <div class="ers-stat"><div class="val" style="color:#e87722">${s.fic}</div><div class="lbl">Fiction</div></div>
         <div class="ers-stat"><div class="val" style="color:#b85000">${s.nf}</div><div class="lbl">Nonfic</div></div>
       </div>
-      ${totalFNs ? `<div class="ers-ratio-bar">
-        <div class="seg-left fic-color" style="width:${sFicPct}%"></div>
-        <div class="seg-right nf-color"></div>
-      </div>` : ''}
-      ${totalPEs ? `<div class="ers-ratio-bar">
-        <div class="seg-left pb-color" style="width:${sPbPct}%"></div>
-        <div class="seg-right eb-color"></div>
-      </div>` : ''}
-      ${hasAlert ? `<div class="ers-alert">${alertIcons.join(' · ')||s.alert}</div>` : ''}
-    `;
+      ${ficBar}${pbBar}${alertHtml}`;
     list.appendChild(card);
   });
 }

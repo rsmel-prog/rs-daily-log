@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 004</title>
+  <title>RS Daily App 005</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -1076,7 +1076,7 @@ function renderErsData(data) {
       <div class="seg-left pb-color" style="width:${sPbPct}%"></div>
       <div class="seg-right eb-color"></div>
     </div>` : '';
-    const alertHtml = hasAlert ? `<div class="ers-alert">${alertParts.join(' · ')||s.alert}</div>` : '';
+    const alertHtml = hasAlert ? `<div class="ers-alert">${alertParts.join(' · ')||s.alert}${s.alertDetail ? '<br><span style="font-size:12px;opacity:0.8">' + s.alertDetail + '</span>' : ''}</div>` : '';
 
     card.innerHTML = `
       <div class="ers-card-top">

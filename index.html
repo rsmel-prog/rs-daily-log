@@ -1007,7 +1007,8 @@ function onErsClassChange() {
     o.value = w.key; o.textContent = w.label;
     wSel.appendChild(o);
   });
-  if (ersWeeks.length) wSel.value = ersWeeks[ersWeeks.length - 1].key;
+  const defaultWeek = ersWeeks.find(w => w.isDefault) || ersWeeks[ersWeeks.length - 1];
+  if (defaultWeek) wSel.value = defaultWeek.key;
   wSel.style.display = 'block';
   loadErsData();
 }

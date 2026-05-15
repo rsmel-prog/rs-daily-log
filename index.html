@@ -611,19 +611,18 @@ function onClassChange() {
   if (!cls) { resetBelowClass(); return; }
   document.getElementById('fnTabs').style.display = 'grid';
 
-  gasCall('attendance_getSubjects', { cls })
-    .then(subjects => {
-      const sel  = document.getElementById('subjectSelect');
-      const prev = sel.value;
-      sel.innerHTML = '<option value="">— Select subject —</option>';
-      (subjects || []).forEach(s => {
-        const opt = document.createElement('option');
-        opt.value = opt.textContent = s;
-        sel.appendChild(opt);
-      });
-      if ((subjects || []).includes(prev)) sel.value = prev;
-    })
-    .catch(() => {});
+  // Use subjects already loaded with class data — no extra API call
+  const info = allClasses.find(c => c.cls === cls);
+  const subjects = (info && info.subjects) || [];
+  const sel  = document.getElementById('subjectSelect');
+  const prev = sel.value;
+  sel.innerHTML = '<option value="">— Select subject —</option>';
+  subjects.forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = opt.textContent = s;
+    sel.appendChild(opt);
+  });
+  if (subjects.includes(prev)) sel.value = prev;
 
   setFunction(currentFn);
 }
@@ -697,6 +696,7 @@ function loadStudentList() {
 
   if (currentFn === 'attendance') {
     renderAttendance(info.students);
+    // Silently check for existing entries in background
     gasCall('attendance_getExisting', {cls, date})
       .then(existing => {
         existingMap = {};
@@ -983,7 +983,7 @@ function setErsTimeSlot(slot) {
   populateErsClasses();
   document.getElementById('ersWeekSelect').style.display = 'none';
   document.getElementById('ersRatioSection').style.display = 'none';
-  document.getElementById('ersStudentList').innerHTML = '<div class="no-students">Select a class above</div>';
+  document.getElementById('ersStudentList').innerHTML = '<div class="no-students">Loading...</div>';
 }
 
 function loadErsWeeks() {

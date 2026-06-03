@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 008</title>
+  <title>RS Daily App 009</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -252,6 +252,21 @@
     .ers-alert { font-size: 13px; color: #c62828; background: #ffebee; padding: 8px 12px; border-radius: 8px; line-height: 1.6; margin-top: 6px; }
     .ers-spacer { height: 40px; }
 
+    /* ── LOADING OVERLAY ── */
+    .list-loading-wrap { position: relative; }
+    .list-overlay {
+      position: absolute; inset: 0; background: rgba(255,255,255,0.82);
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 12px; z-index: 5;
+    }
+    .list-overlay .spin-wrap { text-align: center; }
+    .list-overlay .spin-wrap .spinner {
+      width: 32px; height: 32px; border-width: 4px;
+      border-color: rgba(74,108,247,0.2); border-top-color: #4a6cf7;
+      display: block; margin: 0 auto 10px;
+    }
+    .list-overlay .spin-wrap p { font-size: 14px; color: #4a6cf7; font-weight: 600; }
+
     /* ── CONFIRM ── */
     #confirmScreen {
       display: none; position: fixed; inset: 0;
@@ -366,8 +381,16 @@
     <div style="padding: 12px 16px 0;">
       <button class="btn-secondary" id="allPresentBtn" style="display:none;width:100%;border-radius:12px;" onclick="markAllPresent()">✅ All Present</button>
     </div>
-    <div class="student-list" id="studentList">
-      <div class="no-students">Select a class above</div>
+    <div class="list-loading-wrap">
+      <div id="listOverlay" style="display:none" class="list-overlay">
+        <div class="spin-wrap">
+          <span class="spinner" style="display:inline-block"></span>
+          <p>Checking records…</p>
+        </div>
+      </div>
+      <div class="student-list" id="studentList">
+        <div class="no-students">Select a class above</div>
+      </div>
     </div>
     <div class="spacer-bottom"></div>
     <div class="submit-bar">
@@ -723,15 +746,22 @@ function loadStudentList() {
   document.getElementById('topSubtitle').textContent = sub;
 
   if (currentFn === 'attendance') {
+    existingMap = {};
     renderAttendance(info.students);
-    // Silently check for existing entries in background
+    // Show overlay while checking for existing entries
+    document.getElementById('listOverlay').style.display = 'flex';
+    document.getElementById('submitBtn').disabled = true;
+    document.getElementById('allPresentBtn').style.display = 'none';
     gasCall('attendance_getExisting', {cls, date})
       .then(existing => {
         existingMap = {};
         (existing||[]).forEach(e => { existingMap[e.name] = e; });
         renderAttendance(info.students);
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => {
+        document.getElementById('listOverlay').style.display = 'none';
+      });
   } else {
     renderScoreList(info.students);
   }

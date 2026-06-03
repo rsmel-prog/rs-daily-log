@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 007</title>
+  <title>RS Daily App 008</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -351,6 +351,11 @@
       <select id="subjectSelect" style="display:none" onchange="onSubjectChange()">
         <option value="">— Select subject —</option>
       </select>
+      <div class="pill-row" id="rSubRow" style="display:none">
+        <button class="pill" data-rsub="" onclick="setRSub('')">R</button>
+        <button class="pill" data-rsub="Vocab" onclick="setRSub('Vocab')">Vocab</button>
+        <button class="pill" data-rsub="Comp" onclick="setRSub('Comp')">Comp</button>
+      </div>
       <div class="max-score-row" id="maxScoreRow" style="display:none">
         <label>Max Score</label>
         <input type="number" id="maxScoreInput" min="1" max="200" placeholder="10"
@@ -461,6 +466,7 @@ let maxScore    = null;
 let ersWeeksLoaded = false;
 let ersWeeks    = [];
 let ersSlot     = 'ALL';
+let rSubType    = null; // 'Vocab', 'Comp', or null (plain R)
 
 // ── Init ───────────────────────────────────────────────
 window.onload = () => {
@@ -592,7 +598,9 @@ function setTimeSlot(slot) {
       if (cd !== 'DAILY' && cd !== dayFilter) return false;
       if (slot === 'ALL') return true;
       const m = c.cls.match(/[PQR](?=\d)/i);
-      return m && m[0].toUpperCase() === slot;
+      if (m) return m[0].toUpperCase() === slot;
+      // 매일 classes with no P/Q/R label → show under all slots
+      return cd === 'DAILY';
     })
     .forEach(c => {
       const o = document.createElement('option');
@@ -652,19 +660,39 @@ function setFunction(fn) {
   if (fn === 'attendance') {
     subSel.style.display = 'none';
     maxRow.style.display = 'none';
+    document.getElementById('rSubRow').style.display = 'none';
+    rSubType = null;
     loadStudentList();
   } else {
     subSel.style.display = 'block';
     maxRow.style.display = fn === 'test' ? 'flex' : 'none';
     clearStudentList();
+    updateRSubRow();
     if (subSel.value) loadStudentList();
   }
 }
 
 function onSubjectChange() {
-  if (!document.getElementById('subjectSelect').value) { clearStudentList(); return; }
+  const subj = document.getElementById('subjectSelect').value;
+  if (!subj) { clearStudentList(); updateRSubRow(); return; }
   if (currentFn === 'test') { maxScore = null; document.getElementById('maxScoreInput').value = ''; }
+  updateRSubRow();
   loadStudentList();
+}
+
+function updateRSubRow() {
+  const subj = document.getElementById('subjectSelect').value;
+  const show = currentFn === 'test' && subj === 'R';
+  document.getElementById('rSubRow').style.display = show ? 'flex' : 'none';
+  if (!show) { rSubType = null; }
+  document.querySelectorAll('#rSubRow .pill').forEach(b =>
+    b.classList.toggle('active', b.dataset.rsub === (rSubType || '')));
+}
+
+function setRSub(sub) {
+  rSubType = sub || null;
+  document.querySelectorAll('#rSubRow .pill').forEach(b =>
+    b.classList.toggle('active', b.dataset.rsub === (sub)));
 }
 
 function onMaxScoreChange() {
@@ -953,7 +981,8 @@ function doSubmit() {
       const g   = pct!==null ? calcGrade(pct).str.split(' ·')[0] : null;
       return {name:s.name,nick:s.nick,score:s.score,max:maxScore,pct,grade:g,note:s.note};
     });
-    gasCall('test_submit', {cls,date,hr,subject:subj,entries}).then(onOk).catch(onErr);
+    const finalSubj = (subj === 'R' && rSubType) ? 'R - ' + rSubType : subj;
+    gasCall('test_submit', {cls,date,hr,subject:finalSubj,entries}).then(onOk).catch(onErr);
   } else {
     const entries = studentData.filter(s=>s.score!==null).map(s => {
       const pct = Math.min(100,Math.round(s.score));

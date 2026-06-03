@@ -622,7 +622,9 @@ function setTimeSlot(slot) {
       if (slot === 'ALL') return true;
       const m = c.cls.match(/[PQR](?=\d)/i);
       if (m) return m[0].toUpperCase() === slot;
-      // 매일 classes with no P/Q/R label → show under all slots
+      const slotOverride = { 'GSJ2': 'R' };
+      const base = c.cls.replace(/\(.*\)/, '').trim();
+      if (slotOverride[base]) return slotOverride[base] === slot;
       return cd === 'DAILY';
     })
     .forEach(c => {

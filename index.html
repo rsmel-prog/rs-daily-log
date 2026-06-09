@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 012</title>
+  <title>RS Daily App 013</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -775,7 +775,25 @@ function loadStudentList() {
         document.getElementById('listOverlay').style.display = 'none';
       });
   } else {
+    existingMap = {};
     renderScoreList(info.students);
+    if (currentFn === 'test') {
+      const rawSubj = document.getElementById('subjectSelect').value;
+      const finalSubj = (rawSubj === 'R' && rSubType) ? 'R - ' + rSubType : rawSubj;
+      document.getElementById('listOverlay').style.display = 'flex';
+      document.getElementById('submitBtn').disabled = true;
+      gasCall('test_getExisting', {cls, date, subject: finalSubj})
+        .then(existing => {
+          existingMap = {};
+          (existing||[]).forEach(e => { existingMap[e.name] = e; });
+          renderScoreList(info.students);
+        })
+        .catch(() => {})
+        .finally(() => {
+          document.getElementById('listOverlay').style.display = 'none';
+          document.getElementById('submitBtn').disabled = false;
+        });
+    }
   }
 }
 
@@ -868,7 +886,10 @@ function cycleStatus(i) {
 
 // ── Score render ───────────────────────────────────────
 function renderScoreList(students) {
-  studentData = students.map(s => ({ name: s.name, nick: s.nick, score: null, note: '' }));
+  studentData = students.map(s => {
+    const ex = existingMap[s.name] || null;
+    return { name: s.name, nick: s.nick, score: ex ? ex.score : null, note: ex ? ex.note : '', existing: !!ex };
+  });
   const list = document.getElementById('studentList');
   list.innerHTML = '';
   if (!studentData.length) {
@@ -879,27 +900,34 @@ function renderScoreList(students) {
   const isTest = currentFn === 'test';
   studentData.forEach((s, i) => {
     const card = document.createElement('div');
-    card.className = 'score-card';
+    card.className = 'score-card' + (s.existing ? ' filled' : '');
     card.id = `card-${i}`;
     const maxDisp = isTest ? `<span class="slash">/</span><span class="max-display">${maxScore||'?'}</span>` : '';
+    const existNote = s.existing
+      ? `<div class="existing-label">Already logged: ${s.score !== null ? s.score : '—'}${s.note ? ' · ' + s.note : ''}</div>`
+      : '';
+    const scoreVal = s.score !== null ? s.score : '';
+    const noteVal  = s.note || '';
     card.innerHTML = `
       <div class="score-top">
         <div>
           <div class="student-name">${s.nick||s.name}</div>
           <div class="student-nick">${s.nick?s.name:''}</div>
+          ${existNote}
         </div>
         <div class="score-grade" id="grade-${i}">—</div>
       </div>
       <div class="score-inputs">
-        <input type="number" min="0" max="200" step="0.5" placeholder="Score" inputmode="decimal"
-               oninput="setScore(${i},this.value)" onclick="event.stopPropagation()" onwheel="this.blur()">
+        <input type="number" min="0" max="200" placeholder="Score" inputmode="numeric"
+               value="${scoreVal}" oninput="setScore(${i},this.value)" onclick="event.stopPropagation()">
         ${maxDisp}
       </div>
       <div class="score-note">
-        <input type="text" placeholder="Note (optional)"
+        <input type="text" placeholder="Note (optional)" value="${noteVal}"
                oninput="studentData[${i}].note=this.value" onclick="event.stopPropagation()">
       </div>`;
     list.appendChild(card);
+    if (s.score !== null) setScore(i, s.score);
   });
   document.getElementById('submitBtn').disabled = false;
   updateSummary();

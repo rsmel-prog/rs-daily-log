@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 015</title>
+  <title>RS Daily App 016</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -263,10 +263,10 @@
     /* ── LOADING OVERLAY ── */
     .list-loading-wrap { position: relative; }
     .list-overlay {
-      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-      background: rgba(255,255,255,0.82);
-      display: flex; align-items: center; justify-content: center;
-      border-radius: 12px; z-index: 5; padding: 24px 32px;
+      position: absolute; inset: 0; background: rgba(255,255,255,0.82);
+      display: flex; align-items: flex-start; justify-content: center;
+      padding-top: 32px;
+      border-radius: 12px; z-index: 5;
     }
     .list-overlay .spin-wrap { text-align: center; }
     .list-overlay .spin-wrap .spinner {

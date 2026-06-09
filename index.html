@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 013</title>
+  <title>RS Daily App 014</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -499,7 +499,8 @@ let maxScore    = null;
 let ersWeeksLoaded = false;
 let ersWeeks    = [];
 let ersSlot     = 'ALL';
-let rSubType    = null; // 'Vocab', 'Comp', or null (plain R)
+let rSubType       = null; // 'Vocab', 'Comp', or null (plain R)
+let testExistingMap = {};
 
 // ── Init ───────────────────────────────────────────────
 window.onload = () => {

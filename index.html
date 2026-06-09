@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 017</title>
+  <title>RS Daily App 018</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -890,7 +890,7 @@ function cycleStatus(i) {
 function renderScoreList(students) {
   studentData = students.map(s => {
     const ex = existingMap[s.name] || null;
-    return { name: s.name, nick: s.nick, score: ex ? ex.score : null, note: ex ? ex.note : '', existing: !!ex };
+    return { name: s.name, nick: s.nick, score: ex ? ex.score : null, max: ex ? ex.max : null, note: ex ? ex.note : '', existing: !!ex };
   });
   const list = document.getElementById('studentList');
   list.innerHTML = '';

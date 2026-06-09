@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 016</title>
+  <title>RS Daily App 017</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -906,7 +906,7 @@ function renderScoreList(students) {
     card.id = `card-${i}`;
     const maxDisp = isTest ? `<span class="slash">/</span><span class="max-display">${maxScore||'?'}</span>` : '';
     const existNote = s.existing
-      ? `<div class="existing-label">Already logged: ${s.score !== null ? s.score : '—'}${s.note ? ' · ' + s.note : ''}</div>`
+      ? `<div class="existing-label">Already logged: ${s.score !== null ? s.score : '—'}${s.max ? '/' + s.max : ''}${s.note ? ' · ' + s.note : ''}</div>`
       : '';
     const scoreVal = s.score !== null ? s.score : '';
     const noteVal  = s.note || '';

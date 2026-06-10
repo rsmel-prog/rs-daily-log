@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 020</title>
+  <title>RS Daily App 021</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -500,7 +500,8 @@ let maxScore    = null;
 let ersWeeksLoaded = false;
 let ersWeeks    = [];
 let ersSlot     = 'ALL';
-let rSubType       = null; // 'Vocab', 'Comp', or null (plain R)
+let rSubType     = null; // 'Vocab', 'Comp', or null (plain R)
+let sessionExpiry = null; // ms timestamp, set on login
 let testExistingMap = {};
 
 // ── Init ───────────────────────────────────────────────
@@ -508,7 +509,20 @@ window.onload = () => {
   document.getElementById('pwInput').addEventListener('keydown', e => {
     if (e.key === 'Enter') doLogin();
   });
+  setInterval(checkSession, 60 * 1000);
 };
+
+function checkSession() {
+  if (!sessionExpiry || Date.now() <= sessionExpiry) return;
+  document.getElementById('appScreen').style.display   = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('pwInput').value = '';
+  document.getElementById('loginBtn').disabled = false;
+  document.getElementById('loginBtn').textContent = 'Sign In';
+  document.getElementById('loginError').textContent = 'Session expired. Please sign in again.';
+  document.getElementById('loginError').style.display = 'block';
+  sessionExpiry = null;
+}
 
 // ── Login ──────────────────────────────────────────────
 function doLogin() {
@@ -524,6 +538,7 @@ function doLogin() {
         document.getElementById('appScreen').style.display     = 'block';
         document.getElementById('dailyLogScreen').style.display = 'block';
         initApp(res.classes);
+        sessionExpiry = Date.now() + 60 * 60 * 1000; // 1 hour
       } else if (res.locked) {
         document.getElementById('loginError').textContent =
           `Too many attempts. Try again in ${res.minsLeft} minute${res.minsLeft > 1 ? 's' : ''}.`;

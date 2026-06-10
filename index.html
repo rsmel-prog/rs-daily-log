@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 019</title>
+  <title>RS Daily App 020</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -785,10 +785,51 @@ function loadStudentList() {
       const finalSubj = (rawSubj === 'R' && rSubType) ? 'R - ' + rSubType : rawSubj;
       document.getElementById('listOverlay').style.display = 'flex';
       document.getElementById('submitBtn').disabled = true;
-      gasCall('test_getExisting', {cls, date, subject: finalSubj})
-        .then(existing => {
+
+      const fetches = rawSubj === 'R' && !rSubType
+        ? [
+            gasCall('test_getExisting', {cls, date, subject: 'R'}),
+            gasCall('test_getExisting', {cls, date, subject: 'R - Vocab'}),
+            gasCall('test_getExisting', {cls, date, subject: 'R - Comp'})
+          ]
+        : [gasCall('test_getExisting', {cls, date, subject: finalSubj})];
+
+      Promise.all(fetches)
+        .then(results => {
           existingMap = {};
-          (existing||[]).forEach(e => { existingMap[e.name] = e; });
+          if (rawSubj === 'R' && !rSubType) {
+            const [rData, vocabData, compData] = results;
+            const combined = {};
+            (rData||[]).forEach(e => {
+              combined[e.name] = combined[e.name] || {};
+              combined[e.name].R = e;
+            });
+            (vocabData||[]).forEach(e => {
+              combined[e.name] = combined[e.name] || {};
+              combined[e.name].Vocab = e;
+            });
+            (compData||[]).forEach(e => {
+              combined[e.name] = combined[e.name] || {};
+              combined[e.name].Comp = e;
+            });
+            Object.entries(combined).forEach(([name, subs]) => {
+              const parts = [];
+              if (subs.R)     parts.push(`R ${subs.R.score !== null ? subs.R.score : '—'}${subs.R.max ? '/'+subs.R.max : ''}`);
+              if (subs.Vocab) parts.push(`Vocab ${subs.Vocab.score !== null ? subs.Vocab.score : '—'}${subs.Vocab.max ? '/'+subs.Vocab.max : ''}`);
+              if (subs.Comp)  parts.push(`Comp ${subs.Comp.score !== null ? subs.Comp.score : '—'}${subs.Comp.max ? '/'+subs.Comp.max : ''}`);
+              if (parts.length) {
+                existingMap[name] = {
+                  score: subs.R ? subs.R.score : null,
+                  max:   subs.R ? subs.R.max   : null,
+                  note:  parts.join(' · '),
+                  existing: true,
+                  combinedDisplay: parts.join(' · ')
+                };
+              }
+            });
+          } else {
+            (results[0]||[]).forEach(e => { existingMap[e.name] = e; });
+          }
           renderScoreList(info.students);
         })
         .catch(() => {})
@@ -891,7 +932,7 @@ function cycleStatus(i) {
 function renderScoreList(students) {
   studentData = students.map(s => {
     const ex = existingMap[s.name] || null;
-    return { name: s.name, nick: s.nick, score: ex ? ex.score : null, max: ex ? ex.max : null, note: ex ? ex.note : '', existing: !!ex };
+    return { name: s.name, nick: s.nick, score: ex ? ex.score : null, max: ex ? ex.max : null, note: ex ? ex.note : '', existing: !!ex, combinedDisplay: ex ? ex.combinedDisplay || null : null };
   });
   const list = document.getElementById('studentList');
   list.innerHTML = '';
@@ -907,7 +948,7 @@ function renderScoreList(students) {
     card.id = `card-${i}`;
     const maxDisp = isTest ? `<span class="slash">/</span><span class="max-display">${maxScore||'?'}</span>` : '';
     const existNote = s.existing
-      ? `<div class="existing-label">Already logged: ${s.score !== null ? s.score : '—'}${s.max ? '/' + s.max : ''}${s.note ? ' · ' + s.note : ''}</div>`
+      ? `<div class="existing-label">Already logged: ${s.combinedDisplay || ((s.score !== null ? s.score : '—') + (s.max ? '/'+s.max : '') + (s.note ? ' · '+s.note : ''))}</div>`
       : '';
     const scoreVal = s.score !== null ? s.score : '';
     const noteVal  = s.note || '';

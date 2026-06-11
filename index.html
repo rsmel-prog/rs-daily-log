@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 021</title>
+  <title>RS Daily App 022</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -734,7 +734,7 @@ function onSubjectChange() {
 
 function updateRSubRow() {
   const subj = document.getElementById('subjectSelect').value;
-  const show = currentFn === 'test' && subj === 'R';
+  const show = currentFn === 'test' && (subj === 'R' || sub === 'Novel');
   document.getElementById('rSubRow').style.display = show ? 'flex' : 'none';
   if (!show) { rSubType = null; }
   document.querySelectorAll('#rSubRow .pill').forEach(b =>
@@ -797,22 +797,23 @@ function loadStudentList() {
     renderScoreList(info.students);
     if (currentFn === 'test') {
       const rawSubj = document.getElementById('subjectSelect').value;
-      const finalSubj = (rawSubj === 'R' && rSubType) ? 'R - ' + rSubType : rawSubj;
+      const finalSubj = ((rawSubj === 'R' || rawSubj === 'Novel') && rSubType) ? rawSubj + ' - ' + rSubType : rawSubj;
       document.getElementById('listOverlay').style.display = 'flex';
       document.getElementById('submitBtn').disabled = true;
 
-      const fetches = rawSubj === 'R' && !rSubType
+      const isRType = (rawSubj === 'R' || rawSubj === 'Novel') && !rSubType;
+      const fetches = isRType
         ? [
-            gasCall('test_getExisting', {cls, date, subject: 'R'}),
-            gasCall('test_getExisting', {cls, date, subject: 'R - Vocab'}),
-            gasCall('test_getExisting', {cls, date, subject: 'R - Comp'})
+            gasCall('test_getExisting', {cls, date, subject: rawSubj}),
+            gasCall('test_getExisting', {cls, date, subject: rawSubj + ' - Vocab'}),
+            gasCall('test_getExisting', {cls, date, subject: rawSubj + ' - Comp'})
           ]
         : [gasCall('test_getExisting', {cls, date, subject: finalSubj})];
 
       Promise.all(fetches)
         .then(results => {
           existingMap = {};
-          if (rawSubj === 'R' && !rSubType) {
+          if (isRType) {
             const [rData, vocabData, compData] = results;
             const combined = {};
             (rData||[]).forEach(e => {
@@ -1110,7 +1111,7 @@ function doSubmit() {
       const g   = pct!==null ? calcGrade(pct).str.split(' ·')[0] : null;
       return {name:s.name,nick:s.nick,score:s.score,max:maxScore,pct,grade:g,note:s.note};
     });
-    const finalSubj = (subj === 'R' && rSubType) ? 'R - ' + rSubType : subj;
+    const finalSubj = ((subj === 'R' || subj === 'Novel') && rSubType) ? subj + ' - ' + rSubType : subj;
     gasCall('test_submit', {cls,date,hr,subject:finalSubj,entries}).then(onOk).catch(onErr);
   } else {
     const entries = studentData.filter(s=>s.score!==null).map(s => {

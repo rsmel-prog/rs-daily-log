@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 022</title>
+  <title>RS Daily App 023</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -734,7 +734,7 @@ function onSubjectChange() {
 
 function updateRSubRow() {
   const subj = document.getElementById('subjectSelect').value;
-  const show = currentFn === 'test' && (subj === 'R' || sub === 'Novel');
+  const show = currentFn === 'test' && (subj === 'R' || subj === 'Novel');
   document.getElementById('rSubRow').style.display = show ? 'flex' : 'none';
   if (!show) { rSubType = null; }
   document.querySelectorAll('#rSubRow .pill').forEach(b =>

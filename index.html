@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 024</title>
+  <title>RS Daily App 025</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -907,7 +907,6 @@ function renderAttendance(students) {
         <div>
           <div class="student-name">${s.nick||s.name}</div>
           <div class="student-nick">${s.nick?s.name:''}</div>
-          ${attendanceMap[s.name] && attendanceMap[s.name].status !== 'Present' ? `<div class="att-tag ${attendanceMap[s.name].status.toLowerCase()}">${attendanceMap[s.name].status}${attendanceMap[s.name].reason ? ' · '+attendanceMap[s.name].reason : ''}</div>` : ''}
           ${existNote}
         </div>
         <div class="status-badge" id="badge-${i}">—</div>
@@ -986,6 +985,7 @@ function renderScoreList(students) {
         <div>
           <div class="student-name">${s.nick||s.name}</div>
           <div class="student-nick">${s.nick?s.name:''}</div>
+          ${attendanceMap[s.name] && attendanceMap[s.name].status !== 'Present' ? `<div class="att-tag ${attendanceMap[s.name].status.toLowerCase()}">${attendanceMap[s.name].status}${attendanceMap[s.name].reason ? ' · '+attendanceMap[s.name].reason : ''}</div>` : ''}
           ${existNote}
         </div>
         <div class="score-grade" id="grade-${i}">—</div>

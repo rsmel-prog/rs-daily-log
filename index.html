@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 023</title>
+  <title>RS Daily App 024</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -157,7 +157,10 @@
     .student-name { font-size: 18px; font-weight: 700; }
     .student-nick { font-size: 15px; color: #888; margin-top: 2px; }
     .existing-label { font-size: 13px; color: #bbb; margin-top: 4px; pointer-events: none; }
-
+    .att-tag { font-size: 12px; font-weight: 600; margin-top: 3px; padding: 2px 6px; border-radius: 4px; display: inline-block; }
+    .att-tag.absent { background: #fce8e6; color: #c62828; }
+    .att-tag.late   { background: #fff8e1; color: #e65100; }
+    
     .status-badge {
       font-size: 14px; font-weight: 700; padding: 8px 14px;
       border-radius: 24px; background: #f0f0f0; color: #aaa; white-space: nowrap;
@@ -502,6 +505,7 @@ let ersWeeks    = [];
 let ersSlot     = 'ALL';
 let rSubType     = null; // 'Vocab', 'Comp', or null (plain R)
 let sessionExpiry = null; // ms timestamp, set on login
+let attendanceMap = {};   // name → {status, reason} for today's attendance
 let testExistingMap = {};
 
 // ── Init ───────────────────────────────────────────────
@@ -794,6 +798,14 @@ function loadStudentList() {
       });
   } else {
     existingMap = {};
+    // Fetch today's attendance for absent/late tags on test cards
+    if (currentFn === 'test') {
+      gasCall('attendance_getExisting', {cls, date})
+        .then(att => {
+          attendanceMap = {};
+          (att||[]).forEach(a => { attendanceMap[a.name] = a; });
+        }).catch(() => {});
+    }
     renderScoreList(info.students);
     if (currentFn === 'test') {
       const rawSubj = document.getElementById('subjectSelect').value;
@@ -895,6 +907,7 @@ function renderAttendance(students) {
         <div>
           <div class="student-name">${s.nick||s.name}</div>
           <div class="student-nick">${s.nick?s.name:''}</div>
+          ${attendanceMap[s.name] && attendanceMap[s.name].status !== 'Present' ? `<div class="att-tag ${attendanceMap[s.name].status.toLowerCase()}">${attendanceMap[s.name].status}${attendanceMap[s.name].reason ? ' · '+attendanceMap[s.name].reason : ''}</div>` : ''}
           ${existNote}
         </div>
         <div class="status-badge" id="badge-${i}">—</div>
@@ -1106,8 +1119,8 @@ function doSubmit() {
       .map(s=>({name:s.name,nick:s.nick,status:s.status,reason:s.reason}));
     gasCall('attendance_submit', {cls,date,hr,entries}).then(onOk).catch(onErr);
   } else if (currentFn === 'test') {
-    const entries = studentData.filter(s=>s.score!==null).map(s => {
-      const pct = maxScore ? Math.round(s.score/maxScore*100) : null;
+    const entries = studentData.filter(s=>s.score!==null||s.note).map(s => {
+      const pct = (s.score!==null && maxScore) ? Math.round(s.score/maxScore*100) : null;
       const g   = pct!==null ? calcGrade(pct).str.split(' ·')[0] : null;
       return {name:s.name,nick:s.nick,score:s.score,max:maxScore,pct,grade:g,note:s.note};
     });

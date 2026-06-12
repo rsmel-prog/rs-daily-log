@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 025</title>
+  <title>RS Daily App 026</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -798,48 +798,42 @@ function loadStudentList() {
       });
   } else {
     existingMap = {};
-    // Fetch today's attendance for absent/late tags on test cards
-    if (currentFn === 'test') {
-      gasCall('attendance_getExisting', {cls, date})
-        .then(att => {
-          attendanceMap = {};
-          (att||[]).forEach(a => { attendanceMap[a.name] = a; });
-        }).catch(() => {});
-    }
+    attendanceMap = {};
     renderScoreList(info.students);
-    if (currentFn === 'test') {
-      const rawSubj = document.getElementById('subjectSelect').value;
-      const finalSubj = ((rawSubj === 'R' || rawSubj === 'Novel') && rSubType) ? rawSubj + ' - ' + rSubType : rawSubj;
-      document.getElementById('listOverlay').style.display = 'flex';
-      document.getElementById('submitBtn').disabled = true;
+    document.getElementById('listOverlay').style.display = 'flex';
+    document.getElementById('submitBtn').disabled = true;
 
-      const isRType = (rawSubj === 'R' || rawSubj === 'Novel') && !rSubType;
-      const fetches = isRType
-        ? [
-            gasCall('test_getExisting', {cls, date, subject: rawSubj}),
-            gasCall('test_getExisting', {cls, date, subject: rawSubj + ' - Vocab'}),
-            gasCall('test_getExisting', {cls, date, subject: rawSubj + ' - Comp'})
-          ]
-        : [gasCall('test_getExisting', {cls, date, subject: finalSubj})];
+    const rawSubj   = document.getElementById('subjectSelect').value;
+    const finalSubj = ((rawSubj === 'R' || rawSubj === 'Novel') && rSubType) ? rawSubj + ' - ' + rSubType : rawSubj;
+    const isRType   = (rawSubj === 'R' || rawSubj === 'Novel') && !rSubType && currentFn === 'test';
 
-      Promise.all(fetches)
-        .then(results => {
-          existingMap = {};
+    const fetches = [
+      gasCall('attendance_getExisting', {cls, date}),
+      ...(currentFn === 'test'
+        ? isRType
+          ? [
+              gasCall('test_getExisting', {cls, date, subject: rawSubj}),
+              gasCall('test_getExisting', {cls, date, subject: rawSubj + ' - Vocab'}),
+              gasCall('test_getExisting', {cls, date, subject: rawSubj + ' - Comp'})
+            ]
+          : [gasCall('test_getExisting', {cls, date, subject: finalSubj})]
+        : [])
+    ];
+
+    Promise.all(fetches)
+      .then(results => {
+        existingMap  = {};
+        attendanceMap = {};
+        const [attData, ...scoreResults] = results;
+        (attData||[]).forEach(a => { attendanceMap[a.name] = a; });
+
+        if (currentFn === 'test') {
           if (isRType) {
-            const [rData, vocabData, compData] = results;
+            const [rData, vocabData, compData] = scoreResults;
             const combined = {};
-            (rData||[]).forEach(e => {
-              combined[e.name] = combined[e.name] || {};
-              combined[e.name].R = e;
-            });
-            (vocabData||[]).forEach(e => {
-              combined[e.name] = combined[e.name] || {};
-              combined[e.name].Vocab = e;
-            });
-            (compData||[]).forEach(e => {
-              combined[e.name] = combined[e.name] || {};
-              combined[e.name].Comp = e;
-            });
+            (rData||[]).forEach(e => { combined[e.name] = combined[e.name] || {}; combined[e.name].R = e; });
+            (vocabData||[]).forEach(e => { combined[e.name] = combined[e.name] || {}; combined[e.name].Vocab = e; });
+            (compData||[]).forEach(e => { combined[e.name] = combined[e.name] || {}; combined[e.name].Comp = e; });
             Object.entries(combined).forEach(([name, subs]) => {
               const parts = [];
               if (subs.R)     parts.push(`R ${subs.R.score !== null ? subs.R.score : '—'}${subs.R.max ? '/'+subs.R.max : ''}`);
@@ -856,16 +850,16 @@ function loadStudentList() {
               }
             });
           } else {
-            (results[0]||[]).forEach(e => { existingMap[e.name] = e; });
+            (scoreResults[0]||[]).forEach(e => { existingMap[e.name] = e; });
           }
-          renderScoreList(info.students);
-        })
-        .catch(() => {})
-        .finally(() => {
-          document.getElementById('listOverlay').style.display = 'none';
-          document.getElementById('submitBtn').disabled = false;
-        });
-    }
+        }
+        renderScoreList(info.students);
+      })
+      .catch(() => {})
+      .finally(() => {
+        document.getElementById('listOverlay').style.display = 'none';
+        document.getElementById('submitBtn').disabled = false;
+      });
   }
 }
 

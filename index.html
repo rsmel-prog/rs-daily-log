@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 039</title>
+  <title>RS Daily App 040</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -1136,6 +1136,13 @@ function showConfirm() {
     detailsEl.innerHTML = t.filter(s=>s.status!=='Present')
       .map(s=>`${s.status==='Absent'?'🔴':'🟡'} ${s.nick||s.name}${s.reason?' — '+s.reason:''}`)
       .join('<br>') || '<span style="color:#bbb">All present</span>';
+  } else if (currentFn === 'homework') {
+    const filled = studentData.filter(s => s.hwGrade);
+    statsEl.innerHTML = `
+      <div class="conf-stat s"><div class="num">${filled.length}/${studentData.length}</div><div class="lbl">Entered</div></div>`;
+    detailsEl.innerHTML = filled.map(s =>
+      `${s.nick||s.name}: ${s.hwGrade}${s.note?' — '+s.note:''}`
+    ).join('<br>') || '<span style="color:#bbb">No grades entered</span>';
   } else {
     const filled = studentData.filter(s => s.score !== null);
     const avgPct = filled.length ? Math.round(filled.reduce((sum,s) => {

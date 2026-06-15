@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 030</title>
+  <title>RS Daily App 031</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -589,9 +589,6 @@ function initApp(classes) {
   else                currentSlot = 'R';
 
   ersSlot = currentSlot;
-  document.querySelectorAll('.fn-tab').forEach(b =>
-    b.classList.toggle('active', b.dataset.fn === fn));
-  document.getElementById('hwGuide').style.display = fn === 'homework' ? 'block' : 'none';
 
   if (getDayFilter(`${yyyy}-${mm}-${dd}`) === 'WEEKEND') {
     setTimeSlot('ALL');

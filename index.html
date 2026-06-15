@@ -384,9 +384,6 @@
         <button class="fn-tab"        data-fn="test"       onclick="setFunction('test')">📝 Daily Test</button>
         <button class="fn-tab"        data-fn="homework"   onclick="setFunction('homework')">📚 Homework</button>
       </div>
-      <div class="hw-guide" id="hwGuide" style="display:none">
-        <strong>A</strong> — Excellent &nbsp;|&nbsp; <strong>B</strong> — Acceptable &nbsp;|&nbsp; <strong>C</strong> — Not done
-      </div>
       <select id="subjectSelect" style="display:none" onchange="onSubjectChange()">
         <option value="">— Select subject —</option>
       </select>
@@ -401,6 +398,9 @@
                inputmode="decimal" oninput="onMaxScoreChange()" onwheel="this.blur()">
       </div>
       <input type="date" id="datePicker" onchange="onDateChange()">
+      <div class="hw-guide" id="hwGuide" style="display:none">
+        <strong>A</strong> — Excellent &nbsp;|&nbsp; <strong>B</strong> — Acceptable &nbsp;|&nbsp; <strong>C</strong> — Not done
+      </div>
     </div>
     <div style="padding: 12px 16px 0;">
       <button class="btn-secondary" id="allPresentBtn" style="display:none;width:100%;border-radius:12px;" onclick="markAllPresent()">✅ All Present</button>

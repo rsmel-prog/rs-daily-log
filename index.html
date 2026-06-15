@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 031</title>
+  <title>RS Daily App 033</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -404,6 +404,7 @@
     </div>
     <div style="padding: 12px 16px 0;">
       <button class="btn-secondary" id="allPresentBtn" style="display:none;width:100%;border-radius:12px;" onclick="markAllPresent()">✅ All Present</button>
+      <button class="btn-secondary" id="allABtn" style="display:none;width:100%;border-radius:12px;margin-top:8px;" onclick="markAllA()">✅ All A</button>
     </div>
     <div class="list-loading-wrap">
       <div id="listOverlay" style="display:none" class="list-overlay">
@@ -719,6 +720,9 @@ function setFunction(fn) {
     fn === 'attendance' ? 'Submit Attendance' :
     fn === 'test'       ? 'Submit Test Scores' : 'Submit Homework';
 
+  document.getElementById('hwGuide').style.display = fn === 'homework' ? 'block' : 'none';
+  document.getElementById('allABtn').style.display = 'none';
+
   if (fn === 'attendance') {
     subSel.style.display = 'none';
     maxRow.style.display = 'none';
@@ -837,7 +841,7 @@ function loadStudentList() {
         (attData||[]).forEach(a => { attendanceMap[a.name] = a; });
 
         if (currentFn === 'homework') {
-          (scoreResults[0]||[]).forEach(e => { existingMap[e.name] = e; });
+          (scoreResults[0]||[]).forEach(e => { existingMap[e.name] = { ...e, existing: true }; });
         }
 
         if (currentFn === 'test') {
@@ -929,6 +933,18 @@ function renderAttendance(students) {
   document.getElementById('submitBtn').disabled = false;
   document.getElementById('allPresentBtn').style.display = 
     currentFn === 'attendance' ? 'block' : 'none';
+  updateSummary();
+}
+
+function markAllA() {
+  studentData.forEach((s, i) => {
+    s.hwGrade = 'A';
+    const row = document.querySelector(`#card-${i} .hw-grade-row`);
+    if (row) {
+      row.querySelectorAll('.hw-grade-btn').forEach(b => b.className = 'hw-grade-btn');
+      row.querySelector('.hw-grade-btn').classList.add('selected-A');
+    }
+  });
   updateSummary();
 }
 
@@ -1034,7 +1050,9 @@ function renderScoreList(students) {
     list.appendChild(card);
   });
   document.getElementById('submitBtn').disabled = false;
+  document.getElementById('allABtn').style.display = currentFn === 'homework' ? 'block' : 'none';
   updateSummary();
+}
 }
 
 function setScore(i, val) {

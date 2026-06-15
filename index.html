@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 036</title>
+  <title>RS Daily App 037</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -1045,9 +1045,9 @@ function renderScoreList(students) {
           <input type="text" placeholder="Note (optional)" value="${noteVal}"
                  oninput="studentData[${i}].note=this.value" onclick="event.stopPropagation()">
         </div>`;
-      if (s.score !== null) setScore(i, s.score);
-    }
+      }
     list.appendChild(card);
+    if (s.score !== null) setScore(i, s.score);
   });
   document.getElementById('submitBtn').disabled = false;
   document.getElementById('allABtn').style.display = currentFn === 'homework' ? 'block' : 'none';

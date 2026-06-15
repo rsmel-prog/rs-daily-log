@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 038</title>
+  <title>RS Daily App 039</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -1103,6 +1103,9 @@ function updateSummary() {
     if (l) parts.push(`${l} late`);
     if (u) parts.push(`${u} untouched`);
     document.getElementById('summaryLine').textContent = parts.join(' · ') || '—';
+  } else if (currentFn === 'homework') {
+    const filled = studentData.filter(s => s.hwGrade !== null).length;
+    document.getElementById('summaryLine').textContent = `${filled} / ${studentData.length} entered`;
   } else {
     const filled = studentData.filter(s => s.score !== null).length;
     document.getElementById('summaryLine').textContent = `${filled} / ${studentData.length} entered`;

@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 044</title>
+  <title>RS Daily App 045</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -1028,6 +1028,10 @@ function renderScoreList(students) {
           <button class="hw-grade-btn ${selA}" onclick="setHWGrade(${i},'A',this)">A</button>
           <button class="hw-grade-btn ${selB}" onclick="setHWGrade(${i},'B',this)">B</button>
           <button class="hw-grade-btn ${selC}" onclick="setHWGrade(${i},'C',this)">C</button>
+        </div>
+        <div class="score-note">
+          <input type="text" placeholder="Note (optional)" value="${noteVal}"
+                 oninput="studentData[${i}].note=this.value" onclick="event.stopPropagation()">
         </div>`;
     } else {
       card.innerHTML = `
@@ -1081,10 +1085,15 @@ function setScore(i, val) {
 }
 
 function setHWGrade(i, grade, btn) {
-  studentData[i].hwGrade = grade;
   const row = btn.closest('.hw-grade-row');
-  row.querySelectorAll('.hw-grade-btn').forEach(b => b.className = 'hw-grade-btn');
-  btn.classList.add('selected-' + grade);
+  if (studentData[i].hwGrade === grade) {
+    studentData[i].hwGrade = null;
+    row.querySelectorAll('.hw-grade-btn').forEach(b => b.className = 'hw-grade-btn');
+  } else {
+    studentData[i].hwGrade = grade;
+    row.querySelectorAll('.hw-grade-btn').forEach(b => b.className = 'hw-grade-btn');
+    btn.classList.add('selected-' + grade);
+  }
   updateSummary();
 }
 

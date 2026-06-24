@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 048</title>
+  <title>RS Daily App 049</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -1207,11 +1207,14 @@ function doSubmit() {
   btn.innerHTML = '<span class="spinner"></span> Saving...';
   const onOk = () => {
     hideConfirm();
-    let msg = `${cls} · ${formatDateDisplay(date)}`;
-    if (subj) msg += ` · ${subj}`;
-    document.getElementById('successMsg').textContent = msg;
-    document.getElementById('successScreen').classList.add('visible');
-    btn.disabled = false; btn.textContent = 'Confirm';
+    btn.disabled = false;
+    btn.textContent = 'Saved ✓';
+    btn.style.background = '#2e7d32';
+    setTimeout(() => {
+      btn.textContent = 'Confirm';
+      btn.style.background = '';
+      resetAfterSuccess();
+    }, 1500);
   };
   const onErr = err => {
     alert('Error saving: ' + (err.message||err));
@@ -1238,14 +1241,7 @@ function doSubmit() {
 }
 
 function resetAfterSuccess() {
-  document.getElementById('successScreen').classList.remove('visible');
-  document.getElementById('classSelect').value   = '';
-  document.getElementById('subjectSelect').value = '';
-  document.getElementById('subjectSelect').style.display = 'none';
-  document.getElementById('maxScoreRow').style.display   = 'none';
-  document.getElementById('fnTabs').style.display        = 'none';
-  maxScore = null;
-  clearStudentList();
+  loadStudentList();
 }
 
 // ── e-RS ───────────────────────────────────────────────

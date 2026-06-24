@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 047</title>
+  <title>RS Daily App 048</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -995,7 +995,7 @@ function cycleStatus(i) {
 function renderScoreList(students) {
   studentData = students.map(s => {
     const ex = existingMap[s.name] || null;
-    return { name: s.name, nick: s.nick, score: ex ? ex.score : null, max: ex ? ex.max : null, note: ex ? ex.note : '', hwGrade: ex ? ex.hwGrade || null : null, existing: !!ex, combinedDisplay: ex ? ex.combinedDisplay || null : null };
+    return { name: s.name, nick: s.nick, score: ex ? (ex.score ?? null) : null, max: ex ? (ex.max ?? null) : null, note: ex ? ex.note : '', hwGrade: ex ? ex.hwGrade || null : null, existing: !!ex, combinedDisplay: ex ? ex.combinedDisplay || null : null };
   });
   const list = document.getElementById('studentList');
   list.innerHTML = '';
@@ -1011,7 +1011,7 @@ function renderScoreList(students) {
     card.id = `card-${i}`;
     const maxDisp = isTest ? `<span class="slash">/</span><span class="max-display">${maxScore||'?'}</span>` : '';
     const existNote = s.existing
-      ? `<div class="existing-label">Already logged: ${s.combinedDisplay || ((s.score !== null ? s.score : (s.hwGrade || '—')) + (s.max ? '/'+s.max : '') + (s.note ? ' · '+s.note : ''))}</div>`
+      ? `<div class="existing-label">Already logged: ${s.combinedDisplay || (currentFn === 'homework' ? (s.hwGrade || '—') : (s.score !== null ? s.score : '—')) + (s.max ? '/'+s.max : '') + (s.note ? ' · '+s.note : '')}</div>`
       : '';
     const attTag = attendanceMap[s.name] && attendanceMap[s.name].status !== 'Present'
       ? `<div class="att-tag ${attendanceMap[s.name].status.toLowerCase()}">${attendanceMap[s.name].status}${attendanceMap[s.name].reason ? ' · '+attendanceMap[s.name].reason : ''}</div>`

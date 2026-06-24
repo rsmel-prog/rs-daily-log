@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 049</title>
+  <title>RS Daily App 050</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -1206,11 +1206,11 @@ function doSubmit() {
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span> Saving...';
   const onOk = () => {
-    hideConfirm();
     btn.disabled = false;
     btn.textContent = 'Saved ✓';
     btn.style.background = '#2e7d32';
     setTimeout(() => {
+      hideConfirm();
       btn.textContent = 'Confirm';
       btn.style.background = '';
       resetAfterSuccess();

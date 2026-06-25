@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 053</title>
+  <title>RS Daily App 054</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -378,7 +378,7 @@
 <div id="appScreen">
   <div class="main-tabs" style="grid-template-columns: 1fr 1fr 1fr;">
     <button class="main-tab active" id="tabDailyLog" onclick="switchMainTab('dailylog')">📋 Daily Log</button>
-    <button class="main-tab"        id="tabDash"     onclick="switchMainTab('dash')">📊 Attendance</button>
+    <button class="main-tab"        id="tabDash"     onclick="switchMainTab('dash')">📊 Class Stats</button>
     <button class="main-tab"        id="tabERS"      onclick="switchMainTab('ers')">📖 e-RS</button>
   </div>
 
@@ -498,7 +498,7 @@
 <!-- ── ATTENDANCE DASHBOARD ── -->
   <div id="dashScreen" style="display:none">
     <div class="ers-controls">
-      <div class="pill-row" id="dashTimeFilter">
+      <div class="pill-row" id="dashTimeFilter" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:4px;">
         <button class="pill" data-slot="P" onclick="setDashTimeSlot('P')">P Time</button>
         <button class="pill" data-slot="Q" onclick="setDashTimeSlot('Q')">Q Time</button>
         <button class="pill" data-slot="R" onclick="setDashTimeSlot('R')">R Time</button>

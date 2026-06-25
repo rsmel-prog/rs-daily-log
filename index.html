@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 050</title>
+  <title>RS Daily App 051</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -261,7 +261,7 @@
     .ers-korean { font-size: 14px; color: #888; margin-top: 2px; }
     .ers-cum { font-size: 13px; color: #4a6cf7; font-weight: 700; background: #f0f4ff; padding: 4px 10px; border-radius: 12px; white-space: nowrap; }
 
-    .ers-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-bottom: 10px; }
+    .ers-stats { display: grid; grid-template-columns: repeat(6,1fr); gap: 8px; margin-bottom: 10px; }
     .ers-stat { text-align: center; background: #f8f8f8; border-radius: 10px; padding: 8px 4px; }
     .ers-stat .val { font-size: 18px; font-weight: 700; color: #1a1a2e; }
     .ers-stat .lbl { font-size: 11px; color: #aaa; margin-top: 2px; }
@@ -1383,6 +1383,8 @@ function renderErsData(data) {
         <div class="ers-stat"><div class="val">${s.pass}</div><div class="lbl">Pass</div></div>
         <div class="ers-stat"><div class="val" style="color:#e87722">${s.fic}</div><div class="lbl">Fiction</div></div>
         <div class="ers-stat"><div class="val" style="color:#b85000">${s.nf}</div><div class="lbl">Nonfic</div></div>
+        <div class="ers-stat"><div class="val" style="color:#7c3aed">${s.pb}</div><div class="lbl">PBook</div></div>
+        <div class="ers-stat"><div class="val" style="color:#4c1d95">${s.eb}</div><div class="lbl">eBook</div></div>
       </div>
       ${ficBar}${pbBar}${alertHtml}`;
     list.appendChild(card);

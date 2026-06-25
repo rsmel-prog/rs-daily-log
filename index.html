@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 051</title>
+  <title>RS Daily App 052</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -272,6 +272,19 @@
 
     .ers-alert { font-size: 13px; color: #c62828; background: #ffebee; padding: 8px 12px; border-radius: 8px; line-height: 1.6; margin-top: 6px; }
     .ers-spacer { height: 40px; }
+    .dash-card { background: #fff; border-radius: 16px; padding: 16px 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-left: 5px solid #e0e0e0; margin-bottom: 0; }
+    .dash-card.alert { border-left-color: #e53935; }
+    .dash-card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .dash-rate { font-size: 22px; font-weight: 700; }
+    .dash-rate.good { color: #2e7d32; }
+    .dash-rate.warn { color: #e65100; }
+    .dash-rate.bad  { color: #c62828; }
+    .dash-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 8px; }
+    .dash-stat { text-align: center; background: #f8f8f8; border-radius: 10px; padding: 8px 4px; }
+    .dash-stat .val { font-size: 16px; font-weight: 700; }
+    .dash-stat .lbl { font-size: 11px; color: #aaa; margin-top: 2px; }
+    .dash-reasons { font-size: 12px; color: #888; margin-top: 8px; line-height: 1.8; }
+    .dash-alert-tag { font-size: 12px; font-weight: 700; background: #ffebee; color: #c62828; padding: 3px 8px; border-radius: 6px; }
 
     /* ── LOADING OVERLAY ── */
     .list-loading-wrap { position: relative; }
@@ -363,8 +376,9 @@
 
 <!-- ══ APP ══ -->
 <div id="appScreen">
-  <div class="main-tabs">
+  <div class="main-tabs" style="grid-template-columns: 1fr 1fr 1fr;">
     <button class="main-tab active" id="tabDailyLog" onclick="switchMainTab('dailylog')">📋 Daily Log</button>
+    <button class="main-tab"        id="tabDash"     onclick="switchMainTab('dash')">📊 Attendance</button>
     <button class="main-tab"        id="tabERS"      onclick="switchMainTab('ers')">📖 e-RS</button>
   </div>
 
@@ -477,6 +491,26 @@
       </div>
     </div>
     <div class="ers-student-list" id="ersStudentList">
+      <div class="no-students">Select a class above</div>
+    </div>
+    <div class="ers-spacer"></div>
+  </div>
+<!-- ── ATTENDANCE DASHBOARD ── -->
+  <div id="dashScreen" style="display:none">
+    <div class="ers-controls">
+      <select id="dashClassSelect" onchange="onDashClassChange()">
+        <option value="">— Select class —</option>
+      </select>
+      <select id="dashRangeSelect" onchange="loadDashData()" style="display:none">
+        <option value="7">Last week</option>
+        <option value="14">Last 2 weeks</option>
+        <option value="21">Last 3 weeks</option>
+        <option value="30">Last month</option>
+        <option value="60">Last 2 months</option>
+        <option value="sem">Whole semester</option>
+      </select>
+    </div>
+    <div class="ers-student-list" id="dashStudentList">
       <div class="no-students">Select a class above</div>
     </div>
     <div class="ers-spacer"></div>
@@ -642,12 +676,14 @@ function calcGrade(pct) {
 
 // ── Main tab switch ────────────────────────────────────
 function switchMainTab(tab) {
-  const isDL = tab === 'dailylog';
-  document.getElementById('dailyLogScreen').style.display = isDL ? 'block' : 'none';
-  document.getElementById('ersScreen').style.display      = isDL ? 'none'  : 'block';
-  document.getElementById('tabDailyLog').classList.toggle('active',  isDL);
-  document.getElementById('tabERS').classList.toggle('active', !isDL);
-  if (!isDL && !ersWeeksLoaded) loadErsWeeks();
+  document.getElementById('dailyLogScreen').style.display = tab === 'dailylog' ? 'block' : 'none';
+  document.getElementById('dashScreen').style.display     = tab === 'dash'     ? 'block' : 'none';
+  document.getElementById('ersScreen').style.display      = tab === 'ers'      ? 'block' : 'none';
+  document.getElementById('tabDailyLog').classList.toggle('active', tab === 'dailylog');
+  document.getElementById('tabDash').classList.toggle('active',     tab === 'dash');
+  document.getElementById('tabERS').classList.toggle('active',      tab === 'ers');
+  if (tab === 'ers' && !ersWeeksLoaded) loadErsWeeks();
+  if (tab === 'dash') initDashClasses();
 }
 
 // ── Time slot (Daily Log) ──────────────────────────────
@@ -1390,6 +1426,113 @@ function renderErsData(data) {
     list.appendChild(card);
   });
 }
+
+// ── Attendance Dashboard ───────────────────────────────
+function initDashClasses() {
+  const sel  = document.getElementById('dashClassSelect');
+  const prev = sel.value;
+  sel.innerHTML = '<option value="">— Select class —</option>';
+  allClasses.forEach(c => {
+    const o = document.createElement('option');
+    o.value = o.textContent = c.cls;
+    sel.appendChild(o);
+  });
+  if (allClasses.some(c => c.cls === prev)) sel.value = prev;
+  if (sel.value) onDashClassChange();
+}
+
+function onDashClassChange() {
+  const cls = document.getElementById('dashClassSelect').value;
+  if (!cls) {
+    document.getElementById('dashRangeSelect').style.display = 'none';
+    document.getElementById('dashStudentList').innerHTML = '<div class="no-students">Select a class above</div>';
+    return;
+  }
+  document.getElementById('dashRangeSelect').style.display = 'block';
+  loadDashData();
+}
+
+function loadDashData() {
+  const cls   = document.getElementById('dashClassSelect').value;
+  const range = document.getElementById('dashRangeSelect').value;
+  if (!cls) return;
+
+  document.getElementById('dashStudentList').innerHTML = '<div class="no-students">Loading...</div>';
+
+  const today = new Date();
+  const tz    = 'Asia/Seoul';
+  const fmt   = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const endStr = fmt(today);
+  let startStr;
+
+  if (range === 'sem') {
+    // Will be resolved server-side using getSemesterRange_
+    startStr = 'sem';
+  } else {
+    const start = new Date(today);
+    start.setDate(today.getDate() - parseInt(range));
+    startStr = fmt(start);
+  }
+
+  gasCall('attendance_getDashboard', {cls, start: startStr, end: endStr})
+    .then(data => renderDashData(data))
+    .catch(() => {
+      document.getElementById('dashStudentList').innerHTML = '<div class="no-students">Error loading data</div>';
+    });
+}
+
+function renderDashData(data) {
+  const list = document.getElementById('dashStudentList');
+  list.innerHTML = '';
+
+  if (!data.students || !data.students.length) {
+    list.innerHTML = '<div class="no-students">No attendance data for this range</div>';
+    return;
+  }
+
+  // Update range select to show semester label on 'sem' option
+  const rangeEl = document.getElementById('dashRangeSelect');
+  Array.from(rangeEl.options).forEach(o => {
+    if (o.value === 'sem') o.textContent = `Whole semester (${data.semesterLabel})`;
+  });
+
+  data.students.forEach(s => {
+    const card = document.createElement('div');
+    card.className = 'dash-card' + (s.alert ? ' alert' : '');
+
+    const rateColor = s.rate === null ? '' : s.rate >= 80 ? 'good' : s.rate >= 60 ? 'warn' : 'bad';
+    const rateDisp  = s.rate !== null ? s.rate + '%' : '—';
+
+    const reasonsHtml = s.reasons.length
+      ? '<div class="dash-reasons">' +
+        s.reasons.map(r => `${r.date} · ${r.status}${r.reason ? ' — ' + r.reason : ''}`).join('<br>') +
+        '</div>'
+      : '';
+
+    const alertTag = s.alert
+      ? '<span class="dash-alert-tag">⚠️ Low attendance</span>'
+      : '';
+
+    card.innerHTML = `
+      <div class="dash-card-top">
+        <div>
+          <div class="ers-name">${s.nick||s.name}</div>
+          <div class="ers-korean">${s.nick ? s.name : ''}</div>
+          ${alertTag}
+        </div>
+        <div class="dash-rate ${rateColor}">${rateDisp}</div>
+      </div>
+      <div class="dash-stats">
+        <div class="dash-stat"><div class="val">${s.total}</div><div class="lbl">Sessions</div></div>
+        <div class="dash-stat"><div class="val" style="color:#2e7d32">${s.present}</div><div class="lbl">Present</div></div>
+        <div class="dash-stat"><div class="val" style="color:#c62828">${s.absent}</div><div class="lbl">Absent</div></div>
+      </div>
+      ${s.late > 0 ? `<div style="font-size:13px;color:#e65100;margin-bottom:6px;">🔵 Late: ${s.late}</div>` : ''}
+      ${reasonsHtml}`;
+
+    list.appendChild(card);
+  });
+}  
 </script>
 </body>
 </html>

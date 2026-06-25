@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 052</title>
+  <title>RS Daily App 053</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -498,17 +498,26 @@
 <!-- ── ATTENDANCE DASHBOARD ── -->
   <div id="dashScreen" style="display:none">
     <div class="ers-controls">
+      <div class="pill-row" id="dashTimeFilter">
+        <button class="pill" data-slot="P" onclick="setDashTimeSlot('P')">P Time</button>
+        <button class="pill" data-slot="Q" onclick="setDashTimeSlot('Q')">Q Time</button>
+        <button class="pill" data-slot="R" onclick="setDashTimeSlot('R')">R Time</button>
+        <button class="pill" data-slot="ALL" onclick="setDashTimeSlot('ALL')">All</button>
+      </div>
       <select id="dashClassSelect" onchange="onDashClassChange()">
         <option value="">— Select class —</option>
       </select>
-      <select id="dashRangeSelect" onchange="loadDashData()" style="display:none">
-        <option value="7">Last week</option>
-        <option value="14">Last 2 weeks</option>
-        <option value="21">Last 3 weeks</option>
-        <option value="30">Last month</option>
-        <option value="60">Last 2 months</option>
-        <option value="sem">Whole semester</option>
-      </select>
+      <div id="dashRangeWrap" style="display:none">
+        <label style="font-size:13px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:8px;">Date range</label>
+        <select id="dashRangeSelect" onchange="loadDashData()">
+          <option value="sem" selected>Whole semester</option>
+          <option value="7">Last week</option>
+          <option value="14">Last 2 weeks</option>
+          <option value="21">Last 3 weeks</option>
+          <option value="30">Last month</option>
+          <option value="60">Last 2 months</option>
+        </select>
+      </div>
     </div>
     <div class="ers-student-list" id="dashStudentList">
       <div class="no-students">Select a class above</div>
@@ -559,6 +568,7 @@ let maxScore    = null;
 let ersWeeksLoaded = false;
 let ersWeeks    = [];
 let ersSlot     = 'ALL';
+let dashSlot    = 'ALL';
 let rSubType     = null; // 'Vocab', 'Comp', or null (plain R)
 let sessionExpiry = null; // ms timestamp, set on login
 let attendanceMap = {};   // name → {status, reason} for today's attendance
@@ -683,7 +693,11 @@ function switchMainTab(tab) {
   document.getElementById('tabDash').classList.toggle('active',     tab === 'dash');
   document.getElementById('tabERS').classList.toggle('active',      tab === 'ers');
   if (tab === 'ers' && !ersWeeksLoaded) loadErsWeeks();
-  if (tab === 'dash') initDashClasses();
+  if (tab === 'dash') {
+    document.querySelectorAll('#dashTimeFilter .pill').forEach(b =>
+      b.classList.toggle('active', b.dataset.slot === dashSlot));
+    initDashClasses();
+  }
 }
 
 // ── Time slot (Daily Log) ──────────────────────────────
@@ -1324,6 +1338,13 @@ function populateErsClasses() {
   else sel.value = '';
 }
 
+function setDashTimeSlot(slot) {
+  dashSlot = slot;
+  document.querySelectorAll('#dashTimeFilter .pill').forEach(b =>
+    b.classList.toggle('active', b.dataset.slot === slot));
+  initDashClasses();
+}
+
 function onErsClassChange() {
   const cls = document.getElementById('ersClassSelect').value;
   if (!cls) {
@@ -1432,11 +1453,21 @@ function initDashClasses() {
   const sel  = document.getElementById('dashClassSelect');
   const prev = sel.value;
   sel.innerHTML = '<option value="">— Select class —</option>';
-  allClasses.forEach(c => {
-    const o = document.createElement('option');
-    o.value = o.textContent = c.cls;
-    sel.appendChild(o);
-  });
+  allClasses
+    .filter(c => {
+      if (dashSlot === 'ALL') return true;
+      const m = c.cls.match(/[PQR](?=\d)/i);
+      if (m) return m[0].toUpperCase() === dashSlot;
+      const slotOverride = { 'GSJ2': 'R' };
+      const base = c.cls.replace(/\(.*\)/, '').trim();
+      if (slotOverride[base]) return slotOverride[base] === dashSlot;
+      return true;
+    })
+    .forEach(c => {
+      const o = document.createElement('option');
+      o.value = o.textContent = c.cls;
+      sel.appendChild(o);
+    });
   if (allClasses.some(c => c.cls === prev)) sel.value = prev;
   if (sel.value) onDashClassChange();
 }
@@ -1444,11 +1475,11 @@ function initDashClasses() {
 function onDashClassChange() {
   const cls = document.getElementById('dashClassSelect').value;
   if (!cls) {
-    document.getElementById('dashRangeSelect').style.display = 'none';
+    document.getElementById('dashRangeWrap').style.display = 'none';
     document.getElementById('dashStudentList').innerHTML = '<div class="no-students">Select a class above</div>';
     return;
   }
-  document.getElementById('dashRangeSelect').style.display = 'block';
+  document.getElementById('dashRangeWrap').style.display = 'block';
   loadDashData();
 }
 

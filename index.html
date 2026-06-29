@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 054</title>
+  <title>RS Daily App 055</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -864,7 +864,7 @@ function loadStudentList() {
         (existing||[]).forEach(e => { existingMap[e.name] = e; });
         renderAttendance(info.students);
       })
-      .catch(() => {})
+      .catch(err => { console.error('attendance_getExisting error:', err); })
       .finally(() => {
         document.getElementById('listOverlay').style.display = 'none';
       });

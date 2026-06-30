@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 056</title>
+  <title>RS Daily App 057</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -860,6 +860,7 @@ function loadStudentList() {
     document.getElementById('allPresentBtn').style.display = 'none';
     gasCall('attendance_getExisting', {cls, date})
       .then(existing => {
+        console.log('attendance_getExisting result:', JSON.stringify(existing));
         existingMap = {};
         (existing||[]).forEach(e => { existingMap[e.name] = e; });
         renderAttendance(info.students);

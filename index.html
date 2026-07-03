@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 058</title>
+  <title>RS Daily App 059</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -904,6 +904,7 @@ function loadStudentList() {
         (attData||[]).forEach(a => { attendanceMap[a.name] = a; });
 
         if (currentFn === 'homework') {
+          console.log('homework_getExisting result:', JSON.stringify(scoreResults[0]));
           (scoreResults[0]||[]).forEach(e => { existingMap[e.name] = { ...e, existing: true }; });
         }
 

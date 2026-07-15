@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 060</title>
+  <title>RS Daily App 061</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -285,6 +285,10 @@
     .dash-stat .lbl { font-size: 11px; color: #aaa; margin-top: 2px; }
     .dash-reasons { font-size: 12px; color: #888; margin-top: 8px; line-height: 1.8; }
     .dash-alert-tag { font-size: 12px; font-weight: 700; background: #ffebee; color: #c62828; padding: 3px 8px; border-radius: 6px; }
+    .dash-test-section { margin-top: 10px; border-top: 1px solid #f0f0f0; padding-top: 8px; display: flex; flex-direction: column; gap: 4px; }
+    .dash-test-row { display: flex; justify-content: space-between; align-items: center; }
+    .dash-test-subj { font-size: 13px; color: #666; }
+    .dash-test-avg { font-size: 14px; font-weight: 700; }
 
     /* ── LOADING OVERLAY ── */
     .list-loading-wrap { position: relative; }
@@ -904,7 +908,6 @@ function loadStudentList() {
         (attData||[]).forEach(a => { attendanceMap[a.name] = a; });
 
         if (currentFn === 'homework') {
-          console.log('homework_getExisting result:', JSON.stringify(scoreResults[0]));
           (scoreResults[0]||[]).forEach(e => { existingMap[e.name] = { ...e, existing: true }; });
         }
 
@@ -1507,14 +1510,17 @@ function loadDashData() {
     startStr = fmt(start);
   }
 
-  gasCall('attendance_getDashboard', {cls, start: startStr, end: endStr})
-    .then(data => renderDashData(data))
+  Promise.all([
+    gasCall('attendance_getDashboard', {cls, start: startStr, end: endStr}),
+    gasCall('dashboard_getTestData',   {cls, start: startStr, end: endStr})
+  ])
+    .then(([attData, testData]) => renderDashData(attData, testData))
     .catch(() => {
       document.getElementById('dashStudentList').innerHTML = '<div class="no-students">Error loading data</div>';
     });
 }
 
-function renderDashData(data) {
+function renderDashData(data, testData) {
   const list = document.getElementById('dashStudentList');
   list.innerHTML = '';
 
@@ -1522,6 +1528,13 @@ function renderDashData(data) {
     list.innerHTML = '<div class="no-students">No attendance data for this range</div>';
     return;
   }
+
+  // Build test lookup by name
+  const testMap = {};
+  if (testData && testData.students) {
+    testData.students.forEach(s => { testMap[s.name] = s.scores; });
+  }
+  const subjects = (testData && testData.subjects) || [];
 
   // Update range select to show semester label on 'sem' option
   const rangeEl = document.getElementById('dashRangeSelect');
@@ -1561,7 +1574,18 @@ function renderDashData(data) {
         <div class="dash-stat"><div class="val" style="color:#c62828">${s.absent}</div><div class="lbl">Absent</div></div>
       </div>
       ${s.late > 0 ? `<div style="font-size:13px;color:#e65100;margin-bottom:6px;">🔵 Late: ${s.late}</div>` : ''}
-      ${reasonsHtml}`;
+      ${reasonsHtml}
+      ${(() => {
+        const scores = testMap[s.name];
+        if (!scores || !subjects.length) return '';
+        const rows = subjects.map(subj => {
+          const d = scores[subj];
+          if (!d) return `<div class="dash-test-row"><span class="dash-test-subj">${subj}</span><span class="dash-test-avg" style="color:#ccc">—</span></div>`;
+          const color = d.avg >= 90 ? '#2e7d32' : d.avg >= 80 ? '#1565c0' : d.avg >= 70 ? '#e65100' : '#c62828';
+          return `<div class="dash-test-row"><span class="dash-test-subj">${subj}</span><span class="dash-test-avg" style="color:${color}">${d.avg}%</span></div>`;
+        }).join('');
+        return `<div class="dash-test-section">${rows}</div>`;
+      })()}`;
 
     list.appendChild(card);
   });

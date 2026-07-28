@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 063</title>
+  <title>RS Daily App 064</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -403,6 +403,8 @@
       <select id="classSelect" onchange="onClassChange()">
         <option value="">— Select class —</option>
       </select>
+
+<div class="pill-row" id="teacherPillRow" style="display:none"></div>
     </div>
     <div class="controls">
       <div class="fn-tabs" id="fnTabs" style="display:none">
@@ -567,6 +569,7 @@ async function gasCall(action, params) {
 // ── State ──────────────────────────────────────────────
 let allClasses  = [];
 let intensiveClasses = [];
+let selectedIntensiveTeacher = '';
 let currentSlot = 'P';
 let currentFn   = 'attendance';
 let studentData = [];
@@ -754,24 +757,71 @@ function setTimeSlot(slot) {
 // ── Class (Daily Log) ──────────────────────────────────
 function onClassChange() {
   const cls = document.getElementById('classSelect').value;
-  if (!cls) { resetBelowClass(); return; }
-  document.getElementById('fnTabs').style.display = 'grid';
+  if (!cls) {
+    resetBelowClass();
+    return;
+  }
 
-  // Use subjects already loaded with class data — no extra API call
   const info =
     allClasses.find(c => c.cls === cls) ||
     intensiveClasses.find(c => c.cls === cls);
-  const subjects = (info && info.subjects) || [];
+
+  if (!info) {
+    resetBelowClass();
+    return;
+  }
+
+  const teacherRow = document.getElementById('teacherPillRow');
+  teacherRow.innerHTML = '';
+  selectedIntensiveTeacher = '';
+
+  if (info.intensive && info.teacherGroups) {
+    teacherRow.style.display = 'flex';
+
+    info.teacherGroups.forEach(group => {
+      const button = document.createElement('button');
+      button.className = 'pill';
+      button.textContent = group.teacher;
+      button.onclick = () => setIntensiveTeacher(group.teacher);
+      teacherRow.appendChild(button);
+    });
+
+    document.getElementById('fnTabs').style.display = 'none';
+    clearStudentList();
+  } else {
+    teacherRow.style.display = 'none';
+    document.getElementById('fnTabs').style.display = 'grid';
+  }
+
+  const subjects = info.subjects || [];
   const sel  = document.getElementById('subjectSelect');
   const prev = sel.value;
-  sel.innerHTML = '<option value="">— Select subject —</option>';
-  subjects.forEach(s => {
-    const opt = document.createElement('option');
-    opt.value = opt.textContent = s;
-    sel.appendChild(opt);
-  });
-  if (subjects.includes(prev)) sel.value = prev;
 
+  sel.innerHTML = '<option value="">— Select subject —</option>';
+
+  subjects.forEach(subject => {
+    const option = document.createElement('option');
+    option.value = option.textContent = subject;
+    sel.appendChild(option);
+  });
+
+  if (subjects.includes(prev)) {
+    sel.value = prev;
+  }
+
+  if (!info.intensive) {
+    setFunction(currentFn);
+  }
+}
+
+function setIntensiveTeacher(teacher) {
+  selectedIntensiveTeacher = teacher;
+
+  document.querySelectorAll('#teacherPillRow .pill').forEach(button => {
+    button.classList.toggle('active', button.textContent === teacher);
+  });
+
+  document.getElementById('fnTabs').style.display = 'grid';
   setFunction(currentFn);
 }
 
@@ -860,18 +910,41 @@ function loadStudentList() {
   if (!cls || !date) { clearStudentList(); return; }
   if ((currentFn === 'test' || currentFn === 'homework') && !subj) { clearStudentList(); return; }
 
-  const info =
+    const info =
     allClasses.find(c => c.cls === cls) ||
     intensiveClasses.find(c => c.cls === cls);
-  if (!info) { clearStudentList(); return; }
+
+  if (!info) {
+    clearStudentList();
+    return;
+  }
+
+  let students = students || [];
+
+  if (info.intensive) {
+    const teacherGroup = (info.teacherGroups || []).find(
+      group => group.teacher === selectedIntensiveTeacher
+    );
+
+    if (!teacherGroup) {
+      clearStudentList();
+      return;
+    }
+
+    students = teacherGroup.students;
+  }
 
   let sub = `${cls} · ${formatDateDisplay(date)}`;
+
+  if (info.intensive && selectedIntensiveTeacher) {
+    sub += ` · ${selectedIntensiveTeacher}`;
+  }
   if (subj) sub += ` · ${subj}`;
   document.getElementById('topSubtitle').textContent = sub;
 
   if (currentFn === 'attendance') {
     existingMap = {};
-    renderAttendance(info.students);
+    renderAttendance(students);
     // Show overlay while checking for existing entries
     document.getElementById('listOverlay').style.display = 'flex';
     document.getElementById('submitBtn').disabled = true;
@@ -881,7 +954,7 @@ function loadStudentList() {
         console.log('attendance_getExisting result:', JSON.stringify(existing));
         existingMap = {};
         (existing||[]).forEach(e => { existingMap[e.name] = e; });
-        renderAttendance(info.students);
+        renderAttendance(students);
       })
       .catch(err => { console.error('attendance_getExisting error:', err); })
       .finally(() => {
@@ -890,7 +963,7 @@ function loadStudentList() {
   } else {
     existingMap = {};
     attendanceMap = {};
-    renderScoreList(info.students);
+    renderScoreList(students);
     document.getElementById('listOverlay').style.display = 'flex';
     document.getElementById('submitBtn').disabled = true;
 
@@ -951,7 +1024,7 @@ function loadStudentList() {
             (scoreResults[0]||[]).forEach(e => { existingMap[e.name] = e; });
           }
         }
-        renderScoreList(info.students);
+        renderScoreList(students);
       })
       .catch(err => { console.error('loadStudentList error:', err); })
       .finally(() => {
@@ -1270,11 +1343,14 @@ function doSubmit() {
   const cls  = document.getElementById('classSelect').value;
   const date = document.getElementById('datePicker').value;
   const subj = document.getElementById('subjectSelect').value;
-    const hr = (
+  const classInfo =
     allClasses.find(c => c.cls === cls) ||
     intensiveClasses.find(c => c.cls === cls) ||
-    {}
-  ).hr || '';
+    {};
+
+  const hr = classInfo.intensive
+    ? selectedIntensiveTeacher
+    : classInfo.hr || '';
   const btn  = document.getElementById('confirmBtn');
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span> Saving...';

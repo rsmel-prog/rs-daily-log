@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 061</title>
+  <title>RS Daily App 062</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -394,6 +394,7 @@
     </div>
     <div class="controls-sticky">
       <div class="pill-row" id="timeFilter">
+        <button class="pill" data-slot="INT" id="intPill" onclick="setTimeSlot('INT')" style="display:none">특강</button>
         <button class="pill" data-slot="P" onclick="setTimeSlot('P')">P Time</button>
         <button class="pill" data-slot="Q" onclick="setTimeSlot('Q')">Q Time</button>
         <button class="pill" data-slot="R" onclick="setTimeSlot('R')">R Time</button>
@@ -554,6 +555,7 @@
 
 <script>
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxCkDzYxGVZos60ZC1co9WwPkBeudo_B961rS7NXZEet3RdXhF8l6A6JTkDAG0Wu91lpw/exec';
+const SHOW_INTENSIVES = true; // set to false to hide intensive classes after summer
 
 async function gasCall(action, params) {
   const url = GAS_URL + '?action=' + encodeURIComponent(action);
@@ -564,6 +566,7 @@ async function gasCall(action, params) {
 
 // ── State ──────────────────────────────────────────────
 let allClasses  = [];
+let intensiveClasses = [];
 let currentSlot = 'P';
 let currentFn   = 'attendance';
 let studentData = [];
@@ -611,7 +614,7 @@ function doLogin() {
         document.getElementById('loginScreen').style.display    = 'none';
         document.getElementById('appScreen').style.display     = 'block';
         document.getElementById('dailyLogScreen').style.display = 'block';
-        initApp(res.classes);
+        initApp(res.classes, res.intensiveClasses || []);
         sessionExpiry = Date.now() + 60 * 60 * 1000; // 1 hour
       } else if (res.locked) {
         document.getElementById('loginError').textContent =
@@ -634,8 +637,12 @@ function doLogin() {
 }
 
 // ── App init ───────────────────────────────────────────
-function initApp(classes) {
-  allClasses = classes;
+function initApp(classes, intClasses) {
+  allClasses       = classes;
+  intensiveClasses = SHOW_INTENSIVES ? (intClasses || []) : [];
+  if (SHOW_INTENSIVES && intensiveClasses.length) {
+    document.getElementById('intPill').style.display = 'inline-flex';
+  }
   const today = new Date();
   const yyyy  = today.getFullYear();
   const mm    = String(today.getMonth()+1).padStart(2,'0');
@@ -712,14 +719,17 @@ function setTimeSlot(slot) {
 
   const dateStr   = document.getElementById('datePicker').value;
   const dayFilter = getDayFilter(dateStr);
-  if (dayFilter === 'WEEKEND') return;
+  if (dayFilter === 'WEEKEND' && slot !== 'INT') return;
 
   const sel  = document.getElementById('classSelect');
   const prev = sel.value;
   sel.innerHTML = '<option value="">— Select class —</option>';
 
-  allClasses
+  const sourceClasses = slot === 'INT' ? intensiveClasses : allClasses;
+
+  sourceClasses
     .filter(c => {
+      if (slot === 'INT') return true;
       const cd = getClassDay(c.cls);
       if (cd !== 'DAILY' && cd !== dayFilter) return false;
       if (slot === 'ALL') return true;
@@ -748,7 +758,9 @@ function onClassChange() {
   document.getElementById('fnTabs').style.display = 'grid';
 
   // Use subjects already loaded with class data — no extra API call
-  const info = allClasses.find(c => c.cls === cls);
+  const info =
+    allClasses.find(c => c.cls === cls) ||
+    intensiveClasses.find(c => c.cls === cls);
   const subjects = (info && info.subjects) || [];
   const sel  = document.getElementById('subjectSelect');
   const prev = sel.value;
@@ -848,7 +860,9 @@ function loadStudentList() {
   if (!cls || !date) { clearStudentList(); return; }
   if ((currentFn === 'test' || currentFn === 'homework') && !subj) { clearStudentList(); return; }
 
-  const info = allClasses.find(c => c.cls === cls);
+  const info =
+    allClasses.find(c => c.cls === cls) ||
+    intensiveClasses.find(c => c.cls === cls);
   if (!info) { clearStudentList(); return; }
 
   let sub = `${cls} · ${formatDateDisplay(date)}`;
@@ -1256,7 +1270,11 @@ function doSubmit() {
   const cls  = document.getElementById('classSelect').value;
   const date = document.getElementById('datePicker').value;
   const subj = document.getElementById('subjectSelect').value;
-  const hr   = (allClasses.find(c=>c.cls===cls)||{}).hr || '';
+    const hr = (
+    allClasses.find(c => c.cls === cls) ||
+    intensiveClasses.find(c => c.cls === cls) ||
+    {}
+  ).hr || '';
   const btn  = document.getElementById('confirmBtn');
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span> Saving...';

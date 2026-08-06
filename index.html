@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 065</title>
+  <title>RS Daily App 066</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -971,45 +971,76 @@ function loadStudentList() {
     const finalSubj = ((rawSubj === 'R' || rawSubj === 'Novel') && rSubType) ? rawSubj + ' - ' + rSubType : rawSubj;
     const isRType   = (rawSubj === 'R' || rawSubj === 'Novel') && !rSubType && currentFn === 'test';
 
-    const fetches = [
-      gasCall('attendance_getExisting', {cls, date}),
-      ...(currentFn === 'homework'
-        ? [gasCall('homework_getExisting', {cls, date, subject: subj})]
-        : []),
-      ...(currentFn === 'test'
-        ? isRType
-          ? [
-              gasCall('test_getExisting', {cls, date, subject: rawSubj}),
-              gasCall('test_getExisting', {cls, date, subject: rawSubj + ' - Vocab'}),
-              gasCall('test_getExisting', {cls, date, subject: rawSubj + ' - Comp'})
-            ]
-          : [gasCall('test_getExisting', {cls, date, subject: finalSubj})]
-        : [])
-    ];
+    const requestSubjects = currentFn === 'test' && isRType
+      ? [
+          rawSubj,
+          rawSubj + ' - Vocab',
+          rawSubj + ' - Comp'
+        ]
+      : [];
 
-    Promise.all(fetches)
-      .then(results => {
-        existingMap  = {};
+    gasCall('daily_getExisting', {
+      cls,
+      date,
+      type: currentFn,
+      subject: currentFn === 'homework' ? subj : finalSubj,
+      subjects: requestSubjects
+    })
+      .then(result => {
+        existingMap   = {};
         attendanceMap = {};
-        const [attData, ...scoreResults] = results;
-        (attData||[]).forEach(a => { attendanceMap[a.name] = a; });
+
+        (result.attendance || []).forEach(a => {
+          attendanceMap[a.name] = a;
+        });
 
         if (currentFn === 'homework') {
-          (scoreResults[0]||[]).forEach(e => { existingMap[e.name] = { ...e, existing: true }; });
+          (result.scores[subj] || []).forEach(e => {
+            existingMap[e.name] = {
+              ...e,
+              existing: true
+            };
+          });
         }
 
         if (currentFn === 'test') {
           if (isRType) {
-            const [rData, vocabData, compData] = scoreResults;
+            const rData     = result.scores[rawSubj] || [];
+            const vocabData = result.scores[rawSubj + ' - Vocab'] || [];
+            const compData  = result.scores[rawSubj + ' - Comp'] || [];
+
             const combined = {};
-            (rData||[]).forEach(e => { combined[e.name] = combined[e.name] || {}; combined[e.name].R = e; });
-            (vocabData||[]).forEach(e => { combined[e.name] = combined[e.name] || {}; combined[e.name].Vocab = e; });
-            (compData||[]).forEach(e => { combined[e.name] = combined[e.name] || {}; combined[e.name].Comp = e; });
+
+            rData.forEach(e => {
+              combined[e.name] = combined[e.name] || {};
+              combined[e.name].R = e;
+            });
+
+            vocabData.forEach(e => {
+              combined[e.name] = combined[e.name] || {};
+              combined[e.name].Vocab = e;
+            });
+
+            compData.forEach(e => {
+              combined[e.name] = combined[e.name] || {};
+              combined[e.name].Comp = e;
+            });
+
             Object.entries(combined).forEach(([name, subs]) => {
               const parts = [];
-              if (subs.R)     parts.push(`R ${subs.R.score !== null ? subs.R.score : '—'}${subs.R.max ? '/'+subs.R.max : ''}`);
-              if (subs.Vocab) parts.push(`Vocab ${subs.Vocab.score !== null ? subs.Vocab.score : '—'}${subs.Vocab.max ? '/'+subs.Vocab.max : ''}`);
-              if (subs.Comp)  parts.push(`Comp ${subs.Comp.score !== null ? subs.Comp.score : '—'}${subs.Comp.max ? '/'+subs.Comp.max : ''}`);
+
+              if (subs.R) {
+                parts.push(`R ${subs.R.score !== null ? subs.R.score : '—'}${subs.R.max ? '/'+subs.R.max : ''}`);
+              }
+
+              if (subs.Vocab) {
+                parts.push(`Vocab ${subs.Vocab.score !== null ? subs.Vocab.score : '—'}${subs.Vocab.max ? '/'+subs.Vocab.max : ''}`);
+              }
+
+              if (subs.Comp) {
+                parts.push(`Comp ${subs.Comp.score !== null ? subs.Comp.score : '—'}${subs.Comp.max ? '/'+subs.Comp.max : ''}`);
+              }
+
               if (parts.length) {
                 existingMap[name] = {
                   score: subs.R ? subs.R.score : null,
@@ -1021,9 +1052,12 @@ function loadStudentList() {
               }
             });
           } else {
-            (scoreResults[0]||[]).forEach(e => { existingMap[e.name] = e; });
+            (result.scores[finalSubj] || []).forEach(e => {
+              existingMap[e.name] = e;
+            });
           }
         }
+
         renderScoreList(students);
       })
       .catch(err => { console.error('loadStudentList error:', err); })
@@ -1390,7 +1424,10 @@ function doSubmit() {
 }
 
 function resetAfterSuccess() {
-  loadStudentList();
+  existingMap = {};
+  attendanceMap = {};
+
+  document.getElementById('successScreen').classList.remove('visible');
 }
 
 // ── e-RS ───────────────────────────────────────────────

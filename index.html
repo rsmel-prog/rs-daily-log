@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 066</title>
+  <title>RS Daily App 067</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -1426,8 +1426,18 @@ function doSubmit() {
 function resetAfterSuccess() {
   existingMap = {};
   attendanceMap = {};
+  clearStudentList();
 
-  document.getElementById('successScreen').classList.remove('visible');
+  const cls = document.getElementById('classSelect').value;
+
+  if (cls) {
+    if (currentFn === 'attendance') {
+      loadStudentList();
+    } else {
+      const subj = document.getElementById('subjectSelect').value;
+      if (subj) loadStudentList();
+    }
+  }
 }
 
 // ── e-RS ───────────────────────────────────────────────

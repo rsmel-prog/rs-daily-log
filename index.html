@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 071</title>
+  <title>RS Daily App 072</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -382,10 +382,32 @@
 <div id="adminScreen" style="display:none; min-height:100vh;">
   <div class="top-bar">
     <h2>⚙️ RS Daily Admin</h2>
-    <div class="sub">Attendance Batch Entry</div>
+    <div class="sub">Batch Entry</div>
   </div>
 
   <div class="controls">
+    <select id="adminModeSelect" onchange="adminModeChanged()">
+      <option value="attendance">📋 Attendance</option>
+      <option value="homework">📚 Homework</option>
+      <option value="test">📝 Daily Test</option>
+    </select>
+
+    <select id="adminSubjectSelect" style="display:none;" onchange="adminSubjectChanged()">
+      <option value="">— Select subject —</option>
+    </select>
+
+    <div id="adminMaxScoreWrap" class="max-score-row" style="display:none;">
+      <label>Max Score</label>
+      <input
+        type="number"
+        id="adminMaxScore"
+        min="0.5"
+        max="200"
+        step="0.5"
+        placeholder="10"
+        inputmode="decimal">
+    </div>
+
     <select id="adminClassSelect" onchange="adminClassChanged()">
       <option value="">— Select class —</option>
     </select>
@@ -414,11 +436,29 @@
       </div>
     </div>
 
+    <label style="
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-size:14px;
+      font-weight:700;
+      color:#555;
+      padding:8px 2px;
+    ">
+      <input
+        type="checkbox"
+        id="adminMissingOnly"
+        checked
+        onchange="renderAdminGrid()"
+        style="width:18px;height:18px;">
+      Show dates with missing entries only
+    </label>
+
     <button
       class="btn-primary"
       id="adminLoadBtn"
-      onclick="loadAdminAttendanceGrid()">
-      Load Attendance
+      onclick="loadAdminGrid()">
+      Load Entries
     </button>
   </div>
 
@@ -440,7 +480,10 @@
       padding:12px 16px;
       z-index:50;
     ">
-    <div style="display:flex;gap:8px;margin-bottom:8px;">
+
+    <div
+      id="adminAttendanceBulkRow"
+      style="display:flex;gap:8px;margin-bottom:8px;">
       <button
         class="btn-secondary"
         onclick="adminFillBlankPresent()">
@@ -457,7 +500,7 @@
     <button
       class="btn-primary"
       id="adminSaveBtn"
-      onclick="saveAdminAttendance()">
+      onclick="saveAdminBatch()">
       Save Changes
     </button>
 
@@ -680,6 +723,7 @@ let adminPassword = '';
 let adminClasses  = [];
 let adminGridData = null;
 let adminChanges  = {};
+let adminMode     = 'attendance';
 
 // ── Init ───────────────────────────────────────────────
 window.onload = () => {
@@ -1614,6 +1658,68 @@ function initAdmin() {
 }
 
 
+function adminModeChanged() {
+  adminMode = document.getElementById('adminModeSelect').value;
+
+  const subjectSelect = document.getElementById('adminSubjectSelect');
+  const maxWrap = document.getElementById('adminMaxScoreWrap');
+
+  subjectSelect.style.display =
+    adminMode === 'attendance' ? 'none' : 'block';
+
+  maxWrap.style.display =
+    adminMode === 'test' ? 'flex' : 'none';
+
+  populateAdminSubjects();
+
+  adminGridData = null;
+  adminChanges = {};
+
+  document.getElementById('adminGridWrap').style.display = 'none';
+  document.getElementById('adminSaveBar').style.display = 'none';
+}
+
+
+function adminSubjectChanged() {
+  adminGridData = null;
+  adminChanges = {};
+
+  document.getElementById('adminGridWrap').style.display = 'none';
+  document.getElementById('adminSaveBar').style.display = 'none';
+}
+
+
+function populateAdminSubjects() {
+  const cls = document.getElementById('adminClassSelect').value;
+  const sel = document.getElementById('adminSubjectSelect');
+
+  sel.innerHTML = '<option value="">— Select subject —</option>';
+
+  if (!cls || adminMode === 'attendance') return;
+
+  const info = adminClasses.find(c => c.cls === cls);
+  if (!info) return;
+
+  const subjects = [];
+
+  (info.subjects || []).forEach(subject => {
+    subjects.push(subject);
+
+    if (subject === 'R' || subject === 'Novel') {
+      subjects.push(subject + ' - Vocab');
+      subjects.push(subject + ' - Comp');
+    }
+  });
+
+  [...new Set(subjects)].forEach(subject => {
+    const option = document.createElement('option');
+    option.value = subject;
+    option.textContent = subject;
+    sel.appendChild(option);
+  });
+}
+
+
 function adminClassChanged() {
   adminGridData = null;
   adminChanges = {};
@@ -1621,6 +1727,7 @@ function adminClassChanged() {
   document.getElementById('adminGridWrap').style.display = 'none';
   document.getElementById('adminSaveBar').style.display = 'none';
 
+  populateAdminSubjects();
   buildAdminDates();
 }
 
@@ -1686,12 +1793,18 @@ function getAdminSelectedDates() {
 }
 
 
-function loadAdminAttendanceGrid() {
-  const cls   = document.getElementById('adminClassSelect').value;
-  const dates = getAdminSelectedDates();
+function loadAdminGrid() {
+  const cls     = document.getElementById('adminClassSelect').value;
+  const subject = document.getElementById('adminSubjectSelect').value;
+  const dates   = getAdminSelectedDates();
 
   if (!cls) {
     alert('Select a class.');
+    return;
+  }
+
+  if (adminMode !== 'attendance' && !subject) {
+    alert('Select a subject.');
     return;
   }
 
@@ -1700,20 +1813,30 @@ function loadAdminAttendanceGrid() {
     return;
   }
 
+  const action =
+    adminMode === 'attendance'
+      ? 'admin_getAttendanceGrid'
+      : adminMode === 'homework'
+        ? 'admin_getHomeworkGrid'
+        : 'admin_getTestGrid';
+
   const btn = document.getElementById('adminLoadBtn');
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span> Loading...';
 
-  gasCall('admin_getAttendanceGrid', {
+  gasCall(action, {
     pw: adminPassword,
     cls,
+    subject,
     dates
   })
     .then(data => {
       if (data.error) throw new Error(data.error);
 
       adminGridData = {
+        mode: adminMode,
         cls,
+        subject,
         dates,
         hr: data.hr || '',
         students: data.students || [],
@@ -1722,19 +1845,38 @@ function loadAdminAttendanceGrid() {
 
       adminChanges = {};
 
-      renderAdminAttendanceGrid();
+      renderAdminGrid();
     })
     .catch(err => {
       alert('Admin load error: ' + (err.message || err));
     })
     .finally(() => {
       btn.disabled = false;
-      btn.textContent = 'Load Attendance';
+      btn.textContent = 'Load Entries';
     });
 }
 
 
-function renderAdminAttendanceGrid() {
+function getAdminVisibleDates() {
+  if (!adminGridData) return [];
+
+  const missingOnly =
+    document.getElementById('adminMissingOnly')?.checked;
+
+  if (!missingOnly) {
+    return adminGridData.dates;
+  }
+
+  return adminGridData.dates.filter(date => {
+    return adminGridData.students.some(student => {
+      const key = date + '|' + student.name;
+      return !adminGridData.existing[key];
+    });
+  });
+}
+
+
+function renderAdminGrid() {
   const wrap = document.getElementById('adminGridWrap');
 
   if (!adminGridData) {
@@ -1742,7 +1884,18 @@ function renderAdminAttendanceGrid() {
     return;
   }
 
-  const { dates, students, existing } = adminGridData;
+  const students = adminGridData.students;
+  const existing = adminGridData.existing;
+  const dates = getAdminVisibleDates();
+
+  if (!dates.length) {
+    wrap.innerHTML =
+      '<div class="no-students">✅ No missing dates in this range</div>';
+
+    wrap.style.display = 'block';
+    document.getElementById('adminSaveBar').style.display = 'none';
+    return;
+  }
 
   let html = `
     <table style="
@@ -1774,19 +1927,9 @@ function renderAdminAttendanceGrid() {
           </th>
   `;
 
-  dates.forEach(date => {
-    html += `
-      <th style="
-        position:sticky;
-        top:0;
-        z-index:5;
-        background:#f3f5f8;
-        padding:8px 6px;
-        min-width:92px;
-        border-bottom:1px solid #ddd;
-        font-size:12px;
-      ">
-        <div>${formatDateDisplay(date)}</div>
+    dates.forEach(date => {
+    const allPresentButton = adminMode === 'attendance'
+      ? `
         <button
           type="button"
           onclick="event.stopPropagation(); adminFillDatePresent('${date}')"
@@ -1803,6 +1946,22 @@ function renderAdminAttendanceGrid() {
           ">
           All P
         </button>
+      `
+      : '';
+
+    html += `
+      <th style="
+        position:sticky;
+        top:0;
+        z-index:5;
+        background:#f3f5f8;
+        padding:8px 6px;
+        min-width:92px;
+        border-bottom:1px solid #ddd;
+        font-size:12px;
+      ">
+        <div>${formatDateDisplay(date)}</div>
+        ${allPresentButton}
       </th>
     `;
   });
@@ -1841,25 +2000,76 @@ function renderAdminAttendanceGrid() {
       const key = date + '|' + student.name;
       const saved = existing[key] || null;
       const current = adminChanges[key] || saved || null;
-      const status = current ? current.status : '';
 
-      html += `
-        <td
-          id="adminCell-${rowIndex}-${colIndex}"
-          onclick="cycleAdminAttendance(${rowIndex},${colIndex})"
-          style="
-            padding:8px;
+      if (adminMode === 'attendance') {
+        const status = current ? current.status : '';
+
+        html += `
+          <td
+            onclick="cycleAdminAttendance('${date}',${rowIndex})"
+            style="
+              padding:8px;
+              border-bottom:1px solid #eee;
+              border-left:1px solid #eee;
+              text-align:center;
+              cursor:pointer;
+              font-weight:700;
+              min-width:92px;
+              ${adminAttendanceCellStyle(status, !!saved)}
+            ">
+            ${adminAttendanceShort(status)}
+          </td>
+        `;
+      }
+
+      if (adminMode === 'homework') {
+        const grade = current ? current.hwGrade : '';
+
+        html += `
+          <td
+            onclick="cycleAdminHomework('${date}',${rowIndex})"
+            style="
+              padding:8px;
+              border-bottom:1px solid #eee;
+              border-left:1px solid #eee;
+              text-align:center;
+              cursor:pointer;
+              font-weight:700;
+              min-width:92px;
+            ">
+            ${grade || '—'}
+          </td>
+        `;
+      }
+
+      if (adminMode === 'test') {
+        const score =
+          current && current.score !== null
+            ? current.score
+            : '';
+
+        html += `
+          <td style="
+            padding:6px;
             border-bottom:1px solid #eee;
             border-left:1px solid #eee;
-            text-align:center;
-            cursor:pointer;
-            font-weight:700;
             min-width:92px;
-            ${adminAttendanceCellStyle(status, !!saved)}
           ">
-          ${adminAttendanceShort(status)}
-        </td>
-      `;
+            <input
+              type="number"
+              value="${score}"
+              step="0.5"
+              style="
+                width:72px;
+                padding:8px;
+                text-align:center;
+                border:1px solid #ddd;
+                border-radius:7px;
+              "
+              onchange="setAdminTestScore('${date}',${rowIndex},this.value)">
+          </td>
+        `;
+      }
     });
 
     html += '</tr>';
@@ -1874,6 +2084,9 @@ function renderAdminAttendanceGrid() {
   wrap.style.display = 'block';
 
   document.getElementById('adminSaveBar').style.display = 'block';
+
+  document.getElementById('adminAttendanceBulkRow').style.display =
+    adminMode === 'attendance' ? 'flex' : 'none';
 
   updateAdminSaveButton();
 }
@@ -1908,12 +2121,11 @@ function adminAttendanceCellStyle(status, existing) {
 }
 
 
-function cycleAdminAttendance(rowIndex, colIndex) {
+function cycleAdminAttendance(date, rowIndex) {
   if (!adminGridData) return;
 
   const student = adminGridData.students[rowIndex];
-  const date    = adminGridData.dates[colIndex];
-  const key     = date + '|' + student.name;
+  const key = date + '|' + student.name;
 
   const saved = adminGridData.existing[key] || null;
   const current = adminChanges[key] || saved || null;
@@ -1937,22 +2149,8 @@ function cycleAdminAttendance(rowIndex, colIndex) {
     };
   }
 
-  const effective = adminChanges[key] || saved || null;
-  const effectiveStatus = effective ? effective.status : '';
-
-  const cell = document.getElementById(
-    `adminCell-${rowIndex}-${colIndex}`
-  );
-
-  cell.textContent = adminAttendanceShort(effectiveStatus);
-  cell.style.cssText += adminAttendanceCellStyle(
-    effectiveStatus,
-    !!saved
-  );
-
-  updateAdminSaveButton();
+  renderAdminGrid();
 }
-
 
 function adminFillDatePresent(date) {
   if (!adminGridData) return;
@@ -1969,7 +2167,67 @@ function adminFillDatePresent(date) {
     };
   });
 
-  renderAdminAttendanceGrid();
+  renderAdminGrid();
+}
+
+
+function cycleAdminHomework(date, rowIndex) {
+  const student = adminGridData.students[rowIndex];
+  const key = date + '|' + student.name;
+
+  const saved = adminGridData.existing[key] || null;
+  const current = adminChanges[key] || saved || null;
+  const grade = current ? current.hwGrade : '';
+
+  let next = 'A';
+
+  if (grade === 'A') next = 'B';
+  else if (grade === 'B') next = 'C';
+  else if (grade === 'C') next = '';
+
+  if (!next) {
+    delete adminChanges[key];
+  } else {
+    adminChanges[key] = {
+      date,
+      name: student.name,
+      nick: student.nick || '',
+      hwGrade: next,
+      note: ''
+    };
+  }
+
+  renderAdminGrid();
+}
+
+
+function setAdminTestScore(date, rowIndex, value) {
+  const student = adminGridData.students[rowIndex];
+  const key = date + '|' + student.name;
+
+  if (value === '') {
+    delete adminChanges[key];
+    updateAdminSaveButton();
+    return;
+  }
+
+  const score = parseFloat(value);
+  if (!Number.isFinite(score)) return;
+
+  const max = parseFloat(
+    document.getElementById('adminMaxScore').value
+  );
+
+  adminChanges[key] = {
+    date,
+    name: student.name,
+    nick: student.nick || '',
+    score,
+    max: Number.isFinite(max) ? max : null,
+    note: ''
+  };
+
+  updateAdminSaveButton();
 }
 
 
@@ -1993,13 +2251,13 @@ function adminFillBlankPresent() {
     });
   });
 
-  renderAdminAttendanceGrid();
+  renderAdminGrid();
 }
 
 
 function adminClearChanges() {
   adminChanges = {};
-  renderAdminAttendanceGrid();
+  renderAdminGrid();
 }
 
 
@@ -2015,7 +2273,7 @@ function updateAdminSaveButton() {
 }
 
 
-function saveAdminAttendance() {
+function saveAdminBatch() {
   if (!adminGridData) return;
 
   const changes = Object.values(adminChanges);
@@ -2025,29 +2283,41 @@ function saveAdminAttendance() {
     return;
   }
 
+  let action;
+
+  if (adminMode === 'attendance') {
+    action = 'admin_saveAttendanceBatch';
+  } else if (adminMode === 'homework') {
+    action = 'admin_saveHomeworkBatch';
+  } else {
+    action = 'admin_saveTestBatch';
+  }
+
   const btn = document.getElementById('adminSaveBtn');
+
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span> Saving...';
 
-  gasCall('admin_saveAttendanceBatch', {
+  gasCall(action, {
     pw: adminPassword,
     cls: adminGridData.cls,
     hr: adminGridData.hr,
+    subject: adminGridData.subject || '',
     changes
   })
     .then(result => {
       if (result.error) throw new Error(result.error);
 
-      alert(`Saved ${result.saved} attendance entries.`);
+      adminChanges = {};
 
-      loadAdminAttendanceGrid();
+      loadAdminGrid();
     })
     .catch(err => {
       alert('Admin save error: ' + (err.message || err));
     })
     .finally(() => {
       btn.disabled = false;
-      btn.textContent = 'Save Changes';
+      updateAdminSaveButton();
     });
 }
   

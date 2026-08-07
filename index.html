@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 073</title>
+  <title>RS Daily App 074</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -464,7 +464,13 @@
 
   <div
     id="adminGridWrap"
-    style="display:none;padding:12px 16px 180px;overflow-x:auto;">
+    style="
+      display:none;
+      padding:12px 16px 180px;
+      overflow-x:auto;
+      position:relative;
+      -webkit-overflow-scrolling:touch;
+    ">
   </div>
 
   <div
@@ -1905,7 +1911,7 @@ function renderAdminGrid() {
       min-width:100%;
       background:#fff;
       border-radius:12px;
-      overflow:hidden;
+      overflow:visible;
       box-shadow:0 2px 8px rgba(0,0,0,0.06);
     ">
       <thead>
@@ -1913,7 +1919,8 @@ function renderAdminGrid() {
           <th style="
             position:sticky;
             left:0;
-            z-index:5;
+            top:0;
+            z-index:6;
             background:#f3f5f8;
             padding:10px;
             min-width:130px;

@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 069</title>
+  <title>RS Daily App 070</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -1581,23 +1581,36 @@ function initAdmin() {
   document.getElementById('adminStartDate').value = fmt(start);
   document.getElementById('adminEndDate').value   = fmt(end);
 
-  const classes = Array.isArray(allClasses) && allClasses.length
-    ? allClasses
-    : [];
-
-  adminClasses = classes;
+  adminClasses = [];
 
   const sel = document.getElementById('adminClassSelect');
-  sel.innerHTML = '<option value="">— Select class —</option>';
-
-  adminClasses.forEach(c => {
-    const option = document.createElement('option');
-    option.value = c.cls;
-    option.textContent = c.cls;
-    sel.appendChild(option);
-  });
+  sel.innerHTML = '<option value="">Loading classes...</option>';
+  sel.disabled = true;
 
   buildAdminDates();
+
+  gasCall('admin_getOptions', {
+    pw: adminPassword
+  })
+    .then(classes => {
+      adminClasses = classes || [];
+
+      sel.innerHTML = '<option value="">— Select class —</option>';
+
+      adminClasses.forEach(c => {
+        const option = document.createElement('option');
+        option.value = c.cls;
+        option.textContent = c.cls;
+        sel.appendChild(option);
+      });
+    })
+    .catch(err => {
+      console.error('admin_getOptions error:', err);
+      sel.innerHTML = '<option value="">Error loading classes</option>';
+    })
+    .finally(() => {
+      sel.disabled = false;
+    });
 }
 
 
@@ -1607,12 +1620,15 @@ function adminClassChanged() {
 
   document.getElementById('adminGridWrap').style.display = 'none';
   document.getElementById('adminSaveBar').style.display = 'none';
+
+  buildAdminDates();
 }
 
 
 function buildAdminDates() {
   const startStr = document.getElementById('adminStartDate').value;
   const endStr   = document.getElementById('adminEndDate').value;
+  const cls      = document.getElementById('adminClassSelect').value;
 
   const wrap = document.getElementById('adminDateChips');
   wrap.innerHTML = '';
@@ -1624,13 +1640,21 @@ function buildAdminDates() {
 
   if (start > end) return;
 
+  let allowedDays = [1, 2, 3, 4, 5];
+
+  if (/월수금/.test(cls)) {
+    allowedDays = [1, 3, 5];
+  } else if (/화목/.test(cls)) {
+    allowedDays = [2, 4];
+  }
+
   const d = new Date(start);
   let count = 0;
 
   while (d <= end && count < 31) {
     const day = d.getDay();
 
-    if (day !== 0 && day !== 6) {
+    if (allowedDays.includes(day)) {
       const yyyy = d.getFullYear();
       const mm   = String(d.getMonth()+1).padStart(2,'0');
       const dd   = String(d.getDate()).padStart(2,'0');

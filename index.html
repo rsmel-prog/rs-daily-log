@@ -1777,13 +1777,32 @@ function renderAdminAttendanceGrid() {
   dates.forEach(date => {
     html += `
       <th style="
+        position:sticky;
+        top:0;
+        z-index:5;
         background:#f3f5f8;
-        padding:10px 8px;
+        padding:8px 6px;
         min-width:92px;
         border-bottom:1px solid #ddd;
         font-size:12px;
       ">
-        ${formatDateDisplay(date)}
+        <div>${formatDateDisplay(date)}</div>
+        <button
+          type="button"
+          onclick="event.stopPropagation(); adminFillDatePresent('${date}')"
+          style="
+            margin-top:6px;
+            padding:4px 7px;
+            border:1px solid #c8d6c9;
+            border-radius:6px;
+            background:#e8f5e9;
+            color:#2e7d32;
+            font-size:10px;
+            font-weight:700;
+            cursor:pointer;
+          ">
+          All P
+        </button>
       </th>
     `;
   });
@@ -1855,6 +1874,8 @@ function renderAdminAttendanceGrid() {
   wrap.style.display = 'block';
 
   document.getElementById('adminSaveBar').style.display = 'block';
+
+  updateAdminSaveButton();
 }
 
 
@@ -1928,6 +1949,27 @@ function cycleAdminAttendance(rowIndex, colIndex) {
     effectiveStatus,
     !!saved
   );
+
+  updateAdminSaveButton();
+}
+
+
+function adminFillDatePresent(date) {
+  if (!adminGridData) return;
+
+  adminGridData.students.forEach(student => {
+    const key = date + '|' + student.name;
+
+    adminChanges[key] = {
+      date,
+      name: student.name,
+      nick: student.nick || '',
+      status: 'Present',
+      reason: ''
+    };
+  });
+
+  renderAdminAttendanceGrid();
 }
 
 
@@ -1958,6 +2000,18 @@ function adminFillBlankPresent() {
 function adminClearChanges() {
   adminChanges = {};
   renderAdminAttendanceGrid();
+}
+
+
+function updateAdminSaveButton() {
+  const btn = document.getElementById('adminSaveBtn');
+  if (!btn) return;
+
+  const count = Object.keys(adminChanges).length;
+
+  btn.textContent = count
+    ? `Save Changes (${count})`
+    : 'Save Changes';
 }
 
 

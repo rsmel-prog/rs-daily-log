@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 070</title>
+  <title>RS Daily App 071</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -1760,11 +1760,15 @@ function renderAdminAttendanceGrid() {
           <th style="
             position:sticky;
             left:0;
-            z-index:3;
+            z-index:5;
             background:#f3f5f8;
             padding:10px;
             min-width:130px;
+            width:130px;
+            max-width:130px;
             border-bottom:1px solid #ddd;
+            border-right:2px solid #ddd;
+            box-shadow:4px 0 6px -6px rgba(0,0,0,0.35);
           ">
             Student
           </th>
@@ -1796,10 +1800,15 @@ function renderAdminAttendanceGrid() {
         <td style="
           position:sticky;
           left:0;
-          z-index:2;
+          z-index:4;
           background:#fff;
           padding:10px;
+          min-width:130px;
+          width:130px;
+          max-width:130px;
           border-bottom:1px solid #eee;
+          border-right:2px solid #ddd;
+          box-shadow:4px 0 6px -6px rgba(0,0,0,0.35);
           font-weight:700;
         ">
           ${student.nick || student.name}

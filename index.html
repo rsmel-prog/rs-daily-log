@@ -378,6 +378,33 @@
   </div>
 </div>
 
+<!-- ══ ADMIN ══ -->
+<div id="adminScreen" style="display:none; min-height:100vh;">
+  <div class="top-bar">
+    <h2>⚙️ RS Daily Admin</h2>
+    <div class="sub">Batch Entry</div>
+  </div>
+
+  <div class="controls">
+    <div style="
+      background:#fff;
+      border-radius:16px;
+      padding:24px;
+      text-align:center;
+      color:#777;
+      line-height:1.7;
+    ">
+      <div style="font-size:28px;margin-bottom:10px;">🛠️</div>
+      <strong style="color:#333;">Admin mode is active.</strong><br>
+      Batch Attendance will be added here next.
+    </div>
+
+    <button class="btn-secondary" style="width:100%;" onclick="adminLogout()">
+      Sign Out
+    </button>
+  </div>
+</div>
+
 <!-- ══ APP ══ -->
 <div id="appScreen">
   <div class="main-tabs" style="grid-template-columns: 1fr 1fr 1fr;">
@@ -595,12 +622,26 @@ window.onload = () => {
 function checkSession() {
   if (!sessionExpiry || Date.now() <= sessionExpiry) return;
   document.getElementById('appScreen').style.display   = 'none';
+  document.getElementById('adminScreen').style.display = 'none';
   document.getElementById('loginScreen').style.display = 'flex';
   document.getElementById('pwInput').value = '';
   document.getElementById('loginBtn').disabled = false;
   document.getElementById('loginBtn').textContent = 'Sign In';
   document.getElementById('loginError').textContent = 'Session expired. Please sign in again.';
   document.getElementById('loginError').style.display = 'block';
+  sessionExpiry = null;
+}
+
+function adminLogout() {
+  document.getElementById('adminScreen').style.display = 'none';
+  document.getElementById('appScreen').style.display   = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+
+  document.getElementById('pwInput').value = '';
+  document.getElementById('loginError').style.display = 'none';
+  document.getElementById('loginBtn').disabled = false;
+  document.getElementById('loginBtn').textContent = 'Sign In';
+
   sessionExpiry = null;
 }
 
@@ -614,13 +655,23 @@ function doLogin() {
   gasCall('attendance_login', {pw})
     .then(res => {
       if (res.ok) {
-        document.getElementById('loginScreen').style.display    = 'none';
-        document.getElementById('appScreen').style.display     = 'block';
+        document.getElementById('loginScreen').style.display = 'none';
+
+        if (res.role === 'admin') {
+          document.getElementById('appScreen').style.display   = 'none';
+          document.getElementById('adminScreen').style.display = 'block';
+
+          sessionExpiry = Date.now() + 60 * 60 * 1000; // 1 hour
+          return;
+        }
+
+        document.getElementById('adminScreen').style.display    = 'none';
+        document.getElementById('appScreen').style.display      = 'block';
         document.getElementById('dailyLogScreen').style.display = 'block';
+
         initApp(res.classes, res.intensiveClasses || []);
         sessionExpiry = Date.now() + 60 * 60 * 1000; // 1 hour
-      } else if (res.locked) {
-        document.getElementById('loginError').textContent =
+      } else if (res.locked) {        document.getElementById('loginError').textContent =
           `Too many attempts. Try again in ${res.minsLeft} minute${res.minsLeft > 1 ? 's' : ''}.`;
         document.getElementById('loginError').style.display = 'block';
         btn.disabled = false; btn.textContent = 'Sign In';

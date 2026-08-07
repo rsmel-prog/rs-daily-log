@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 072</title>
+  <title>RS Daily App 073</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -2003,25 +2003,49 @@ function renderAdminGrid() {
 
       if (adminMode === 'attendance') {
         const status = current ? current.status : '';
+        const reason = current ? (current.reason || '') : '';
+        const showReason = status === 'Absent' || status === 'Late';
 
         html += `
           <td
-            onclick="cycleAdminAttendance('${date}',${rowIndex})"
             style="
               padding:8px;
               border-bottom:1px solid #eee;
               border-left:1px solid #eee;
               text-align:center;
-              cursor:pointer;
               font-weight:700;
-              min-width:92px;
+              min-width:110px;
               ${adminAttendanceCellStyle(status, !!saved)}
             ">
-            ${adminAttendanceShort(status)}
+            <div
+              onclick="cycleAdminAttendance('${date}',${rowIndex})"
+              style="
+                cursor:pointer;
+                padding:6px 4px;
+              ">
+              ${adminAttendanceShort(status)}
+            </div>
+
+            ${showReason ? `
+              <input
+                type="text"
+                placeholder="Reason"
+                value="${adminEscapeAttr(reason)}"
+                onclick="event.stopPropagation()"
+                oninput="setAdminAttendanceReason('${date}',${rowIndex},this.value)"
+                style="
+                  width:100%;
+                  margin-top:4px;
+                  padding:6px;
+                  border:1px solid #ddd;
+                  border-radius:6px;
+                  font-size:12px !important;
+                  background:#fff;
+                ">
+            ` : ''}
           </td>
         `;
       }
-
       if (adminMode === 'homework') {
         const grade = current ? current.hwGrade : '';
 
@@ -2130,6 +2154,7 @@ function cycleAdminAttendance(date, rowIndex) {
   const saved = adminGridData.existing[key] || null;
   const current = adminChanges[key] || saved || null;
   const status = current ? current.status : '';
+  const reason = current ? (current.reason || '') : '';
 
   let next = 'Present';
 
@@ -2145,12 +2170,46 @@ function cycleAdminAttendance(date, rowIndex) {
       name: student.name,
       nick: student.nick || '',
       status: next,
-      reason: ''
+      reason: next === 'Present' ? '' : reason
     };
   }
 
   renderAdminGrid();
 }
+
+function adminEscapeAttr(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+
+function setAdminAttendanceReason(date, rowIndex, value) {
+  if (!adminGridData) return;
+
+  const student = adminGridData.students[rowIndex];
+  const key = date + '|' + student.name;
+
+  const saved = adminGridData.existing[key] || null;
+  const current = adminChanges[key] || saved || null;
+
+  if (!current || (current.status !== 'Absent' && current.status !== 'Late')) {
+    return;
+  }
+
+  adminChanges[key] = {
+    date,
+    name: student.name,
+    nick: student.nick || '',
+    status: current.status,
+    reason: value
+  };
+
+  updateAdminSaveButton();
+}
+
 
 function adminFillDatePresent(date) {
   if (!adminGridData) return;

@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 075</title>
+  <title>RS Daily App 076</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -1128,14 +1128,42 @@ function loadStudentList() {
     document.getElementById('allPresentBtn').style.display = 'none';
     gasCall('attendance_getExisting', {cls, date})
       .then(existing => {
-        console.log('attendance_getExisting result:', JSON.stringify(existing));
+        if (existing && existing.error) {
+          throw new Error(existing.error);
+        }
+
+        if (!Array.isArray(existing)) {
+          throw new Error('Invalid attendance lookup response.');
+        }
+
+        console.log(
+          'attendance_getExisting result:',
+          JSON.stringify(existing)
+        );
+
         existingMap = {};
-        (existing||[]).forEach(e => { existingMap[e.name] = e; });
+
+        existing.forEach(e => {
+          existingMap[e.name] = e;
+        });
+
         renderAttendance(students);
-      })
-      .catch(err => { console.error('attendance_getExisting error:', err); })
-      .finally(() => {
+
         document.getElementById('listOverlay').style.display = 'none';
+        document.getElementById('submitBtn').disabled = false;
+        document.getElementById('allPresentBtn').style.display = 'block';
+      })
+      .catch(err => {
+        console.error('attendance_getExisting error:', err);
+
+        document.getElementById('listOverlay').style.display = 'none';
+        document.getElementById('submitBtn').disabled = true;
+        document.getElementById('allPresentBtn').style.display = 'none';
+
+        alert(
+          'Attendance lookup failed: ' +
+          (err.message || err)
+        );
       });
   } else {
     existingMap = {};
@@ -1575,7 +1603,7 @@ function doSubmit() {
       btn.textContent = 'Confirm';
       btn.style.background = '';
       resetAfterSuccess();
-    }, 250);
+    }, 1500);
   };
   const onErr = err => {
     alert('Error saving: ' + (err.message||err));

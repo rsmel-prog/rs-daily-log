@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 080</title>
+  <title>RS Daily App 081</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -754,6 +754,9 @@ let sessionExpiry = null; // ms timestamp, set on login
 let attendanceMap = {};   // name → {status, reason} for today's attendance
 let testExistingMap = {};
 
+let loginTodayDate = '';
+let loginTodayAttendance = {};
+
 let adminPassword = '';
 let adminClasses  = [];
 let adminGridData = null;
@@ -824,7 +827,13 @@ function doLogin() {
         document.getElementById('appScreen').style.display      = 'block';
         document.getElementById('dailyLogScreen').style.display = 'block';
 
-        initApp(res.classes, res.intensiveClasses || []);
+        initApp(
+          res.classes,
+          res.intensiveClasses || [],
+          res.todayDate || '',
+          res.todayAttendance || {}
+        );
+
         sessionExpiry = Date.now() + 60 * 60 * 1000; // 1 hour
       } else if (res.locked) {        document.getElementById('loginError').textContent =
           `Too many attempts. Try again in ${res.minsLeft} minute${res.minsLeft > 1 ? 's' : ''}.`;
@@ -852,9 +861,12 @@ function doLogin() {
 }
 
 // ── App init ───────────────────────────────────────────
-function initApp(classes, intClasses) {
+function initApp(classes, intClasses, todayDate, todayAttendance) {
   allClasses       = classes;
   intensiveClasses = SHOW_INTENSIVES ? (intClasses || []) : [];
+
+  loginTodayDate = todayDate || '';
+  loginTodayAttendance = todayAttendance || {};
   if (SHOW_INTENSIVES && intensiveClasses.length) {
     document.getElementById('intPill').style.display = 'inline-flex';
   }
@@ -1111,7 +1123,6 @@ function onMaxScoreChange() {
 
 function onDateChange() {
   setTimeSlot(currentSlot);
-  if (document.getElementById('classSelect').value) loadStudentList();
 }
 
 // ── Load students ──────────────────────────────────────
@@ -1156,11 +1167,33 @@ function loadStudentList() {
 
   if (currentFn === 'attendance') {
     existingMap = {};
+
+    const cachedToday =
+      date === loginTodayDate &&
+      Array.isArray(loginTodayAttendance[cls])
+        ? loginTodayAttendance[cls]
+        : null;
+
+    if (cachedToday !== null) {
+      cachedToday.forEach(e => {
+        existingMap[e.name] = e;
+      });
+
+      renderAttendance(students);
+
+      document.getElementById('listOverlay').style.display = 'none';
+      document.getElementById('submitBtn').disabled = false;
+      document.getElementById('allPresentBtn').style.display = 'block';
+
+      return;
+    }
+
     renderAttendance(students);
-    // Show overlay while checking for existing entries
+
     document.getElementById('listOverlay').style.display = 'flex';
     document.getElementById('submitBtn').disabled = true;
     document.getElementById('allPresentBtn').style.display = 'none';
+
     gasCall('attendance_getExisting', {cls, date})
       .then(existing => {
         if (existing && existing.error) {
@@ -1170,11 +1203,6 @@ function loadStudentList() {
         if (!Array.isArray(existing)) {
           throw new Error('Invalid attendance lookup response.');
         }
-
-        console.log(
-          'attendance_getExisting result:',
-          JSON.stringify(existing)
-        );
 
         existingMap = {};
 
@@ -1647,7 +1675,26 @@ function doSubmit() {
   if (currentFn === 'attendance') {
     const entries = studentData.filter(s=>s.status!==null)
       .map(s=>({name:s.name,nick:s.nick,status:s.status,reason:s.reason}));
-    gasCall('attendance_submit', {cls,date,hr,entries}).then(onOk).catch(onErr);
+
+    gasCall('attendance_submit', {cls,date,hr,entries})
+      .then(result => {
+        if (date === loginTodayDate) {
+          const byName = {};
+
+          (loginTodayAttendance[cls] || []).forEach(e => {
+            byName[e.name] = e;
+          });
+
+          entries.forEach(e => {
+            byName[e.name] = e;
+          });
+
+          loginTodayAttendance[cls] = Object.values(byName);
+        }
+
+        onOk(result);
+      })
+      .catch(onErr);
   } else if (currentFn === 'test') {
     const entries = studentData.filter(s=>s.score!==null||s.note).map(s => {
       const pct = (s.score!==null && maxScore) ? Math.round(s.score/maxScore*100) : null;

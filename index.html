@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 079</title>
+  <title>RS Daily App 080</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -700,23 +700,41 @@
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxCkDzYxGVZos60ZC1co9WwPkBeudo_B961rS7NXZEet3RdXhF8l6A6JTkDAG0Wu91lpw/exec';
 const SHOW_INTENSIVES = true; // set to false to hide intensive classes after summer
 
-function gasCall(action, params) {
-  return new Promise((resolve, reject) => {
-    google.script.run
-      .withSuccessHandler(result => {
-        resolve(result);
-      })
-      .withFailureHandler(err => {
-        reject(
-          new Error(
-            err && err.message
-              ? err.message
-              : String(err || 'Unknown server error')
-          )
-        );
-      })
-      .apiCall(action, params || {});
+async function gasCall(action, params) {
+  const url = GAS_URL + '?action=' + encodeURIComponent(action);
+
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'text/plain'
+    },
+    body: JSON.stringify(params)
   });
+
+  const text = await res.text();
+
+  if (!res.ok) {
+    throw new Error(
+      `HTTP ${res.status}: ${text.slice(0, 300)}`
+    );
+  }
+
+  let data;
+
+  try {
+    data = JSON.parse(text);
+  } catch (err) {
+    throw new Error(
+      'Server returned non-JSON response: ' +
+      text.slice(0, 300)
+    );
+  }
+
+  if (data && data.error) {
+    throw new Error(data.error);
+  }
+
+  return data;
 }
 // ── State ──────────────────────────────────────────────
 let allClasses  = [];

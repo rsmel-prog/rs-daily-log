@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 083</title>
+  <title>RS Daily App 083.1</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -2193,7 +2193,7 @@ function bhSatRenderDaily() {
       ).value
     );
 
-  let maxBooks = 5;
+  let maxBooks = 10;
 
   bhSatStudents.forEach(student => {
     maxBooks = Math.max(
@@ -2448,13 +2448,13 @@ function bhSatRenderDaily() {
 
       html += `
           <td>
-            <strong>
+            <strong id="bhToday-${rowIndex}">
               ${validScores.length}
             </strong>
           </td>
 
           <td>
-            <strong>
+            <strong id="bhAvg-${rowIndex}">
               ${
                 avg === null
                   ? '—'
@@ -2465,21 +2465,56 @@ function bhSatRenderDaily() {
 
           <td>
 
-            <input
-              class="bh-text-input"
-              type="text"
-              placeholder="Attitude"
-              value="${
-                bhAttr_(
-                  daily.attitude || ''
-                )
-              }"
-              oninput="
+            <select
+              class="bh-att-select"
+              onchange="
                 bhSatStudents[
                   ${rowIndex}
                 ].daily.attitude =
                   this.value
               ">
+
+              <option
+                value=""
+                ${
+                  !daily.attitude
+                    ? 'selected'
+                    : ''
+                }>
+                —
+              </option>
+
+              <option
+                value="A"
+                ${
+                  daily.attitude === 'A'
+                    ? 'selected'
+                    : ''
+                }>
+                A
+              </option>
+
+              <option
+                value="B"
+                ${
+                  daily.attitude === 'B'
+                    ? 'selected'
+                    : ''
+                }>
+                B
+              </option>
+
+              <option
+                value="C"
+                ${
+                  daily.attitude === 'C'
+                    ? 'selected'
+                    : ''
+                }>
+                C
+              </option>
+
+            </select>
 
           </td>
 
@@ -2526,30 +2561,19 @@ function bhSatSetScore(
   value,
   input
 ) {
-  const student =
-    bhSatStudents[studentIndex];
+  const student = bhSatStudents[studentIndex];
 
   if (!Array.isArray(student.scores)) {
     student.scores = [];
   }
 
   const maxScore =
-    Number(
-      document.getElementById(
-        'bhMaxScore'
-      ).value
-    ) || 10;
+    Number(document.getElementById('bhMaxScore').value) || 10;
 
   const passScore =
-    Number(
-      document.getElementById(
-        'bhPassScore'
-      ).value
-    );
+    Number(document.getElementById('bhPassScore').value);
 
-  while (
-    student.scores.length <= bookIndex
-  ) {
+  while (student.scores.length <= bookIndex) {
     student.scores.push({
       score: null,
       max: maxScore,
@@ -2562,8 +2586,7 @@ function bhSatSetScore(
       ? null
       : Number(value);
 
-  student.scores[bookIndex].max =
-    maxScore;
+  student.scores[bookIndex].max = maxScore;
 
   input.classList.remove(
     'bh-score-pass',
@@ -2578,23 +2601,54 @@ function bhSatSetScore(
     );
   }
 
+  bhSatUpdateStudentStats(studentIndex);
   bhSatUpdateDailySummary();
+}
 
-  const isLastColumn =
-    bookIndex ===
-    Math.max(
-      4,
-      ...bhSatStudents.map(
-        student =>
-          (student.scores || []).length
-      )
+
+function bhSatUpdateStudentStats(studentIndex) {
+  const student = bhSatStudents[studentIndex];
+
+  const maxScore =
+    Number(document.getElementById('bhMaxScore').value) || 10;
+
+  const validScores =
+    (student.scores || []).filter(score =>
+      score.score !== null &&
+      score.score !== undefined &&
+      score.score !== ''
     );
 
-  if (
-    value !== '' &&
-    isLastColumn
-  ) {
-    bhSatRenderDaily();
+  const today = validScores.length;
+
+  const avg =
+    today > 0
+      ? Math.round(
+          validScores.reduce(
+            (sum, score) => sum + Number(score.score || 0),
+            0
+          ) /
+          today /
+          maxScore *
+          100
+        )
+      : null;
+
+  const todayEl =
+    document.getElementById(`bhToday-${studentIndex}`);
+
+  const avgEl =
+    document.getElementById(`bhAvg-${studentIndex}`);
+
+  if (todayEl) {
+    todayEl.textContent = today;
+  }
+
+  if (avgEl) {
+    avgEl.textContent =
+      avg === null
+        ? '—'
+        : avg + '%';
   }
 }
 

@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 083.2</title>
+  <title>RS Daily App 083.430</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -2919,6 +2919,7 @@ function bhSatLoadAnalytics() {
               <th>Pass Rate</th>
               <th>Avg Score</th>
               <th>Current Progress</th>
+              <th>Progress History</th>
             </tr>
           </thead>
 
@@ -3013,6 +3014,39 @@ function bhSatLoadAnalytics() {
                 ${bhEscape_(
                   student.progress || '—'
                 )}
+              </td>
+
+
+              <td style="
+                text-align:left;
+                min-width:260px;
+                white-space:normal;
+                line-height:1.6;
+              ">
+                ${
+                  student.progressHistory &&
+                  student.progressHistory.length
+                    ? student.progressHistory
+                        .map(item => {
+                          const parts =
+                            item.date.split('-');
+
+                          const shortDate =
+                            parts.length === 3
+                              ? parts[1] + '/' + parts[2]
+                              : item.date;
+
+                          return (
+                            '<div>' +
+                            bhEscape_(shortDate) +
+                            ' — ' +
+                            bhEscape_(item.progress) +
+                            '</div>'
+                          );
+                        })
+                        .join('')
+                    : '—'
+                }
               </td>
 
             </tr>

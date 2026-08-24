@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 081</title>
+  <title>RS Daily App 082</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -80,6 +80,125 @@
     #appScreen { display: none; }
     #dailyLogScreen { display: none; }
     #ersScreen { display: none; }
+    #bhSatScreen { display: none; }
+
+    .bh-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      margin-bottom: 12px;
+    }
+
+    .bh-card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .bh-count {
+      padding: 7px 12px;
+      background: #f0f4ff;
+      color: #4a6cf7;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .bh-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: #777;
+      margin: 14px 0 7px;
+      text-transform: uppercase;
+    }
+
+    .bh-field {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e5e5e5;
+      border-radius: 10px;
+      background: #fff;
+      outline: none;
+    }
+
+    .bh-score-row {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr 2fr auto;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 7px;
+    }
+
+    .bh-score-row input {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #e5e5e5;
+      border-radius: 9px;
+    }
+
+    .bh-score-remove {
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      background: #ffebee;
+      color: #c62828;
+      cursor: pointer;
+    }
+
+    .bh-add-book {
+      width: 100%;
+      padding: 11px;
+      border: 2px dashed #b8c5f5;
+      border-radius: 10px;
+      background: #f7f9ff;
+      color: #4a6cf7;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .bh-board {
+      padding: 16px;
+    }
+
+    .bh-board-summary {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .bh-board-stat {
+      background: #fff;
+      padding: 18px;
+      border-radius: 14px;
+      text-align: center;
+    }
+
+    .bh-board-stat .num {
+      font-size: 30px;
+      font-weight: 800;
+      color: #4a6cf7;
+    }
+
+    .bh-board-stat .lbl {
+      font-size: 12px;
+      color: #888;
+      margin-top: 3px;
+    }
+
+    .bh-board-row {
+      display: grid;
+      grid-template-columns: 45px 1.5fr 70px 70px 80px 1.2fr;
+      gap: 8px;
+      align-items: center;
+      background: #fff;
+      padding: 13px 10px;
+      border-radius: 12px;
+      margin-bottom: 8px;
+    }
 
     .top-bar {
       background: #fff; padding: 16px 20px 12px; border-bottom: 1px solid #e8e8e8;
@@ -519,6 +638,78 @@
   </div>
 </div>
 
+<!-- ══ SATURDAY BOOK HUNTERS ══ -->
+<div id="bhSatScreen" style="display:none; min-height:100vh;">
+  <div class="top-bar">
+    <h2>📚 Saturday Book Hunters</h2>
+    <div class="sub">Saturday BH Prototype</div>
+  </div>
+
+  <div class="controls">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      <button
+        class="fn-tab active"
+        id="bhSatEntryTab"
+        onclick="bhSatSetMode('entry')">
+        ✏️ Teacher Entry
+      </button>
+
+      <button
+        class="fn-tab"
+        id="bhSatBoardTab"
+        onclick="bhSatSetMode('board')">
+        📺 Live Board
+      </button>
+    </div>
+
+    <input
+      type="date"
+      id="bhSatDate"
+      onchange="bhSatDateChanged()">
+
+    <button
+      class="btn-secondary"
+      style="width:100%;"
+      onclick="bhSatLogout()">
+      Sign Out
+    </button>
+  </div>
+
+  <div id="bhSatEntryView">
+    <div
+      id="bhSatStudentList"
+      style="padding:12px 16px 180px;">
+      <div class="no-students">Loading...</div>
+    </div>
+
+    <div class="submit-bar">
+      <div
+        class="summary-line"
+        id="bhSatSummary">
+        —
+      </div>
+
+      <button
+        class="btn-primary"
+        id="bhSatSaveBtn"
+        onclick="bhSatSave()">
+        Save Saturday BH
+      </button>
+    </div>
+  </div>
+
+  <div
+    id="bhSatBoardView"
+    style="display:none;">
+    <div
+      class="bh-board"
+      id="bhSatBoard">
+      <div class="no-students">Loading...</div>
+    </div>
+  </div>
+</div>
+
+
 <!-- ══ APP ══ -->
 <div id="appScreen">
   <div class="main-tabs" style="grid-template-columns: 1fr 1fr 1fr;">
@@ -763,6 +954,11 @@ let adminGridData = null;
 let adminChanges  = {};
 let adminMode     = 'attendance';
 
+let bhSatPassword = '';
+let bhSatData     = [];
+let bhSatMode     = 'entry';
+let bhSatBoardTimer = null;
+
 // ── Init ───────────────────────────────────────────────
 window.onload = () => {
   document.getElementById('pwInput').addEventListener('keydown', e => {
@@ -773,9 +969,16 @@ window.onload = () => {
 
 function checkSession() {
   if (!sessionExpiry || Date.now() <= sessionExpiry) return;
-  document.getElementById('appScreen').style.display   = 'none';
-  document.getElementById('adminScreen').style.display = 'none';
-  document.getElementById('loginScreen').style.display = 'flex';
+
+  if (bhSatBoardTimer) {
+    clearInterval(bhSatBoardTimer);
+    bhSatBoardTimer = null;
+  }
+
+  document.getElementById('appScreen').style.display    = 'none';
+  document.getElementById('adminScreen').style.display  = 'none';
+  document.getElementById('bhSatScreen').style.display  = 'none';
+  document.getElementById('loginScreen').style.display  = 'flex';
   document.getElementById('pwInput').value = '';
   document.getElementById('loginBtn').disabled = false;
   document.getElementById('loginBtn').textContent = 'Sign In';
@@ -814,16 +1017,31 @@ function doLogin() {
         if (res.role === 'admin') {
           adminPassword = pw;
 
-          document.getElementById('appScreen').style.display   = 'none';
-          document.getElementById('adminScreen').style.display = 'block';
+          document.getElementById('appScreen').style.display    = 'none';
+          document.getElementById('bhSatScreen').style.display  = 'none';
+          document.getElementById('adminScreen').style.display  = 'block';
 
           initAdmin();
 
-          sessionExpiry = Date.now() + 60 * 60 * 1000; // 1 hour
+          sessionExpiry = Date.now() + 60 * 60 * 1000;
+          return;
+        }
+
+        if (res.role === 'bh_sat') {
+          bhSatPassword = pw;
+
+          document.getElementById('appScreen').style.display    = 'none';
+          document.getElementById('adminScreen').style.display  = 'none';
+          document.getElementById('bhSatScreen').style.display  = 'block';
+
+          bhSatInit();
+
+          sessionExpiry = Date.now() + 60 * 60 * 1000;
           return;
         }
 
         document.getElementById('adminScreen').style.display    = 'none';
+        document.getElementById('bhSatScreen').style.display    = 'none';
         document.getElementById('appScreen').style.display      = 'block';
         document.getElementById('dailyLogScreen').style.display = 'block';
 
@@ -1727,6 +1945,598 @@ function resetAfterSuccess() {
     }
   }
 }
+
+// ── Saturday Book Hunters ──────────────────────────────
+
+function bhSatToday_() {
+  const d = new Date();
+
+  return (
+    d.getFullYear() + '-' +
+    String(d.getMonth() + 1).padStart(2, '0') + '-' +
+    String(d.getDate()).padStart(2, '0')
+  );
+}
+
+
+function bhSatInit() {
+  document.getElementById('bhSatDate').value = bhSatToday_();
+
+  bhSatSetMode('entry');
+}
+
+
+function bhSatLogout() {
+  bhSatPassword = '';
+  bhSatData = [];
+
+  if (bhSatBoardTimer) {
+    clearInterval(bhSatBoardTimer);
+    bhSatBoardTimer = null;
+  }
+
+  document.getElementById('bhSatScreen').style.display = 'none';
+  document.getElementById('appScreen').style.display = 'none';
+  document.getElementById('adminScreen').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+
+  document.getElementById('pwInput').value = '';
+  document.getElementById('loginError').style.display = 'none';
+
+  sessionExpiry = null;
+}
+
+
+function bhSatSetMode(mode) {
+  bhSatMode = mode;
+
+  document
+    .getElementById('bhSatEntryTab')
+    .classList.toggle('active', mode === 'entry');
+
+  document
+    .getElementById('bhSatBoardTab')
+    .classList.toggle('active', mode === 'board');
+
+  document.getElementById('bhSatEntryView').style.display =
+    mode === 'entry' ? 'block' : 'none';
+
+  document.getElementById('bhSatBoardView').style.display =
+    mode === 'board' ? 'block' : 'none';
+
+  if (bhSatBoardTimer) {
+    clearInterval(bhSatBoardTimer);
+    bhSatBoardTimer = null;
+  }
+
+  if (mode === 'entry') {
+    bhSatLoad();
+    return;
+  }
+
+  bhSatLoadBoard();
+
+  bhSatBoardTimer = setInterval(() => {
+    if (bhSatMode === 'board') {
+      bhSatLoadBoard(true);
+    }
+  }, 15000);
+}
+
+
+function bhSatDateChanged() {
+  if (bhSatMode === 'board') {
+    bhSatLoadBoard();
+  } else {
+    bhSatLoad();
+  }
+}
+
+
+function bhSatLoad() {
+  const date = document.getElementById('bhSatDate').value;
+  const wrap = document.getElementById('bhSatStudentList');
+
+  if (!date) return;
+
+  wrap.innerHTML =
+    '<div class="no-students">Loading...</div>';
+
+  gasCall('bhSat_getData', {
+    pw: bhSatPassword,
+    date
+  })
+    .then(result => {
+      bhSatData = result.students || [];
+
+      bhSatRender();
+    })
+    .catch(err => {
+      wrap.innerHTML =
+        '<div class="no-students">Error: ' +
+        bhSatEscape_(err.message || err) +
+        '</div>';
+    });
+}
+
+
+function bhSatRender() {
+  const wrap = document.getElementById('bhSatStudentList');
+
+  if (!bhSatData.length) {
+    wrap.innerHTML =
+      '<div class="no-students">No active students in BH_SAT_ROSTER</div>';
+
+    document.getElementById('bhSatSummary').textContent =
+      '0 students';
+
+    return;
+  }
+
+  let html = '';
+
+  bhSatData.forEach((student, i) => {
+    const daily = student.daily || {};
+    const scores = student.scores || [];
+
+    html += `
+      <div class="bh-card">
+
+        <div class="bh-card-head">
+          <div>
+            <div class="student-name">
+              ${bhSatEscape_(student.nick || student.name)}
+            </div>
+
+            <div class="student-nick">
+              ${student.nick ? bhSatEscape_(student.name) : ''}
+            </div>
+          </div>
+
+          <div class="bh-count">
+            ${scores.length} book${scores.length === 1 ? '' : 's'}
+          </div>
+        </div>
+
+
+        <div class="bh-label">Attendance</div>
+
+        <select
+          class="bh-field"
+          onchange="bhSatData[${i}].daily.attendance=this.value">
+
+          <option value=""
+            ${!daily.attendance ? 'selected' : ''}>
+            —
+          </option>
+
+          <option value="Present"
+            ${daily.attendance === 'Present' ? 'selected' : ''}>
+            Present
+          </option>
+
+          <option value="Absent"
+            ${daily.attendance === 'Absent' ? 'selected' : ''}>
+            Absent
+          </option>
+
+          <option value="Late"
+            ${daily.attendance === 'Late' ? 'selected' : ''}>
+            Late
+          </option>
+        </select>
+
+        <input
+          class="bh-field"
+          style="margin-top:7px;"
+          type="text"
+          placeholder="Attendance note"
+          value="${bhSatAttr_(daily.attendanceNote || '')}"
+          oninput="bhSatData[${i}].daily.attendanceNote=this.value">
+
+
+        <div class="bh-label">Scores / Books</div>
+
+        <div id="bh-scores-${i}">
+          ${bhSatScoreRowsHtml_(student, i)}
+        </div>
+
+        <button
+          type="button"
+          class="bh-add-book"
+          onclick="bhSatAddBook(${i})">
+          ＋ Add Book
+        </button>
+
+
+        <div class="bh-label">Books Note</div>
+
+        <input
+          class="bh-field"
+          type="text"
+          placeholder="General book note"
+          value="${bhSatAttr_(daily.booksNote || '')}"
+          oninput="bhSatData[${i}].daily.booksNote=this.value">
+
+
+        <div class="bh-label">Attitude</div>
+
+        <textarea
+          class="bh-field"
+          rows="2"
+          placeholder="Attitude"
+          oninput="bhSatData[${i}].daily.attitude=this.value"
+        >${bhSatEscape_(daily.attitude || '')}</textarea>
+
+
+        <div class="bh-label">Progress</div>
+
+        <input
+          class="bh-field"
+          type="text"
+          placeholder="e.g. For 2D [9]"
+          value="${bhSatAttr_(daily.progress || '')}"
+          oninput="bhSatData[${i}].daily.progress=this.value">
+
+        <input
+          class="bh-field"
+          style="margin-top:7px;"
+          type="text"
+          placeholder="Progress note"
+          value="${bhSatAttr_(daily.progressNote || '')}"
+          oninput="bhSatData[${i}].daily.progressNote=this.value">
+
+      </div>
+    `;
+  });
+
+  wrap.innerHTML = html;
+
+  bhSatUpdateSummary();
+}
+
+
+function bhSatScoreRowsHtml_(student, studentIndex) {
+  const scores = student.scores || [];
+
+  if (!scores.length) {
+    return `
+      <div style="
+        color:#aaa;
+        font-size:13px;
+        margin-bottom:8px;">
+        No books entered yet
+      </div>
+    `;
+  }
+
+  return scores.map((score, scoreIndex) => `
+    <div class="bh-score-row">
+
+      <input
+        type="number"
+        min="0"
+        step="0.5"
+        placeholder="Score"
+        value="${
+          score.score === null ||
+          score.score === undefined
+            ? ''
+            : score.score
+        }"
+        oninput="
+          bhSatSetScore(
+            ${studentIndex},
+            ${scoreIndex},
+            'score',
+            this.value
+          )
+        ">
+
+      <span>/</span>
+
+      <input
+        type="number"
+        min="0.5"
+        step="0.5"
+        value="${score.max || 10}"
+        oninput="
+          bhSatSetScore(
+            ${studentIndex},
+            ${scoreIndex},
+            'max',
+            this.value
+          )
+        ">
+
+      <input
+        type="text"
+        placeholder="Score note"
+        value="${bhSatAttr_(score.note || '')}"
+        oninput="
+          bhSatSetScore(
+            ${studentIndex},
+            ${scoreIndex},
+            'note',
+            this.value
+          )
+        ">
+
+      <button
+        type="button"
+        class="bh-score-remove"
+        onclick="
+          bhSatRemoveBook(
+            ${studentIndex},
+            ${scoreIndex}
+          )
+        ">
+        ×
+      </button>
+
+    </div>
+  `).join('');
+}
+
+
+function bhSatAddBook(studentIndex) {
+  const student = bhSatData[studentIndex];
+
+  if (!Array.isArray(student.scores)) {
+    student.scores = [];
+  }
+
+  student.scores.push({
+    score: null,
+    max: 10,
+    note: ''
+  });
+
+  bhSatRender();
+}
+
+
+function bhSatRemoveBook(studentIndex, scoreIndex) {
+  bhSatData[studentIndex].scores.splice(
+    scoreIndex,
+    1
+  );
+
+  bhSatRender();
+}
+
+
+function bhSatSetScore(
+  studentIndex,
+  scoreIndex,
+  field,
+  value
+) {
+  const score =
+    bhSatData[studentIndex].scores[scoreIndex];
+
+  if (field === 'note') {
+    score.note = value;
+  }
+
+  if (field === 'score') {
+    score.score =
+      value === ''
+        ? null
+        : Number(value);
+  }
+
+  if (field === 'max') {
+    score.max =
+      value === ''
+        ? 10
+        : Number(value);
+  }
+
+  bhSatUpdateSummary();
+}
+
+
+function bhSatUpdateSummary() {
+  const books = bhSatData.reduce(
+    (total, student) => {
+      return total + (student.scores || []).filter(score => {
+        return (
+          score.score !== null &&
+          score.score !== undefined &&
+          score.score !== ''
+        );
+      }).length;
+    },
+    0
+  );
+
+  document.getElementById('bhSatSummary').textContent =
+    `${bhSatData.length} students · ${books} books today`;
+}
+
+
+function bhSatSave() {
+  const date =
+    document.getElementById('bhSatDate').value;
+
+  const btn =
+    document.getElementById('bhSatSaveBtn');
+
+  if (!date) return;
+
+  btn.disabled = true;
+  btn.innerHTML =
+    '<span class="spinner"></span> Saving...';
+
+  gasCall('bhSat_save', {
+    pw: bhSatPassword,
+    date,
+    entries: bhSatData
+  })
+    .then(() => {
+      btn.textContent = 'Saved ✓';
+
+      setTimeout(() => {
+        btn.disabled = false;
+        btn.textContent = 'Save Saturday BH';
+
+        bhSatLoad();
+      }, 800);
+    })
+    .catch(err => {
+      alert(
+        'Saturday BH save error: ' +
+        (err.message || err)
+      );
+
+      btn.disabled = false;
+      btn.textContent = 'Save Saturday BH';
+    });
+}
+
+
+function bhSatLoadBoard(silent) {
+  const date =
+    document.getElementById('bhSatDate').value;
+
+  const wrap =
+    document.getElementById('bhSatBoard');
+
+  if (!silent) {
+    wrap.innerHTML =
+      '<div class="no-students">Loading...</div>';
+  }
+
+  gasCall('bhSat_getBoard', {
+    pw: bhSatPassword,
+    date
+  })
+    .then(result => {
+      let html = `
+        <div class="bh-board-summary">
+
+          <div class="bh-board-stat">
+            <div class="num">
+              ${result.todayTotal || 0}
+            </div>
+            <div class="lbl">
+              BOOKS TODAY
+            </div>
+          </div>
+
+          <div class="bh-board-stat">
+            <div class="num">
+              ${result.totalBooks || 0}
+            </div>
+            <div class="lbl">
+              TOTAL BOOKS
+            </div>
+          </div>
+
+        </div>
+      `;
+
+      (result.students || []).forEach((student, i) => {
+        const rank =
+          i === 0 ? '🥇' :
+          i === 1 ? '🥈' :
+          i === 2 ? '🥉' :
+          String(i + 1);
+
+        html += `
+          <div class="bh-board-row">
+
+            <div style="
+              text-align:center;
+              font-size:20px;
+              font-weight:800;">
+              ${rank}
+            </div>
+
+            <div>
+              <strong>
+                ${bhSatEscape_(
+                  student.nick || student.name
+                )}
+              </strong>
+
+              <div style="
+                font-size:11px;
+                color:#999;">
+                ${
+                  student.nick
+                    ? bhSatEscape_(student.name)
+                    : ''
+                }
+              </div>
+            </div>
+
+            <div style="text-align:center;">
+              <strong>${student.todayBooks}</strong>
+              <div style="font-size:10px;color:#999;">
+                Today
+              </div>
+            </div>
+
+            <div style="text-align:center;">
+              <strong>${student.totalBooks}</strong>
+              <div style="font-size:10px;color:#999;">
+                Total
+              </div>
+            </div>
+
+            <div style="text-align:center;">
+              <strong>
+                ${
+                  student.avgPct === null
+                    ? '—'
+                    : student.avgPct + '%'
+                }
+              </strong>
+
+              <div style="font-size:10px;color:#999;">
+                Avg
+              </div>
+            </div>
+
+            <div>
+              <strong>
+                ${bhSatEscape_(student.progress || '—')}
+              </strong>
+            </div>
+
+          </div>
+        `;
+      });
+
+      wrap.innerHTML = html;
+    })
+    .catch(err => {
+      if (!silent) {
+        wrap.innerHTML =
+          '<div class="no-students">Error: ' +
+          bhSatEscape_(err.message || err) +
+          '</div>';
+      }
+    });
+}
+
+
+function bhSatEscape_(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+
+function bhSatAttr_(value) {
+  return bhSatEscape_(value);
+}
+
 
 // ── Admin Attendance Batch ─────────────────────────────
 function initAdmin() {

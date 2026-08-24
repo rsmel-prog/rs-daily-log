@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 082</title>
+  <title>RS Daily App 083</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -82,122 +82,154 @@
     #ersScreen { display: none; }
     #bhSatScreen { display: none; }
 
-    .bh-card {
-      background: #fff;
-      border-radius: 16px;
-      padding: 18px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-      margin-bottom: 12px;
-    }
-
-    .bh-card-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 14px;
-    }
-
-    .bh-count {
-      padding: 7px 12px;
-      background: #f0f4ff;
-      color: #4a6cf7;
-      border-radius: 20px;
-      font-size: 14px;
-      font-weight: 700;
-    }
-
-    .bh-label {
-      font-size: 12px;
-      font-weight: 700;
-      color: #777;
-      margin: 14px 0 7px;
-      text-transform: uppercase;
-    }
-
-    .bh-field {
-      width: 100%;
-      padding: 12px;
-      border: 2px solid #e5e5e5;
-      border-radius: 10px;
-      background: #fff;
-      outline: none;
-    }
-
-    .bh-score-row {
-      display: grid;
-      grid-template-columns: 1fr auto 1fr 2fr auto;
-      align-items: center;
-      gap: 7px;
-      margin-bottom: 7px;
-    }
-
-    .bh-score-row input {
-      width: 100%;
-      padding: 10px;
-      border: 2px solid #e5e5e5;
-      border-radius: 9px;
-    }
-
-    .bh-score-remove {
-      padding: 10px;
-      border: none;
-      border-radius: 8px;
-      background: #ffebee;
-      color: #c62828;
-      cursor: pointer;
-    }
-
-    .bh-add-book {
-      width: 100%;
-      padding: 11px;
-      border: 2px dashed #b8c5f5;
-      border-radius: 10px;
-      background: #f7f9ff;
-      color: #4a6cf7;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .bh-board {
-      padding: 16px;
-    }
-
-    .bh-board-summary {
+    /* ── SATURDAY BOOK HUNTERS ── */
+    .bh-tabs {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-bottom: 14px;
+      background: #fff;
+      border-bottom: 1px solid #e8e8e8;
+      position: sticky;
+      top: 0;
+      z-index: 20;
     }
 
-    .bh-board-stat {
+    .bh-tab {
+      padding: 16px;
+      text-align: center;
+      font-size: 16px;
+      font-weight: 700;
+      color: #aaa;
+      border: none;
+      border-bottom: 3px solid transparent;
       background: #fff;
-      padding: 18px;
-      border-radius: 14px;
+      cursor: pointer;
+    }
+
+    .bh-tab.active {
+      color: #4a6cf7;
+      border-bottom-color: #4a6cf7;
+    }
+
+    .bh-grid-wrap {
+      padding: 12px 16px 180px;
+      overflow-x: auto;
+      position: relative;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .bh-table {
+      border-collapse: separate;
+      border-spacing: 0;
+      width: max-content;
+      min-width: 100%;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .bh-table th,
+    .bh-table td {
+      padding: 8px;
+      border-bottom: 1px solid #eee;
+      border-right: 1px solid #eee;
+      white-space: nowrap;
       text-align: center;
     }
 
-    .bh-board-stat .num {
-      font-size: 30px;
+    .bh-table thead th {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      background: #f3f5f8;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .bh-student-col {
+      position: sticky !important;
+      left: 0;
+      z-index: 6 !important;
+      min-width: 140px;
+      width: 140px;
+      max-width: 140px;
+      background: #fff !important;
+      text-align: left !important;
+      border-right: 2px solid #ddd !important;
+      box-shadow: 4px 0 6px -6px rgba(0,0,0,0.4);
+    }
+
+    .bh-table thead .bh-student-col {
+      z-index: 8 !important;
+      background: #f3f5f8 !important;
+    }
+
+    .bh-score-input {
+      width: 58px;
+      padding: 8px 4px;
+      text-align: center;
+      border: 1px solid #ddd;
+      border-radius: 7px;
+      font-weight: 700;
+    }
+
+    .bh-score-pass {
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+
+    .bh-score-fail {
+      background: #ffebee;
+      color: #c62828;
+    }
+
+    .bh-progress-input {
+      width: 110px;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 7px;
+    }
+
+    .bh-text-input {
+      width: 140px;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 7px;
+    }
+
+    .bh-att-select {
+      width: 70px;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 7px;
+      background: #fff;
+    }
+
+    .bh-summary-cards {
+      display: grid;
+      grid-template-columns: repeat(3,1fr);
+      gap: 10px;
+      padding: 12px 16px;
+    }
+
+    .bh-summary-card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 16px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .bh-summary-card .num {
+      font-size: 26px;
       font-weight: 800;
       color: #4a6cf7;
     }
 
-    .bh-board-stat .lbl {
-      font-size: 12px;
-      color: #888;
+    .bh-summary-card .lbl {
       margin-top: 3px;
-    }
-
-    .bh-board-row {
-      display: grid;
-      grid-template-columns: 45px 1.5fr 70px 70px 80px 1.2fr;
-      gap: 8px;
-      align-items: center;
-      background: #fff;
-      padding: 13px 10px;
-      border-radius: 12px;
-      margin-bottom: 8px;
+      font-size: 11px;
+      color: #999;
+      text-transform: uppercase;
     }
 
     .top-bar {
@@ -640,73 +672,167 @@
 
 <!-- ══ SATURDAY BOOK HUNTERS ══ -->
 <div id="bhSatScreen" style="display:none; min-height:100vh;">
-  <div class="top-bar">
-    <h2>📚 Saturday Book Hunters</h2>
-    <div class="sub">Saturday BH Prototype</div>
-  </div>
 
-  <div class="controls">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-      <button
-        class="fn-tab active"
-        id="bhSatEntryTab"
-        onclick="bhSatSetMode('entry')">
-        ✏️ Teacher Entry
-      </button>
-
-      <button
-        class="fn-tab"
-        id="bhSatBoardTab"
-        onclick="bhSatSetMode('board')">
-        📺 Live Board
-      </button>
-    </div>
-
-    <input
-      type="date"
-      id="bhSatDate"
-      onchange="bhSatDateChanged()">
+  <div class="bh-tabs">
+    <button
+      class="bh-tab active"
+      id="bhDailyTab"
+      onclick="bhSatSwitchTab('daily')">
+      📚 Daily Board
+    </button>
 
     <button
-      class="btn-secondary"
-      style="width:100%;"
-      onclick="bhSatLogout()">
-      Sign Out
+      class="bh-tab"
+      id="bhAnalyticsTab"
+      onclick="bhSatSwitchTab('analytics')">
+      📊 Analytics
     </button>
   </div>
 
-  <div id="bhSatEntryView">
-    <div
-      id="bhSatStudentList"
-      style="padding:12px 16px 180px;">
-      <div class="no-students">Loading...</div>
+
+  <!-- DAILY BOARD -->
+  <div id="bhDailyScreen">
+
+    <div class="top-bar">
+      <h2>📚 Saturday Book Hunters</h2>
+      <div class="sub">Daily Entry / Live Board</div>
     </div>
 
+    <div class="controls">
+
+      <input
+        type="date"
+        id="bhDate"
+        onchange="bhSatLoadDaily()">
+
+      <div style="
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:10px;
+      ">
+
+        <div>
+          <div style="
+            font-size:12px;
+            font-weight:700;
+            color:#777;
+            margin-bottom:5px;">
+            MAX SCORE
+          </div>
+
+          <input
+            class="bh-text-input"
+            style="width:100%;"
+            type="number"
+            id="bhMaxScore"
+            value="10"
+            min="1"
+            step="0.5"
+            onchange="bhSatRenderDaily()">
+        </div>
+
+        <div>
+          <div style="
+            font-size:12px;
+            font-weight:700;
+            color:#777;
+            margin-bottom:5px;">
+            PASS SCORE
+          </div>
+
+          <input
+            class="bh-text-input"
+            style="width:100%;"
+            type="number"
+            id="bhPassScore"
+            value="7"
+            min="0"
+            step="0.5"
+            onchange="bhSatRenderDaily()">
+        </div>
+
+      </div>
+    </div>
+
+
+    <div
+      id="bhDailyGrid"
+      class="bh-grid-wrap">
+
+      <div class="no-students">
+        Loading...
+      </div>
+    </div>
+
+
     <div class="submit-bar">
+
       <div
         class="summary-line"
-        id="bhSatSummary">
+        id="bhDailySummary">
         —
       </div>
 
       <button
         class="btn-primary"
-        id="bhSatSaveBtn"
-        onclick="bhSatSave()">
-        Save Saturday BH
+        id="bhSaveBtn"
+        onclick="bhSatSaveDaily()">
+        Save Daily Board
       </button>
+
+      <button
+        class="btn-secondary"
+        style="width:100%;margin-top:8px;"
+        onclick="bhSatLogout()">
+        Sign Out
+      </button>
+
     </div>
+
   </div>
 
+
+  <!-- ANALYTICS -->
   <div
-    id="bhSatBoardView"
+    id="bhAnalyticsScreen"
     style="display:none;">
-    <div
-      class="bh-board"
-      id="bhSatBoard">
-      <div class="no-students">Loading...</div>
+
+    <div class="top-bar">
+      <h2>📊 Saturday Book Hunters</h2>
+
+      <div
+        class="sub"
+        id="bhAnalyticsRange">
+        Overall
+      </div>
     </div>
+
+    <div
+      id="bhAnalyticsSummary"
+      class="bh-summary-cards">
+    </div>
+
+    <div
+      id="bhAnalyticsGrid"
+      class="bh-grid-wrap"
+      style="padding-bottom:40px;">
+
+      <div class="no-students">
+        Loading...
+      </div>
+    </div>
+
+    <div style="padding:0 16px 30px;">
+      <button
+        class="btn-secondary"
+        style="width:100%;"
+        onclick="bhSatLogout()">
+        Sign Out
+      </button>
+    </div>
+
   </div>
+
 </div>
 
 
@@ -954,10 +1080,9 @@ let adminGridData = null;
 let adminChanges  = {};
 let adminMode     = 'attendance';
 
-let bhSatPassword = '';
-let bhSatData     = [];
-let bhSatMode     = 'entry';
-let bhSatBoardTimer = null;
+let bhSatPassword   = '';
+let bhSatStudents   = [];
+let bhSatCurrentTab = 'daily';
 
 // ── Init ───────────────────────────────────────────────
 window.onload = () => {
@@ -969,11 +1094,6 @@ window.onload = () => {
 
 function checkSession() {
   if (!sessionExpiry || Date.now() <= sessionExpiry) return;
-
-  if (bhSatBoardTimer) {
-    clearInterval(bhSatBoardTimer);
-    bhSatBoardTimer = null;
-  }
 
   document.getElementById('appScreen').style.display    = 'none';
   document.getElementById('adminScreen').style.display  = 'none';
@@ -1948,36 +2068,25 @@ function resetAfterSuccess() {
 
 // ── Saturday Book Hunters ──────────────────────────────
 
-function bhSatToday_() {
+function bhSatInit() {
   const d = new Date();
 
-  return (
+  document.getElementById('bhDate').value =
     d.getFullYear() + '-' +
     String(d.getMonth() + 1).padStart(2, '0') + '-' +
-    String(d.getDate()).padStart(2, '0')
-  );
-}
+    String(d.getDate()).padStart(2, '0');
 
-
-function bhSatInit() {
-  document.getElementById('bhSatDate').value = bhSatToday_();
-
-  bhSatSetMode('entry');
+  bhSatSwitchTab('daily');
 }
 
 
 function bhSatLogout() {
   bhSatPassword = '';
-  bhSatData = [];
-
-  if (bhSatBoardTimer) {
-    clearInterval(bhSatBoardTimer);
-    bhSatBoardTimer = null;
-  }
+  bhSatStudents = [];
 
   document.getElementById('bhSatScreen').style.display = 'none';
-  document.getElementById('appScreen').style.display = 'none';
   document.getElementById('adminScreen').style.display = 'none';
+  document.getElementById('appScreen').style.display = 'none';
   document.getElementById('loginScreen').style.display = 'flex';
 
   document.getElementById('pwInput').value = '';
@@ -1987,402 +2096,583 @@ function bhSatLogout() {
 }
 
 
-function bhSatSetMode(mode) {
-  bhSatMode = mode;
+function bhSatSwitchTab(tab) {
+  bhSatCurrentTab = tab;
 
   document
-    .getElementById('bhSatEntryTab')
-    .classList.toggle('active', mode === 'entry');
+    .getElementById('bhDailyTab')
+    .classList.toggle(
+      'active',
+      tab === 'daily'
+    );
 
   document
-    .getElementById('bhSatBoardTab')
-    .classList.toggle('active', mode === 'board');
+    .getElementById('bhAnalyticsTab')
+    .classList.toggle(
+      'active',
+      tab === 'analytics'
+    );
 
-  document.getElementById('bhSatEntryView').style.display =
-    mode === 'entry' ? 'block' : 'none';
+  document.getElementById('bhDailyScreen').style.display =
+    tab === 'daily'
+      ? 'block'
+      : 'none';
 
-  document.getElementById('bhSatBoardView').style.display =
-    mode === 'board' ? 'block' : 'none';
+  document.getElementById('bhAnalyticsScreen').style.display =
+    tab === 'analytics'
+      ? 'block'
+      : 'none';
 
-  if (bhSatBoardTimer) {
-    clearInterval(bhSatBoardTimer);
-    bhSatBoardTimer = null;
-  }
-
-  if (mode === 'entry') {
-    bhSatLoad();
-    return;
-  }
-
-  bhSatLoadBoard();
-
-  bhSatBoardTimer = setInterval(() => {
-    if (bhSatMode === 'board') {
-      bhSatLoadBoard(true);
-    }
-  }, 15000);
-}
-
-
-function bhSatDateChanged() {
-  if (bhSatMode === 'board') {
-    bhSatLoadBoard();
+  if (tab === 'daily') {
+    bhSatLoadDaily();
   } else {
-    bhSatLoad();
+    bhSatLoadAnalytics();
   }
 }
 
 
-function bhSatLoad() {
-  const date = document.getElementById('bhSatDate').value;
-  const wrap = document.getElementById('bhSatStudentList');
+function bhSatLoadDaily() {
+  const date =
+    document.getElementById('bhDate').value;
+
+  const wrap =
+    document.getElementById('bhDailyGrid');
 
   if (!date) return;
 
   wrap.innerHTML =
     '<div class="no-students">Loading...</div>';
 
-  gasCall('bhSat_getData', {
+  gasCall('bhSat_getDaily', {
     pw: bhSatPassword,
     date
   })
     .then(result => {
-      bhSatData = result.students || [];
+      bhSatStudents =
+        result.students || [];
 
-      bhSatRender();
+      bhSatRenderDaily();
     })
     .catch(err => {
       wrap.innerHTML =
         '<div class="no-students">Error: ' +
-        bhSatEscape_(err.message || err) +
+        bhEscape_(err.message || err) +
         '</div>';
     });
 }
 
 
-function bhSatRender() {
-  const wrap = document.getElementById('bhSatStudentList');
+function bhSatRenderDaily() {
+  const wrap =
+    document.getElementById('bhDailyGrid');
 
-  if (!bhSatData.length) {
+  if (!bhSatStudents.length) {
     wrap.innerHTML =
-      '<div class="no-students">No active students in BH_SAT_ROSTER</div>';
+      '<div class="no-students">' +
+      'No active students in BH_SAT_ROSTER' +
+      '</div>';
 
-    document.getElementById('bhSatSummary').textContent =
-      '0 students';
+    document.getElementById(
+      'bhDailySummary'
+    ).textContent = '0 students';
 
     return;
   }
 
-  let html = '';
+  const maxScore =
+    Number(
+      document.getElementById(
+        'bhMaxScore'
+      ).value
+    ) || 10;
 
-  bhSatData.forEach((student, i) => {
-    const daily = student.daily || {};
-    const scores = student.scores || [];
+  const passScore =
+    Number(
+      document.getElementById(
+        'bhPassScore'
+      ).value
+    );
 
-    html += `
-      <div class="bh-card">
+  let maxBooks = 5;
 
-        <div class="bh-card-head">
-          <div>
-            <div class="student-name">
-              ${bhSatEscape_(student.nick || student.name)}
-            </div>
-
-            <div class="student-nick">
-              ${student.nick ? bhSatEscape_(student.name) : ''}
-            </div>
-          </div>
-
-          <div class="bh-count">
-            ${scores.length} book${scores.length === 1 ? '' : 's'}
-          </div>
-        </div>
-
-
-        <div class="bh-label">Attendance</div>
-
-        <select
-          class="bh-field"
-          onchange="bhSatData[${i}].daily.attendance=this.value">
-
-          <option value=""
-            ${!daily.attendance ? 'selected' : ''}>
-            —
-          </option>
-
-          <option value="Present"
-            ${daily.attendance === 'Present' ? 'selected' : ''}>
-            Present
-          </option>
-
-          <option value="Absent"
-            ${daily.attendance === 'Absent' ? 'selected' : ''}>
-            Absent
-          </option>
-
-          <option value="Late"
-            ${daily.attendance === 'Late' ? 'selected' : ''}>
-            Late
-          </option>
-        </select>
-
-        <input
-          class="bh-field"
-          style="margin-top:7px;"
-          type="text"
-          placeholder="Attendance note"
-          value="${bhSatAttr_(daily.attendanceNote || '')}"
-          oninput="bhSatData[${i}].daily.attendanceNote=this.value">
-
-
-        <div class="bh-label">Scores / Books</div>
-
-        <div id="bh-scores-${i}">
-          ${bhSatScoreRowsHtml_(student, i)}
-        </div>
-
-        <button
-          type="button"
-          class="bh-add-book"
-          onclick="bhSatAddBook(${i})">
-          ＋ Add Book
-        </button>
-
-
-        <div class="bh-label">Books Note</div>
-
-        <input
-          class="bh-field"
-          type="text"
-          placeholder="General book note"
-          value="${bhSatAttr_(daily.booksNote || '')}"
-          oninput="bhSatData[${i}].daily.booksNote=this.value">
-
-
-        <div class="bh-label">Attitude</div>
-
-        <textarea
-          class="bh-field"
-          rows="2"
-          placeholder="Attitude"
-          oninput="bhSatData[${i}].daily.attitude=this.value"
-        >${bhSatEscape_(daily.attitude || '')}</textarea>
-
-
-        <div class="bh-label">Progress</div>
-
-        <input
-          class="bh-field"
-          type="text"
-          placeholder="e.g. For 2D [9]"
-          value="${bhSatAttr_(daily.progress || '')}"
-          oninput="bhSatData[${i}].daily.progress=this.value">
-
-        <input
-          class="bh-field"
-          style="margin-top:7px;"
-          type="text"
-          placeholder="Progress note"
-          value="${bhSatAttr_(daily.progressNote || '')}"
-          oninput="bhSatData[${i}].daily.progressNote=this.value">
-
-      </div>
-    `;
+  bhSatStudents.forEach(student => {
+    maxBooks = Math.max(
+      maxBooks,
+      (student.scores || []).length + 1
+    );
   });
+
+  let html = `
+    <table class="bh-table">
+
+      <thead>
+        <tr>
+          <th class="bh-student-col">
+            Student
+          </th>
+
+          <th>Att</th>
+          <th>Progress</th>
+  `;
+
+  for (let book = 0; book < maxBooks; book++) {
+    html += `
+      <th>B${book + 1}</th>
+    `;
+  }
+
+  html += `
+          <th>Today</th>
+          <th>Avg</th>
+          <th>Attitude</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+
+      <tbody>
+  `;
+
+
+  bhSatStudents.forEach(
+    (student, rowIndex) => {
+
+      if (!student.daily) {
+        student.daily = {
+          attendance: '',
+          attendanceNote: '',
+          attitude: '',
+          progress: '',
+          progressNote: '',
+          note: ''
+        };
+      }
+
+      if (!Array.isArray(student.scores)) {
+        student.scores = [];
+      }
+
+      const daily = student.daily;
+      const scores = student.scores;
+
+      const validScores =
+        scores.filter(score =>
+          score.score !== null &&
+          score.score !== undefined &&
+          score.score !== ''
+        );
+
+      const scoreTotal =
+        validScores.reduce(
+          (sum, score) =>
+            sum + Number(score.score || 0),
+          0
+        );
+
+      const avg =
+        validScores.length
+          ? Math.round(
+              scoreTotal /
+              validScores.length /
+              maxScore *
+              100
+            )
+          : null;
+
+
+      html += `
+        <tr>
+
+          <td class="bh-student-col">
+
+            <strong>
+              ${bhEscape_(
+                student.nick ||
+                student.name
+              )}
+            </strong>
+
+            <div style="
+              font-size:11px;
+              color:#999;
+              font-weight:400;
+            ">
+              ${
+                student.nick
+                  ? bhEscape_(student.name)
+                  : ''
+              }
+            </div>
+
+          </td>
+
+
+          <td>
+
+            <select
+              class="bh-att-select"
+              onchange="
+                bhSatStudents[
+                  ${rowIndex}
+                ].daily.attendance =
+                  this.value
+              ">
+
+              <option
+                value=""
+                ${
+                  !daily.attendance
+                    ? 'selected'
+                    : ''
+                }>
+                —
+              </option>
+
+              <option
+                value="Present"
+                ${
+                  daily.attendance ===
+                  'Present'
+                    ? 'selected'
+                    : ''
+                }>
+                P
+              </option>
+
+              <option
+                value="Absent"
+                ${
+                  daily.attendance ===
+                  'Absent'
+                    ? 'selected'
+                    : ''
+                }>
+                A
+              </option>
+
+              <option
+                value="Late"
+                ${
+                  daily.attendance ===
+                  'Late'
+                    ? 'selected'
+                    : ''
+                }>
+                L
+              </option>
+
+            </select>
+
+          </td>
+
+
+          <td>
+
+            <input
+              class="bh-progress-input"
+              type="text"
+              placeholder="2D [9]"
+              value="${
+                bhAttr_(
+                  daily.progress || ''
+                )
+              }"
+              oninput="
+                bhSatStudents[
+                  ${rowIndex}
+                ].daily.progress =
+                  this.value
+              ">
+
+          </td>
+      `;
+
+
+      for (
+        let bookIndex = 0;
+        bookIndex < maxBooks;
+        bookIndex++
+      ) {
+        const scoreObj =
+          scores[bookIndex] || {
+            score: null,
+            max: maxScore,
+            note: ''
+          };
+
+        const value =
+          scoreObj.score === null ||
+          scoreObj.score === undefined
+            ? ''
+            : scoreObj.score;
+
+        let scoreClass = '';
+
+        if (value !== '') {
+          scoreClass =
+            Number(value) >= passScore
+              ? 'bh-score-pass'
+              : 'bh-score-fail';
+        }
+
+        html += `
+          <td>
+
+            <input
+              class="
+                bh-score-input
+                ${scoreClass}
+              "
+              type="number"
+              min="0"
+              max="${maxScore}"
+              step="0.5"
+              value="${value}"
+              title="${
+                bhAttr_(
+                  scoreObj.note || ''
+                )
+              }"
+              oninput="
+                bhSatSetScore(
+                  ${rowIndex},
+                  ${bookIndex},
+                  this.value,
+                  this
+                )
+              ">
+
+          </td>
+        `;
+      }
+
+
+      html += `
+          <td>
+            <strong>
+              ${validScores.length}
+            </strong>
+          </td>
+
+          <td>
+            <strong>
+              ${
+                avg === null
+                  ? '—'
+                  : avg + '%'
+              }
+            </strong>
+          </td>
+
+          <td>
+
+            <input
+              class="bh-text-input"
+              type="text"
+              placeholder="Attitude"
+              value="${
+                bhAttr_(
+                  daily.attitude || ''
+                )
+              }"
+              oninput="
+                bhSatStudents[
+                  ${rowIndex}
+                ].daily.attitude =
+                  this.value
+              ">
+
+          </td>
+
+          <td>
+
+            <input
+              class="bh-text-input"
+              type="text"
+              placeholder="Notes"
+              value="${
+                bhAttr_(
+                  daily.note || ''
+                )
+              }"
+              oninput="
+                bhSatStudents[
+                  ${rowIndex}
+                ].daily.note =
+                  this.value
+              ">
+
+          </td>
+
+        </tr>
+      `;
+    }
+  );
+
+
+  html += `
+      </tbody>
+    </table>
+  `;
 
   wrap.innerHTML = html;
 
-  bhSatUpdateSummary();
-}
-
-
-function bhSatScoreRowsHtml_(student, studentIndex) {
-  const scores = student.scores || [];
-
-  if (!scores.length) {
-    return `
-      <div style="
-        color:#aaa;
-        font-size:13px;
-        margin-bottom:8px;">
-        No books entered yet
-      </div>
-    `;
-  }
-
-  return scores.map((score, scoreIndex) => `
-    <div class="bh-score-row">
-
-      <input
-        type="number"
-        min="0"
-        step="0.5"
-        placeholder="Score"
-        value="${
-          score.score === null ||
-          score.score === undefined
-            ? ''
-            : score.score
-        }"
-        oninput="
-          bhSatSetScore(
-            ${studentIndex},
-            ${scoreIndex},
-            'score',
-            this.value
-          )
-        ">
-
-      <span>/</span>
-
-      <input
-        type="number"
-        min="0.5"
-        step="0.5"
-        value="${score.max || 10}"
-        oninput="
-          bhSatSetScore(
-            ${studentIndex},
-            ${scoreIndex},
-            'max',
-            this.value
-          )
-        ">
-
-      <input
-        type="text"
-        placeholder="Score note"
-        value="${bhSatAttr_(score.note || '')}"
-        oninput="
-          bhSatSetScore(
-            ${studentIndex},
-            ${scoreIndex},
-            'note',
-            this.value
-          )
-        ">
-
-      <button
-        type="button"
-        class="bh-score-remove"
-        onclick="
-          bhSatRemoveBook(
-            ${studentIndex},
-            ${scoreIndex}
-          )
-        ">
-        ×
-      </button>
-
-    </div>
-  `).join('');
-}
-
-
-function bhSatAddBook(studentIndex) {
-  const student = bhSatData[studentIndex];
-
-  if (!Array.isArray(student.scores)) {
-    student.scores = [];
-  }
-
-  student.scores.push({
-    score: null,
-    max: 10,
-    note: ''
-  });
-
-  bhSatRender();
-}
-
-
-function bhSatRemoveBook(studentIndex, scoreIndex) {
-  bhSatData[studentIndex].scores.splice(
-    scoreIndex,
-    1
-  );
-
-  bhSatRender();
+  bhSatUpdateDailySummary();
 }
 
 
 function bhSatSetScore(
   studentIndex,
-  scoreIndex,
-  field,
-  value
+  bookIndex,
+  value,
+  input
 ) {
-  const score =
-    bhSatData[studentIndex].scores[scoreIndex];
+  const student =
+    bhSatStudents[studentIndex];
 
-  if (field === 'note') {
-    score.note = value;
+  if (!Array.isArray(student.scores)) {
+    student.scores = [];
   }
 
-  if (field === 'score') {
-    score.score =
-      value === ''
-        ? null
-        : Number(value);
+  const maxScore =
+    Number(
+      document.getElementById(
+        'bhMaxScore'
+      ).value
+    ) || 10;
+
+  const passScore =
+    Number(
+      document.getElementById(
+        'bhPassScore'
+      ).value
+    );
+
+  while (
+    student.scores.length <= bookIndex
+  ) {
+    student.scores.push({
+      score: null,
+      max: maxScore,
+      note: ''
+    });
   }
 
-  if (field === 'max') {
-    score.max =
-      value === ''
-        ? 10
-        : Number(value);
+  student.scores[bookIndex].score =
+    value === ''
+      ? null
+      : Number(value);
+
+  student.scores[bookIndex].max =
+    maxScore;
+
+  input.classList.remove(
+    'bh-score-pass',
+    'bh-score-fail'
+  );
+
+  if (value !== '') {
+    input.classList.add(
+      Number(value) >= passScore
+        ? 'bh-score-pass'
+        : 'bh-score-fail'
+    );
   }
 
-  bhSatUpdateSummary();
+  bhSatUpdateDailySummary();
+
+  const isLastColumn =
+    bookIndex ===
+    Math.max(
+      4,
+      ...bhSatStudents.map(
+        student =>
+          (student.scores || []).length
+      )
+    );
+
+  if (
+    value !== '' &&
+    isLastColumn
+  ) {
+    bhSatRenderDaily();
+  }
 }
 
 
-function bhSatUpdateSummary() {
-  const books = bhSatData.reduce(
-    (total, student) => {
-      return total + (student.scores || []).filter(score => {
-        return (
+function bhSatUpdateDailySummary() {
+  let books = 0;
+
+  bhSatStudents.forEach(student => {
+    books +=
+      (student.scores || [])
+        .filter(score =>
           score.score !== null &&
           score.score !== undefined &&
           score.score !== ''
-        );
-      }).length;
-    },
-    0
-  );
+        )
+        .length;
+  });
 
-  document.getElementById('bhSatSummary').textContent =
-    `${bhSatData.length} students · ${books} books today`;
+  document.getElementById(
+    'bhDailySummary'
+  ).textContent =
+    `${bhSatStudents.length} students · ` +
+    `${books} books today`;
 }
 
 
-function bhSatSave() {
+function bhSatSaveDaily() {
   const date =
-    document.getElementById('bhSatDate').value;
+    document.getElementById(
+      'bhDate'
+    ).value;
+
+  const maxScore =
+    Number(
+      document.getElementById(
+        'bhMaxScore'
+      ).value
+    ) || 10;
+
+  const passScore =
+    Number(
+      document.getElementById(
+        'bhPassScore'
+      ).value
+    );
 
   const btn =
-    document.getElementById('bhSatSaveBtn');
+    document.getElementById(
+      'bhSaveBtn'
+    );
 
-  if (!date) return;
+  if (!date) {
+    return;
+  }
 
   btn.disabled = true;
+
   btn.innerHTML =
     '<span class="spinner"></span> Saving...';
 
-  gasCall('bhSat_save', {
+  gasCall('bhSat_saveDaily', {
     pw: bhSatPassword,
     date,
-    entries: bhSatData
+    maxScore,
+    passScore,
+    entries: bhSatStudents
   })
     .then(() => {
-      btn.textContent = 'Saved ✓';
+      btn.textContent =
+        'Saved ✓';
 
       setTimeout(() => {
         btn.disabled = false;
-        btn.textContent = 'Save Saturday BH';
+        btn.textContent =
+          'Save Daily Board';
 
-        bhSatLoad();
-      }, 800);
+        bhSatLoadDaily();
+      }, 700);
     })
     .catch(err => {
       alert(
@@ -2391,139 +2681,223 @@ function bhSatSave() {
       );
 
       btn.disabled = false;
-      btn.textContent = 'Save Saturday BH';
+
+      btn.textContent =
+        'Save Daily Board';
     });
 }
 
 
-function bhSatLoadBoard(silent) {
-  const date =
-    document.getElementById('bhSatDate').value;
+function bhSatLoadAnalytics() {
+  const summary =
+    document.getElementById(
+      'bhAnalyticsSummary'
+    );
 
   const wrap =
-    document.getElementById('bhSatBoard');
+    document.getElementById(
+      'bhAnalyticsGrid'
+    );
 
-  if (!silent) {
-    wrap.innerHTML =
-      '<div class="no-students">Loading...</div>';
-  }
+  summary.innerHTML = '';
 
-  gasCall('bhSat_getBoard', {
-    pw: bhSatPassword,
-    date
+  wrap.innerHTML =
+    '<div class="no-students">' +
+    'Loading...' +
+    '</div>';
+
+  gasCall('bhSat_getAnalytics', {
+    pw: bhSatPassword
   })
     .then(result => {
-      let html = `
-        <div class="bh-board-summary">
 
-          <div class="bh-board-stat">
-            <div class="num">
-              ${result.todayTotal || 0}
-            </div>
-            <div class="lbl">
-              BOOKS TODAY
-            </div>
+      document.getElementById(
+        'bhAnalyticsRange'
+      ).textContent =
+        result.startDate &&
+        result.endDate
+          ? (
+              result.startDate +
+              ' → ' +
+              result.endDate
+            )
+          : 'No saved data yet';
+
+
+      summary.innerHTML = `
+
+        <div class="bh-summary-card">
+          <div class="num">
+            ${result.totalBooks || 0}
           </div>
 
-          <div class="bh-board-stat">
-            <div class="num">
-              ${result.totalBooks || 0}
-            </div>
-            <div class="lbl">
-              TOTAL BOOKS
-            </div>
+          <div class="lbl">
+            Total Books
+          </div>
+        </div>
+
+
+        <div class="bh-summary-card">
+          <div class="num">
+            ${result.avgBooks || 0}
           </div>
 
+          <div class="lbl">
+            Avg / Student
+          </div>
+        </div>
+
+
+        <div class="bh-summary-card">
+          <div class="num">
+            ${
+              result.passRate === null
+                ? '—'
+                : result.passRate + '%'
+            }
+          </div>
+
+          <div class="lbl">
+            Pass Rate
+          </div>
         </div>
       `;
 
-      (result.students || []).forEach((student, i) => {
-        const rank =
-          i === 0 ? '🥇' :
-          i === 1 ? '🥈' :
-          i === 2 ? '🥉' :
-          String(i + 1);
 
-        html += `
-          <div class="bh-board-row">
+      let html = `
+        <table class="bh-table">
 
-            <div style="
-              text-align:center;
-              font-size:20px;
-              font-weight:800;">
-              ${rank}
-            </div>
+          <thead>
+            <tr>
+              <th class="bh-student-col">
+                Student
+              </th>
 
-            <div>
-              <strong>
-                ${bhSatEscape_(
-                  student.nick || student.name
-                )}
-              </strong>
+              <th>Sessions</th>
+              <th>Attendance</th>
+              <th>Books</th>
+              <th>Pass</th>
+              <th>Pass Rate</th>
+              <th>Avg Score</th>
+              <th>Current Progress</th>
+            </tr>
+          </thead>
 
-              <div style="
-                font-size:11px;
-                color:#999;">
+          <tbody>
+      `;
+
+
+      (result.students || [])
+        .forEach(student => {
+
+          html += `
+            <tr>
+
+              <td class="bh-student-col">
+
+                <strong>
+                  ${bhEscape_(
+                    student.nick ||
+                    student.name
+                  )}
+                </strong>
+
+                <div style="
+                  font-size:11px;
+                  color:#999;
+                  font-weight:400;
+                ">
+                  ${
+                    student.nick
+                      ? bhEscape_(
+                          student.name
+                        )
+                      : ''
+                  }
+                </div>
+
+              </td>
+
+
+              <td>
+                ${student.sessions}
+              </td>
+
+
+              <td>
+                ${student.attended}/
+                ${student.sessions}
+
                 ${
-                  student.nick
-                    ? bhSatEscape_(student.name)
-                    : ''
+                  student.attendancePct === null
+                    ? ''
+                    : (
+                        ' (' +
+                        student.attendancePct +
+                        '%)'
+                      )
                 }
-              </div>
-            </div>
+              </td>
 
-            <div style="text-align:center;">
-              <strong>${student.todayBooks}</strong>
-              <div style="font-size:10px;color:#999;">
-                Today
-              </div>
-            </div>
 
-            <div style="text-align:center;">
-              <strong>${student.totalBooks}</strong>
-              <div style="font-size:10px;color:#999;">
-                Total
-              </div>
-            </div>
+              <td>
+                <strong>
+                  ${student.books}
+                </strong>
+              </td>
 
-            <div style="text-align:center;">
-              <strong>
+
+              <td>
+                ${student.pass}
+              </td>
+
+
+              <td>
                 ${
-                  student.avgPct === null
+                  student.passRate === null
                     ? '—'
-                    : student.avgPct + '%'
+                    : student.passRate + '%'
                 }
-              </strong>
+              </td>
 
-              <div style="font-size:10px;color:#999;">
-                Avg
-              </div>
-            </div>
 
-            <div>
-              <strong>
-                ${bhSatEscape_(student.progress || '—')}
-              </strong>
-            </div>
+              <td>
+                ${
+                  student.avgScore === null
+                    ? '—'
+                    : student.avgScore + '%'
+                }
+              </td>
 
-          </div>
-        `;
-      });
+
+              <td>
+                ${bhEscape_(
+                  student.progress || '—'
+                )}
+              </td>
+
+            </tr>
+          `;
+        });
+
+
+      html += `
+          </tbody>
+        </table>
+      `;
 
       wrap.innerHTML = html;
     })
     .catch(err => {
-      if (!silent) {
-        wrap.innerHTML =
-          '<div class="no-students">Error: ' +
-          bhSatEscape_(err.message || err) +
-          '</div>';
-      }
+      wrap.innerHTML =
+        '<div class="no-students">' +
+        bhEscape_(err.message || err) +
+        '</div>';
     });
 }
 
 
-function bhSatEscape_(value) {
+function bhEscape_(value) {
   return String(value || '')
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
@@ -2533,8 +2907,8 @@ function bhSatEscape_(value) {
 }
 
 
-function bhSatAttr_(value) {
-  return bhSatEscape_(value);
+function bhAttr_(value) {
+  return bhEscape_(value);
 }
 
 

@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 083.1</title>
+  <title>RS Daily App 083.2</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -1084,6 +1084,9 @@ let bhSatPassword   = '';
 let bhSatStudents   = [];
 let bhSatCurrentTab = 'daily';
 
+let bhSatAutosaveTimer = null;
+let bhSatDirty = false;
+
 // ── Init ───────────────────────────────────────────────
 window.onload = () => {
   document.getElementById('pwInput').addEventListener('keydown', e => {
@@ -2076,13 +2079,34 @@ function bhSatInit() {
     String(d.getMonth() + 1).padStart(2, '0') + '-' +
     String(d.getDate()).padStart(2, '0');
 
+  bhSatDirty = false;
+
   bhSatSwitchTab('daily');
+
+  if (bhSatAutosaveTimer) {
+    clearInterval(bhSatAutosaveTimer);
+  }
+
+  bhSatAutosaveTimer = setInterval(() => {
+    if (
+      bhSatCurrentTab === 'daily' &&
+      bhSatDirty
+    ) {
+      bhSatAutosave();
+    }
+  }, 5 * 60 * 1000);
 }
 
 
 function bhSatLogout() {
   bhSatPassword = '';
   bhSatStudents = [];
+  bhSatDirty = false;
+
+  if (bhSatAutosaveTimer) {
+    clearInterval(bhSatAutosaveTimer);
+    bhSatAutosaveTimer = null;
+  }
 
   document.getElementById('bhSatScreen').style.display = 'none';
   document.getElementById('adminScreen').style.display = 'none';
@@ -2151,6 +2175,8 @@ function bhSatLoadDaily() {
       bhSatStudents =
         result.students || [];
 
+      bhSatDirty = false;
+
       bhSatRenderDaily();
     })
     .catch(err => {
@@ -2193,14 +2219,7 @@ function bhSatRenderDaily() {
       ).value
     );
 
-  let maxBooks = 10;
-
-  bhSatStudents.forEach(student => {
-    maxBooks = Math.max(
-      maxBooks,
-      (student.scores || []).length + 1
-    );
-  });
+  const maxBooks = 10;
 
   let html = `
     <table class="bh-table">
@@ -2314,7 +2333,8 @@ function bhSatRenderDaily() {
                 bhSatStudents[
                   ${rowIndex}
                 ].daily.attendance =
-                  this.value
+                  this.value;
+                bhSatDirty = true;
               ">
 
               <option
@@ -2380,7 +2400,8 @@ function bhSatRenderDaily() {
                 bhSatStudents[
                   ${rowIndex}
                 ].daily.progress =
-                  this.value
+                  this.value;
+                bhSatDirty = true;
               ">
 
           </td>
@@ -2471,7 +2492,8 @@ function bhSatRenderDaily() {
                 bhSatStudents[
                   ${rowIndex}
                 ].daily.attitude =
-                  this.value
+                  this.value;
+                bhSatDirty = true;
               ">
 
               <option
@@ -2533,7 +2555,8 @@ function bhSatRenderDaily() {
                 bhSatStudents[
                   ${rowIndex}
                 ].daily.note =
-                  this.value
+                  this.value;
+                bhSatDirty = true;
               ">
 
           </td>
@@ -2586,7 +2609,10 @@ function bhSatSetScore(
       ? null
       : Number(value);
 
-  student.scores[bookIndex].max = maxScore;
+  student.scores[bookIndex].max =
+    maxScore;
+
+  bhSatDirty = true;
 
   input.classList.remove(
     'bh-score-pass',
@@ -2675,6 +2701,63 @@ function bhSatUpdateDailySummary() {
 }
 
 
+function bhSatAutosave() {
+  const date =
+    document.getElementById(
+      'bhDate'
+    ).value;
+
+  if (!date || !bhSatDirty) {
+    return;
+  }
+
+  const maxScore =
+    Number(
+      document.getElementById(
+        'bhMaxScore'
+      ).value
+    ) || 10;
+
+  const passScore =
+    Number(
+      document.getElementById(
+        'bhPassScore'
+      ).value
+    );
+
+  gasCall('bhSat_saveDaily', {
+    pw: bhSatPassword,
+    date,
+    maxScore,
+    passScore,
+    entries: bhSatStudents
+  })
+    .then(() => {
+      bhSatDirty = false;
+
+      const summary =
+        document.getElementById(
+          'bhDailySummary'
+        );
+
+      if (summary) {
+        summary.textContent +=
+          ' · Autosaved';
+
+        setTimeout(() => {
+          bhSatUpdateDailySummary();
+        }, 1500);
+      }
+    })
+    .catch(err => {
+      console.error(
+        'Saturday BH autosave failed:',
+        err
+      );
+    });
+}
+
+
 function bhSatSaveDaily() {
   const date =
     document.getElementById(
@@ -2717,6 +2800,8 @@ function bhSatSaveDaily() {
     entries: bhSatStudents
   })
     .then(() => {
+      bhSatDirty = false;
+
       btn.textContent =
         'Saved ✓';
 

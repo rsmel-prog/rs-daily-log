@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 085</title>
+  <title>RS Daily App 086</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -84,17 +84,30 @@
 
     /* ── REGULAR BOOK HUNTERS ── */
     .bh-reg-list {
-      padding: 12px 0 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
+      width: 100%;
+      padding: 16px 16px 110px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 14px;
+      box-sizing: border-box;
     }
 
     .bh-reg-card {
+      width: 100%;
+      min-width: 0;
       background: #fff;
       border-radius: 16px;
       padding: 16px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      box-sizing: border-box;
+    }
+
+    @media (max-width: 600px) {
+      .bh-reg-list {
+        grid-template-columns: 1fr;
+        padding: 12px 10px 110px;
+        gap: 12px;
+      }
     }
 
     .bh-reg-head {

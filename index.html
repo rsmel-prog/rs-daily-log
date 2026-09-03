@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 084</title>
+  <title>RS Daily App 085</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -81,6 +81,92 @@
     #dailyLogScreen { display: none; }
     #ersScreen { display: none; }
     #bhSatScreen { display: none; }
+
+    /* ── REGULAR BOOK HUNTERS ── */
+    .bh-reg-list {
+      padding: 12px 0 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .bh-reg-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .bh-reg-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .bh-reg-count {
+      background: #f0f4ff;
+      color: #4a6cf7;
+      border-radius: 20px;
+      padding: 7px 11px;
+      font-size: 14px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .bh-reg-score-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .bh-reg-book-label {
+      width: 54px;
+      flex: 0 0 54px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #777;
+    }
+
+    .bh-reg-score {
+      flex: 1;
+      width: 100%;
+      padding: 14px;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      background: #fff;
+      outline: none;
+      font-weight: 700;
+    }
+
+    .bh-reg-score:focus {
+      border-color: #4a6cf7;
+    }
+
+    .bh-reg-score.valid {
+      border-color: #81c784;
+      background: #f1f8f2;
+    }
+
+    .bh-reg-score.invalid {
+      border-color: #ef9a9a;
+      background: #fff5f5;
+    }
+
+    .bh-reg-add {
+      width: 100%;
+      margin-top: 4px;
+      padding: 11px;
+      border: 1px dashed #b9c4f5;
+      border-radius: 10px;
+      background: #f7f9ff;
+      color: #4a6cf7;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
 
     /* ── SATURDAY BOOK HUNTERS ── */
     .bh-tabs {
@@ -910,7 +996,7 @@
     <div class="spacer-bottom"></div>
     <div class="submit-bar">
       <div class="summary-line" id="summaryLine">—</div>
-      <button class="btn-primary" id="submitBtn" onclick="showConfirm()" disabled>Submit</button>
+      <button class="btn-primary" id="submitBtn" onclick="handleMainSubmit()" disabled>Submit</button>
     </div>
   </div>
 
@@ -1070,6 +1156,9 @@ let rSubType     = null; // 'Vocab', 'Comp', or null (plain R)
 let sessionExpiry = null; // ms timestamp, set on login
 let attendanceMap = {};   // name → {status, reason} for today's attendance
 let testExistingMap = {};
+
+let bhRegStudents = [];
+let bhRegMode = false;
 
 let loginTodayDate = '';
 let loginTodayAttendance = {};
@@ -1400,6 +1489,9 @@ function resetBelowClass() {
 // ── Function tab ───────────────────────────────────────
 function setFunction(fn) {
   currentFn = fn;
+  bhRegMode = false;
+  bhRegStudents = [];
+
   document.querySelectorAll('.fn-tab').forEach(b =>
     b.classList.toggle('active', b.dataset.fn === fn));
 
@@ -1433,8 +1525,42 @@ function setFunction(fn) {
 
 function onSubjectChange() {
   const subj = document.getElementById('subjectSelect').value;
-  if (!subj) { clearStudentList(); updateRSubRow(); return; }
-  if (currentFn === 'test') { maxScore = null; document.getElementById('maxScoreInput').value = ''; }
+
+  bhRegMode =
+    currentFn === 'test' &&
+    subj === 'BH';
+
+  if (!subj) {
+    bhRegMode = false;
+    clearStudentList();
+    updateRSubRow();
+    return;
+  }
+
+  if (currentFn === 'test') {
+    maxScore = null;
+    document.getElementById('maxScoreInput').value = '';
+  }
+
+  if (bhRegMode) {
+    document.getElementById('maxScoreRow').style.display = 'none';
+    document.getElementById('rSubRow').style.display = 'none';
+    document.getElementById('avgDisplayRow').style.display = 'none';
+    document.getElementById('allPresentBtn').style.display = 'none';
+    document.getElementById('allABtn').style.display = 'none';
+    document.getElementById('submitBtn').textContent = 'Save Book Hunters';
+
+    loadBookHunters();
+    return;
+  }
+
+  document.getElementById('submitBtn').textContent =
+    currentFn === 'test'
+      ? 'Submit Test Scores'
+      : currentFn === 'homework'
+        ? 'Submit Homework'
+        : 'Submit Attendance';
+
   updateRSubRow();
   loadStudentList();
 }
@@ -1776,6 +1902,358 @@ function cycleStatus(i) {
   updateSummary();
 }
 
+// ── Regular Book Hunters ───────────────────────────────
+
+function bhRegParseScore(value) {
+  const text =
+    String(value || '').trim();
+
+  if (!text) {
+    return null;
+  }
+
+  const match =
+    text.match(
+      /^(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)$/
+    );
+
+  if (!match) {
+    return false;
+  }
+
+  const score = Number(match[1]);
+  const max = Number(match[2]);
+
+  if (
+    !Number.isFinite(score) ||
+    !Number.isFinite(max) ||
+    score < 0 ||
+    max <= 0 ||
+    score > max
+  ) {
+    return false;
+  }
+
+  return {
+    score,
+    max,
+    pct: Math.round(score / max * 100)
+  };
+}
+
+
+function loadBookHunters() {
+  const cls =
+    document.getElementById('classSelect').value;
+
+  const date =
+    document.getElementById('datePicker').value;
+
+  const info =
+    allClasses.find(c => c.cls === cls) ||
+    intensiveClasses.find(c => c.cls === cls);
+
+  if (!cls || !date || !info) {
+    clearStudentList();
+    return;
+  }
+
+  let students = info.students || [];
+
+  if (info.intensive) {
+    const teacherGroup =
+      (info.teacherGroups || []).find(
+        group =>
+          group.teacher === selectedIntensiveTeacher
+      );
+
+    students =
+      teacherGroup
+        ? teacherGroup.students
+        : [];
+  }
+
+  document.getElementById(
+    'topTitle'
+  ).textContent = '📚 Book Hunters';
+
+  document.getElementById(
+    'topSubtitle'
+  ).textContent =
+    `${cls} · ${formatDateDisplay(date)}`;
+
+  document.getElementById(
+    'studentList'
+  ).innerHTML =
+    '<div class="no-students">Loading...</div>';
+
+  document.getElementById(
+    'submitBtn'
+  ).disabled = true;
+
+  gasCall('bhReg_getDaily', {
+    cls,
+    date
+  })
+    .then(result => {
+      const saved =
+        result.scores || {};
+
+      bhRegStudents =
+        students.map(student => ({
+          name: student.name,
+          nick: student.nick,
+          scores:
+            (saved[student.name] || [])
+              .map(score => score.raw)
+        }));
+
+      renderBookHunters();
+    })
+    .catch(err => {
+      console.error(
+        'Book Hunters load error:',
+        err
+      );
+
+      document.getElementById(
+        'studentList'
+      ).innerHTML =
+        '<div class="no-students">' +
+        'Book Hunters load failed' +
+        '</div>';
+    });
+}
+
+
+function renderBookHunters() {
+  const list =
+    document.getElementById('studentList');
+
+  if (!bhRegStudents.length) {
+    list.innerHTML =
+      '<div class="no-students">No students</div>';
+
+    document.getElementById(
+      'summaryLine'
+    ).textContent = '0 books';
+
+    return;
+  }
+
+  let html =
+    '<div class="bh-reg-list">';
+
+  bhRegStudents.forEach(
+    (student, studentIndex) => {
+
+      if (!Array.isArray(student.scores)) {
+        student.scores = [];
+      }
+
+      if (student.scores.length === 0) {
+        student.scores.push('');
+      }
+
+      const bookCount =
+        student.scores.filter(score => {
+          const parsed =
+            bhRegParseScore(score);
+
+          return parsed !== null &&
+                 parsed !== false;
+        }).length;
+
+      html += `
+        <div class="bh-reg-card">
+
+          <div class="bh-reg-head">
+            <div>
+              <div class="student-name">
+                ${bhEscape_(student.nick || student.name)}
+              </div>
+
+              <div class="student-nick">
+                ${
+                  student.nick
+                    ? bhEscape_(student.name)
+                    : ''
+                }
+              </div>
+            </div>
+
+            <div
+              class="bh-reg-count"
+              id="bhRegCount-${studentIndex}">
+              ${bookCount} books
+            </div>
+          </div>
+      `;
+
+      student.scores.forEach(
+        (score, scoreIndex) => {
+
+          const parsed =
+            bhRegParseScore(score);
+
+          const scoreClass =
+            score === ''
+              ? ''
+              : parsed
+                ? 'valid'
+                : 'invalid';
+
+          html += `
+            <div class="bh-reg-score-row">
+
+              <div class="bh-reg-book-label">
+                Book ${scoreIndex + 1}
+              </div>
+
+              <input
+                class="bh-reg-score ${scoreClass}"
+                type="text"
+                inputmode="text"
+                autocomplete="off"
+                placeholder="7/7"
+                value="${bhAttr_(score)}"
+                oninput="
+                  bhRegSetScore(
+                    ${studentIndex},
+                    ${scoreIndex},
+                    this.value,
+                    this
+                  )
+                ">
+
+            </div>
+          `;
+        }
+      );
+
+      if (student.scores.length < 10) {
+        html += `
+          <button
+            class="bh-reg-add"
+            onclick="
+              bhRegAddBook(${studentIndex})
+            ">
+            + Add book
+          </button>
+        `;
+      }
+
+      html += `
+        </div>
+      `;
+    }
+  );
+
+  html += '</div>';
+
+  list.innerHTML = html;
+
+  document.getElementById(
+    'submitBtn'
+  ).disabled = false;
+
+  bhRegUpdateSummary();
+}
+
+
+function bhRegSetScore(
+  studentIndex,
+  scoreIndex,
+  value,
+  input
+) {
+  bhRegStudents[studentIndex]
+    .scores[scoreIndex] = value;
+
+  const parsed =
+    bhRegParseScore(value);
+
+  input.classList.remove(
+    'valid',
+    'invalid'
+  );
+
+  if (String(value).trim()) {
+    input.classList.add(
+      parsed
+        ? 'valid'
+        : 'invalid'
+    );
+  }
+
+  bhRegUpdateStudentCount(
+    studentIndex
+  );
+
+  bhRegUpdateSummary();
+}
+
+
+function bhRegAddBook(studentIndex) {
+  const scores =
+    bhRegStudents[studentIndex].scores;
+
+  if (scores.length >= 10) {
+    return;
+  }
+
+  scores.push('');
+
+  renderBookHunters();
+}
+
+
+function bhRegUpdateStudentCount(studentIndex) {
+  const student =
+    bhRegStudents[studentIndex];
+
+  const count =
+    (student.scores || []).filter(score => {
+      const parsed =
+        bhRegParseScore(score);
+
+      return parsed !== null &&
+             parsed !== false;
+    }).length;
+
+  const el =
+    document.getElementById(
+      `bhRegCount-${studentIndex}`
+    );
+
+  if (el) {
+    el.textContent =
+      `${count} ${count === 1 ? 'book' : 'books'}`;
+  }
+}
+
+
+function bhRegUpdateSummary() {
+  let books = 0;
+
+  bhRegStudents.forEach(student => {
+    books +=
+      (student.scores || []).filter(score => {
+        const parsed =
+          bhRegParseScore(score);
+
+        return parsed !== null &&
+               parsed !== false;
+      }).length;
+  });
+
+  document.getElementById(
+    'summaryLine'
+  ).textContent =
+    `${books} books entered`;
+}
+
+
 // ── Score render ───────────────────────────────────────
 function renderScoreList(students) {
   studentData = students.map(s => {
@@ -1930,6 +2408,78 @@ function updateSummary() {
 }
 
 // ── Confirm ────────────────────────────────────────────
+
+function handleMainSubmit() {
+  if (bhRegMode) {
+    bhRegSave();
+    return;
+  }
+
+  showConfirm();
+}
+
+
+function bhRegSave() {
+  const cls =
+    document.getElementById('classSelect').value;
+
+  const date =
+    document.getElementById('datePicker').value;
+
+  const btn =
+    document.getElementById('submitBtn');
+
+  for (const student of bhRegStudents) {
+    for (const score of student.scores || []) {
+      const text =
+        String(score || '').trim();
+
+      if (
+        text &&
+        !bhRegParseScore(text)
+      ) {
+        alert(
+          `${student.nick || student.name}: ` +
+          `enter the score as 7/7 or 3/5.`
+        );
+
+        return;
+      }
+    }
+  }
+
+  btn.disabled = true;
+
+  btn.innerHTML =
+    '<span class="spinner"></span> Saving...';
+
+  gasCall('bhReg_saveDaily', {
+    cls,
+    date,
+    entries: bhRegStudents
+  })
+    .then(() => {
+      btn.textContent = 'Saved ✓';
+
+      setTimeout(() => {
+        btn.disabled = false;
+        btn.textContent = 'Save Book Hunters';
+
+        loadBookHunters();
+      }, 700);
+    })
+    .catch(err => {
+      alert(
+        'Book Hunters save error: ' +
+        (err.message || err)
+      );
+
+      btn.disabled = false;
+      btn.textContent = 'Save Book Hunters';
+    });
+}
+
+
 function showConfirm() {
   const cls  = document.getElementById('classSelect').value;
   const date = document.getElementById('datePicker').value;

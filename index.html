@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 086</title>
+  <title>RS Daily App 087</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -607,6 +607,11 @@
       .submit-bar { left: 50%; transform: translateX(-50%); width: 900px; border-radius: 16px 16px 0 0; }
       .top-bar { max-width: 900px; margin-left: auto; margin-right: auto; }
       .student-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
+
+      .student-list.bh-reg-active {
+        display: block;
+      }
+
       .ers-student-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
     }
   </style>
@@ -1505,6 +1510,10 @@ function setFunction(fn) {
   bhRegMode = false;
   bhRegStudents = [];
 
+  document.getElementById(
+    'studentList'
+  ).classList.remove('bh-reg-active');
+
   document.querySelectorAll('.fn-tab').forEach(b =>
     b.classList.toggle('active', b.dataset.fn === fn));
 
@@ -1566,6 +1575,10 @@ function onSubjectChange() {
     loadBookHunters();
     return;
   }
+
+  document.getElementById(
+    'studentList'
+  ).classList.remove('bh-reg-active');
 
   document.getElementById('submitBtn').textContent =
     currentFn === 'test'
@@ -1956,6 +1969,10 @@ function bhRegParseScore(value) {
 
 
 function loadBookHunters() {
+  document.getElementById(
+    'studentList'
+  ).classList.add('bh-reg-active');
+
   const cls =
     document.getElementById('classSelect').value;
 

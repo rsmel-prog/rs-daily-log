@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 088</title>
+  <title>RS Daily App 089</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -1408,11 +1408,16 @@ function setTimeSlot(slot) {
       const cd = getClassDay(c.cls);
       if (cd !== 'DAILY' && cd !== dayFilter) return false;
       if (slot === 'ALL') return true;
+
+      const base = c.cls.replace(/\(.*\)/, '').trim();
+
+      if (/^GS/i.test(base)) {
+        return slot === 'R';
+      }
+
       const m = c.cls.match(/[PQR](?=\d)/i);
       if (m) return m[0].toUpperCase() === slot;
-      const slotOverride = { 'GSJ2': 'R' };
-      const base = c.cls.replace(/\(.*\)/, '').trim();
-      if (slotOverride[base]) return slotOverride[base] === slot;
+
       return cd === 'DAILY';
     })
     .forEach(c => {
@@ -4567,6 +4572,13 @@ function populateErsClasses() {
   allClasses
     .filter(c => {
       if (!ersSlot || ersSlot === 'ALL') return true;
+
+      const base = c.cls.replace(/\(.*\)/, '').trim();
+
+      if (/^GS/i.test(base)) {
+        return ersSlot === 'R';
+      }
+
       const m = c.cls.match(/[PQR](?=\d)/i);
       return m && m[0].toUpperCase() === ersSlot;
     })
@@ -4697,11 +4709,16 @@ function initDashClasses() {
   allClasses
     .filter(c => {
       if (dashSlot === 'ALL') return true;
+
+      const base = c.cls.replace(/\(.*\)/, '').trim();
+
+      if (/^GS/i.test(base)) {
+        return dashSlot === 'R';
+      }
+
       const m = c.cls.match(/[PQR](?=\d)/i);
       if (m) return m[0].toUpperCase() === dashSlot;
-      const slotOverride = { 'GSJ2': 'R' };
-      const base = c.cls.replace(/\(.*\)/, '').trim();
-      if (slotOverride[base]) return slotOverride[base] === dashSlot;
+
       return true;
     })
     .forEach(c => {

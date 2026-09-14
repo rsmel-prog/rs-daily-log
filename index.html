@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 090</title>
+  <title>RS Daily App 091</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -1233,6 +1233,8 @@ let sessionExpiry = null; // ms timestamp, set on login
 let attendanceMap = {};   // name → {status, reason} for today's attendance
 let testExistingMap = {};
 
+let studentLoadSeq = 0;
+
 let bhRegStudents = [];
 let bhRegMode = false;
 
@@ -1683,9 +1685,13 @@ function onDateChange() {
 
 // ── Load students ──────────────────────────────────────
 function loadStudentList() {
+  const loadSeq = ++studentLoadSeq;
+
   const cls  = document.getElementById('classSelect').value;
   const date = document.getElementById('datePicker').value;
   const subj = document.getElementById('subjectSelect').value;
+
+  const requestedFn = currentFn;
   if (!cls || !date) { clearStudentList(); return; }
   if ((currentFn === 'test' || currentFn === 'homework') && !subj) { clearStudentList(); return; }
 
@@ -1752,6 +1758,15 @@ function loadStudentList() {
 
     gasCall('attendance_getExisting', {cls, date})
       .then(existing => {
+        if (
+          loadSeq !== studentLoadSeq ||
+          currentFn !== 'attendance' ||
+          document.getElementById('classSelect').value !== cls ||
+          document.getElementById('datePicker').value !== date
+        ) {
+          return;
+        }
+
         if (existing && existing.error) {
           throw new Error(existing.error);
         }
@@ -1806,11 +1821,21 @@ function loadStudentList() {
     gasCall('daily_getExisting', {
       cls,
       date,
-      type: currentFn,
-      subject: currentFn === 'homework' ? subj : finalSubj,
+      type: requestedFn,
+      subject: requestedFn === 'homework' ? subj : finalSubj,
       subjects: requestSubjects
     })
       .then(result => {
+        if (
+          loadSeq !== studentLoadSeq ||
+          currentFn !== requestedFn ||
+          document.getElementById('classSelect').value !== cls ||
+          document.getElementById('datePicker').value !== date ||
+          document.getElementById('subjectSelect').value !== subj
+        ) {
+          return;
+        }
+
         existingMap   = {};
         attendanceMap = {};
 

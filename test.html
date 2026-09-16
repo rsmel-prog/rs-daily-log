@@ -1,0 +1,4931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="apple-touch-icon" href="rs_daily_icon_512.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="rs_daily_icon_192.png">
+  <link rel="icon" href="favicon.ico">
+  
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>RS Daily App 092</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    input, select, textarea { font-size: 16px !important; }
+    input:focus, select:focus, textarea:focus { font-size: 16px !important; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f0f2f5; color: #1a1a2e; min-height: 100vh; font-size: 16px;
+    }
+
+    /* ── LOGIN ── */
+    #loginScreen {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: flex-start;
+      min-height: 100vh; padding: 24px 20px;
+    }
+    .login-box {
+      background: #fff; border-radius: 20px; padding: 32px 24px;
+      width: 100%; max-width: 440px; box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    }
+    .login-box h1 { font-size: 26px; font-weight: 700; margin-bottom: 4px; }
+    .login-box p  { font-size: 16px; color: #888; margin-bottom: 28px; }
+    .input-group  { margin-bottom: 16px; }
+    .input-group label {
+      display: block; font-size: 13px; font-weight: 700; color: #555;
+      margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .input-group input {
+      width: 100%; padding: 16px; border: 2px solid #e0e0e0;
+      border-radius: 12px; outline: none; background: #fff; color: #1a1a2e;
+    }
+    .input-group input:focus { border-color: #4a6cf7; }
+    .error-msg { color: #e53935; font-size: 15px; margin-bottom: 12px; display: none; }
+
+    /* ── BUTTONS ── */
+    .btn-primary {
+      width: 100%; padding: 18px; background: #4a6cf7; color: #fff;
+      border: none; border-radius: 12px; font-size: 18px; font-weight: 700; cursor: pointer;
+      -webkit-appearance: none;
+    }
+    .btn-primary:active   { background: #3a5ce6; }
+    .btn-primary:disabled { background: #b0bec5; cursor: not-allowed; }
+    .btn-secondary {
+      flex: 1; padding: 16px; background: #f0f0f0; color: #333;
+      border: none; border-radius: 12px; font-size: 17px; font-weight: 600; cursor: pointer;
+    }
+    .btn-secondary:active { background: #e0e0e0; }
+    .btn-confirm {
+      flex: 2; padding: 16px; background: #4a6cf7; color: #fff;
+      border: none; border-radius: 12px; font-size: 17px; font-weight: 700; cursor: pointer;
+    }
+    .btn-confirm:active   { background: #3a5ce6; }
+    .btn-confirm:disabled { background: #b0bec5; }
+
+    /* ── MAIN TABS ── */
+    .main-tabs {
+      display: grid; grid-template-columns: 1fr 1fr;
+      background: #fff; border-bottom: 1px solid #e8e8e8;
+      position: sticky; top: 0; z-index: 11;
+    }
+    .main-tab {
+      padding: 16px; text-align: center; font-size: 16px; font-weight: 700;
+      color: #aaa; border-bottom: 3px solid transparent; cursor: pointer;
+      background: none; border-left: none; border-right: none; border-top: none;
+      -webkit-appearance: none;
+    }
+    .main-tab.active { color: #4a6cf7; border-bottom-color: #4a6cf7; }
+
+    /* ── APP ── */
+    #appScreen { display: none; }
+    #dailyLogScreen { display: none; }
+    #ersScreen { display: none; }
+    #bhSatScreen { display: none; }
+
+    /* ── REGULAR BOOK HUNTERS ── */
+    .bh-reg-list {
+      width: 100%;
+      padding: 16px 16px 110px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 14px;
+      box-sizing: border-box;
+    }
+
+    .bh-reg-card {
+      width: 100%;
+      min-width: 0;
+      background: #fff;
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      box-sizing: border-box;
+    }
+
+    @media (max-width: 600px) {
+      .bh-reg-list {
+        grid-template-columns: 1fr;
+        padding: 12px 10px 110px;
+        gap: 12px;
+      }
+    }
+
+    .bh-reg-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .bh-reg-count {
+      background: #f0f4ff;
+      color: #4a6cf7;
+      border-radius: 20px;
+      padding: 7px 11px;
+      font-size: 14px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .bh-reg-score-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .bh-reg-book-label {
+      width: 54px;
+      flex: 0 0 54px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #777;
+    }
+
+    .bh-reg-score {
+      flex: 1;
+      width: 100%;
+      padding: 14px;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      background: #fff;
+      outline: none;
+      font-weight: 700;
+    }
+
+    .bh-reg-score:focus {
+      border-color: #4a6cf7;
+    }
+
+    .bh-reg-score.valid {
+      border-color: #81c784;
+      background: #f1f8f2;
+    }
+
+    .bh-reg-score.invalid {
+      border-color: #ef9a9a;
+      background: #fff5f5;
+    }
+
+    .bh-reg-add {
+      width: 100%;
+      margin-top: 4px;
+      padding: 11px;
+      border: 1px dashed #b9c4f5;
+      border-radius: 10px;
+      background: #f7f9ff;
+      color: #4a6cf7;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* ── SATURDAY BOOK HUNTERS ── */
+    .bh-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: #fff;
+      border-bottom: 1px solid #e8e8e8;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+
+    .bh-tab {
+      padding: 16px;
+      text-align: center;
+      font-size: 16px;
+      font-weight: 700;
+      color: #aaa;
+      border: none;
+      border-bottom: 3px solid transparent;
+      background: #fff;
+      cursor: pointer;
+    }
+
+    .bh-tab.active {
+      color: #4a6cf7;
+      border-bottom-color: #4a6cf7;
+    }
+
+    .bh-grid-wrap {
+      padding: 12px 16px 180px;
+      overflow-x: auto;
+      position: relative;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .bh-table {
+      border-collapse: separate;
+      border-spacing: 0;
+      width: max-content;
+      min-width: 100%;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .bh-table th,
+    .bh-table td {
+      padding: 8px;
+      border-bottom: 1px solid #eee;
+      border-right: 1px solid #eee;
+      white-space: nowrap;
+      text-align: center;
+    }
+
+    .bh-table thead th {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      background: #f3f5f8;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .bh-student-col {
+      position: sticky !important;
+      left: 0;
+      z-index: 6 !important;
+      min-width: 140px;
+      width: 140px;
+      max-width: 140px;
+      background: #fff !important;
+      text-align: left !important;
+      border-right: 2px solid #ddd !important;
+      box-shadow: 4px 0 6px -6px rgba(0,0,0,0.4);
+    }
+
+    .bh-table thead .bh-student-col {
+      z-index: 8 !important;
+      background: #f3f5f8 !important;
+    }
+
+    .bh-score-input {
+      width: 58px;
+      padding: 8px 4px;
+      text-align: center;
+      border: 1px solid #ddd;
+      border-radius: 7px;
+      font-weight: 700;
+    }
+
+    .bh-score-pass {
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+
+    .bh-score-fail {
+      background: #ffebee;
+      color: #c62828;
+    }
+
+    .bh-progress-input {
+      width: 110px;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 7px;
+    }
+
+    .bh-text-input {
+      width: 140px;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 7px;
+    }
+
+    .bh-att-select {
+      width: 70px;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 7px;
+      background: #fff;
+    }
+
+    .bh-summary-cards {
+      display: grid;
+      grid-template-columns: repeat(3,1fr);
+      gap: 10px;
+      padding: 12px 16px;
+    }
+
+    .bh-summary-card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 16px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .bh-summary-card .num {
+      font-size: 26px;
+      font-weight: 800;
+      color: #4a6cf7;
+    }
+
+    .bh-summary-card .lbl {
+      margin-top: 3px;
+      font-size: 11px;
+      color: #999;
+      text-transform: uppercase;
+    }
+
+    .top-bar {
+      background: #fff; padding: 16px 20px 12px; border-bottom: 1px solid #e8e8e8;
+    }
+    .top-bar h2   { font-size: 20px; font-weight: 700; }
+    .top-bar .sub { font-size: 14px; color: #888; margin-top: 3px; }
+
+    .controls {
+      background: #fff; padding: 16px; border-bottom: 1px solid #e8e8e8;
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    .controls-sticky {
+      background: #fff; padding: 12px 16px; border-bottom: 1px solid #e8e8e8;
+      display: flex; flex-direction: column; gap: 12px;
+      position: sticky; top: 49px; z-index: 9;
+    }
+
+    .pill-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .pill {
+      padding: 10px 18px; border: 2px solid #e0e0e0; border-radius: 24px;
+      font-size: 15px; font-weight: 600; background: #fff; color: #555; cursor: pointer;
+      -webkit-appearance: none;
+    }
+    .pill.active   { background: #4a6cf7; border-color: #4a6cf7; color: #fff; }
+    .pill:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .fn-tabs { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
+    .fn-tab {
+      padding: 14px 6px; border: 2px solid #e0e0e0; border-radius: 12px;
+      font-size: 14px; font-weight: 700; background: #fff; color: #555;
+      cursor: pointer; text-align: center; -webkit-appearance: none;
+    }
+    .fn-tab.active { background: #4a6cf7; border-color: #4a6cf7; color: #fff; }
+
+    select {
+      width: 100%; padding: 16px; border: 2px solid #e0e0e0;
+      border-radius: 12px; background: #fff; color: #1a1a2e; outline: none;
+      -webkit-appearance: none; appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23aaa' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 16px center; padding-right: 40px;
+    }
+    select:focus { border-color: #4a6cf7; }
+
+    input[type="date"] {
+      width: 100%; padding: 16px; border: 2px solid #e0e0e0;
+      border-radius: 12px; background: #fff; color: #1a1a2e; outline: none; -webkit-appearance: none;
+    }
+    input[type="date"]:focus { border-color: #4a6cf7; }
+
+    .max-score-row {
+      display: flex; align-items: center; gap: 12px;
+      background: #f0f4ff; border-radius: 12px; padding: 14px 16px;
+    }
+    .max-score-row label { font-size: 16px; font-weight: 700; color: #4a6cf7; flex: 1; }
+    .max-score-row input {
+      width: 90px; padding: 12px; text-align: center;
+      border: 2px solid #c5d0f7; border-radius: 10px;
+      font-weight: 700; color: #4a6cf7; background: #fff; outline: none;
+    }
+
+    /* ── STUDENT LIST ── */
+    .student-list { padding: 12px 16px; display: flex; flex-direction: column; gap: 12px; }
+
+    .student-card {
+      background: #fff; border-radius: 16px; padding: 18px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-left: 5px solid #e0e0e0;
+      cursor: pointer; user-select: none;
+    }
+    .student-card.present  { border-left-color: #43a047; }
+    .student-card.absent   { border-left-color: #e53935; }
+    .student-card.late     { border-left-color: #fb8c00; }
+    .student-card.existing { border-left-color: #9e9e9e; opacity: 0.85; }
+
+    .student-top { display: flex; align-items: center; justify-content: space-between; pointer-events: none; }
+    .student-name { font-size: 18px; font-weight: 700; }
+    .student-nick { font-size: 15px; color: #888; margin-top: 2px; }
+    .existing-label { font-size: 13px; color: #bbb; margin-top: 4px; pointer-events: none; }
+    .avg-display-row { display: flex; align-items: center; justify-content: space-between; background: #e8f5e9; border-radius: 12px; padding: 12px 16px; }
+    .avg-label { font-size: 15px; font-weight: 700; color: #2e7d32; }
+    .avg-value { font-size: 18px; font-weight: 700; color: #2e7d32; }
+    .hw-guide { background: #f8f9fa; border-radius: 8px; padding: 12px 16px; margin: 0 0 4px; font-size: 13px; color: #555; line-height: 1.6; }
+    .hw-guide strong { color: #333; }
+    .hw-grade-btn { flex: 1; padding: 10px 4px; border: 2px solid #e0e0e0; border-radius: 8px; background: #fff; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.15s; }
+    .hw-grade-btn.selected-A { border-color: #2e7d32; background: #e8f5e9; color: #2e7d32; }
+    .hw-grade-btn.selected-B { border-color: #1565c0; background: #e3f2fd; color: #1565c0; }
+    .hw-grade-btn.selected-C { border-color: #c62828; background: #ffebee; color: #c62828; }
+    .hw-grade-row { display: flex; gap: 8px; margin-top: 8px; }
+    .att-tag { font-size: 12px; font-weight: 600; margin-top: 3px; padding: 2px 6px; border-radius: 4px; display: inline-block; }
+    .att-tag.absent { background: #fce8e6; color: #c62828; }
+    .att-tag.late   { background: #fff8e1; color: #e65100; }
+    
+    .status-badge {
+      font-size: 14px; font-weight: 700; padding: 8px 14px;
+      border-radius: 24px; background: #f0f0f0; color: #aaa; white-space: nowrap;
+    }
+    .student-card.present .status-badge { background: #e8f5e9; color: #2e7d32; }
+    .student-card.absent  .status-badge { background: #ffebee; color: #c62828; }
+    .student-card.late    .status-badge { background: #fff3e0; color: #e65100; }
+
+    .extra-box { margin-top: 12px; display: none; }
+    .extra-box.visible { display: block; }
+    .extra-box input[type="text"] {
+      width: 100%; padding: 14px; border: 2px solid #e8e8e8;
+      border-radius: 10px; color: #333; background: #fafafa; outline: none;
+    }
+    .extra-box input[type="text"]:focus { border-color: #4a6cf7; background: #fff; }
+
+    /* Score cards */
+    .score-card {
+      background: #fff; border-radius: 16px; padding: 18px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-left: 5px solid #e0e0e0;
+    }
+    .score-card.filled { border-left-color: #4a6cf7; }
+    .score-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .score-grade { font-size: 14px; font-weight: 700; padding: 6px 12px; border-radius: 24px; background: #f0f0f0; color: #aaa; }
+    .grade-A { background: #e8f5e9; color: #2e7d32; }
+    .grade-B { background: #e3f2fd; color: #1565c0; }
+    .grade-C { background: #fff3e0; color: #e65100; }
+    .grade-D { background: #ffebee; color: #c62828; }
+
+    .score-inputs { display: flex; gap: 10px; align-items: center; }
+    .score-inputs input[type="number"] {
+      flex: 1; padding: 14px; text-align: center;
+      border: 2px solid #e0e0e0; border-radius: 10px;
+      font-size: 20px !important; font-weight: 700; color: #1a1a2e; background: #fff; outline: none;
+    }
+    .score-inputs input[type="number"]:focus { border-color: #4a6cf7; }
+    .score-inputs .slash       { font-size: 22px; color: #ccc; font-weight: 300; }
+    .score-inputs .max-display { font-size: 20px; font-weight: 700; color: #aaa; min-width: 32px; text-align: center; }
+    .score-note { margin-top: 10px; }
+    .score-note input {
+      width: 100%; padding: 14px; border: 2px solid #e8e8e8;
+      border-radius: 10px; color: #333; background: #fafafa; outline: none;
+    }
+    .score-note input:focus { border-color: #4a6cf7; background: #fff; }
+
+    .no-students { text-align: center; color: #aaa; font-size: 17px; padding: 56px 16px; }
+
+    /* ── SUBMIT BAR ── */
+    .submit-bar {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: #fff; border-top: 1px solid #e8e8e8;
+      padding: 14px 16px; padding-bottom: calc(14px + env(safe-area-inset-bottom));
+    }
+    .submit-bar .summary-line { font-size: 14px; color: #888; margin-bottom: 10px; text-align: center; }
+    .spacer-bottom { height: 200px; }
+
+    /* ── e-RS ── */
+    .ers-controls {
+      background: #fff; padding: 16px; border-bottom: 1px solid #e8e8e8;
+      display: flex; flex-direction: column; gap: 12px;
+    }
+
+    .ratio-section {
+      background: #fff; padding: 16px; border-bottom: 1px solid #e8e8e8;
+    }
+    .ratio-title { font-size: 13px; font-weight: 700; color: #888; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .ratio-row { margin-bottom: 12px; }
+    .ratio-label { display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+    .ratio-bar { height: 14px; border-radius: 7px; background: #f0f0f0; overflow: hidden; display: flex; }
+    .ratio-bar .seg-left  { height: 100%; transition: width 0.4s ease; }
+    .ratio-bar .seg-right { height: 100%; flex: 1; }
+    .fic-color { background: #e87722; }
+    .nf-color  { background: #b85000; }
+    .pb-color  { background: #7c3aed; }
+    .eb-color  { background: #4c1d95; }
+
+    .ers-student-list { padding: 12px 16px; display: flex; flex-direction: column; gap: 12px; }
+
+    .ers-card {
+      background: #fff; border-radius: 16px; padding: 16px 18px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-left: 5px solid #e0e0e0;
+    }
+    .ers-card.has-alert { border-left-color: #e53935; }
+    .ers-card.no-ers    { border-left-color: #bbb; opacity: 0.7; }
+
+    .ers-card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .ers-name  { font-size: 18px; font-weight: 700; }
+    .ers-korean { font-size: 14px; color: #888; margin-top: 2px; }
+    .ers-cum { font-size: 13px; color: #4a6cf7; font-weight: 700; background: #f0f4ff; padding: 4px 10px; border-radius: 12px; white-space: nowrap; }
+
+    .ers-stats { display: grid; grid-template-columns: repeat(6,1fr); gap: 8px; margin-bottom: 10px; }
+    .ers-stat { text-align: center; background: #f8f8f8; border-radius: 10px; padding: 8px 4px; }
+    .ers-stat .val { font-size: 18px; font-weight: 700; color: #1a1a2e; }
+    .ers-stat .lbl { font-size: 11px; color: #aaa; margin-top: 2px; }
+
+    .ers-ratio-bar { height: 8px; border-radius: 4px; background: #f0f0f0; overflow: hidden; display: flex; margin-bottom: 6px; }
+    .ers-ratio-bar .seg-left  { height: 100%; }
+    .ers-ratio-bar .seg-right { height: 100%; flex: 1; }
+
+    .ers-alert { font-size: 13px; color: #c62828; background: #ffebee; padding: 8px 12px; border-radius: 8px; line-height: 1.6; margin-top: 6px; }
+    .ers-spacer { height: 40px; }
+    .dash-card { background: #fff; border-radius: 16px; padding: 16px 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-left: 5px solid #e0e0e0; margin-bottom: 0; }
+    .dash-card.alert { border-left-color: #e53935; }
+    .dash-card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .dash-rate { font-size: 22px; font-weight: 700; }
+    .dash-rate.good { color: #2e7d32; }
+    .dash-rate.warn { color: #e65100; }
+    .dash-rate.bad  { color: #c62828; }
+    .dash-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 8px; }
+    .dash-stat { text-align: center; background: #f8f8f8; border-radius: 10px; padding: 8px 4px; }
+    .dash-stat .val { font-size: 16px; font-weight: 700; }
+    .dash-stat .lbl { font-size: 11px; color: #aaa; margin-top: 2px; }
+    .dash-reasons { font-size: 12px; color: #888; margin-top: 8px; line-height: 1.8; }
+    .dash-alert-tag { font-size: 12px; font-weight: 700; background: #ffebee; color: #c62828; padding: 3px 8px; border-radius: 6px; }
+    .dash-test-section { margin-top: 10px; border-top: 1px solid #f0f0f0; padding-top: 8px; display: flex; flex-direction: column; gap: 4px; }
+    .dash-test-row { display: flex; justify-content: space-between; align-items: center; }
+    .dash-test-subj { font-size: 13px; color: #666; }
+    .dash-test-avg { font-size: 14px; font-weight: 700; }
+
+    /* ── LOADING OVERLAY ── */
+    .list-loading-wrap { position: relative; }
+    .list-overlay {
+      position: absolute; inset: 0; background: rgba(255,255,255,0.82);
+      display: flex; align-items: flex-start; justify-content: center;
+      padding-top: 32px;
+      border-radius: 12px; z-index: 5;
+    }
+    .list-overlay .spin-wrap { text-align: center; }
+    .list-overlay .spin-wrap .spinner {
+      width: 32px; height: 32px; border-width: 4px;
+      border-color: rgba(74,108,247,0.2); border-top-color: #4a6cf7;
+      display: block; margin: 0 auto 10px;
+    }
+    .list-overlay .spin-wrap p { font-size: 14px; color: #4a6cf7; font-weight: 600; }
+
+    /* ── CONFIRM ── */
+    #confirmScreen {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.5); z-index: 100;
+      align-items: flex-end; justify-content: center;
+    }
+    #confirmScreen.visible { display: flex; }
+    .confirm-sheet {
+      background: #fff; border-radius: 24px 24px 0 0; padding: 28px 20px;
+      padding-bottom: calc(28px + env(safe-area-inset-bottom)); width: 100%; max-width: 540px;
+    }
+    .confirm-sheet h3 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+    .conf-sub         { font-size: 15px; color: #888; margin-bottom: 20px; }
+    .confirm-stats    { display: flex; gap: 10px; margin-bottom: 20px; }
+    .conf-stat        { flex: 1; text-align: center; padding: 16px 8px; border-radius: 14px; }
+    .conf-stat.p { background: #e8f5e9; } .conf-stat.a { background: #ffebee; }
+    .conf-stat.l { background: #fff3e0; } .conf-stat.s { background: #e3f2fd; }
+    .conf-stat .num { font-size: 30px; font-weight: 700; }
+    .conf-stat.p .num { color: #2e7d32; } .conf-stat.a .num { color: #c62828; }
+    .conf-stat.l .num { color: #e65100; } .conf-stat.s .num { color: #1565c0; }
+    .conf-stat .lbl { font-size: 13px; color: #888; margin-top: 4px; }
+    .confirm-details { font-size: 15px; color: #555; margin-bottom: 24px; line-height: 2; max-height: 160px; overflow-y: auto; }
+    .confirm-btns { display: flex; gap: 12px; }
+
+    /* ── SUCCESS ── */
+    #successScreen {
+      display: none; position: fixed; inset: 0; background: #fff; z-index: 200;
+      flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; padding: 32px;
+    }
+    #successScreen.visible { display: flex; }
+    .success-icon { font-size: 72px; margin-bottom: 20px; }
+    #successScreen h2 { font-size: 26px; font-weight: 700; margin-bottom: 10px; }
+    #successScreen p  { font-size: 17px; color: #888; margin-bottom: 36px; white-space: pre-line; }
+
+    .spinner {
+      display: inline-block; width: 20px; height: 20px;
+      border: 3px solid rgba(255,255,255,0.4); border-top-color: #fff;
+      border-radius: 50%; animation: spin 0.7s linear infinite;
+      vertical-align: middle; margin-right: 8px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (min-width: 600px) {
+      body { font-size: 15px; }
+      .login-box { padding: 40px 36px; }
+      .controls, .controls-sticky, .ers-controls, .ratio-section { max-width: 900px; margin-left: auto; margin-right: auto; }
+      .student-list, .ers-student-list { max-width: 1600px; margin-left: auto; margin-right: auto; padding: 12px 16px; }
+      .submit-bar { left: 50%; transform: translateX(-50%); width: 900px; border-radius: 16px 16px 0 0; }
+      .top-bar { max-width: 900px; margin-left: auto; margin-right: auto; }
+      .student-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
+
+      .student-list.bh-reg-active {
+        display: block;
+      }
+
+      .ers-student-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══ LOGIN ══ -->
+<div id="loginScreen">
+  <div class="login-box">
+    <h1>📋 RS Daily App</h1>
+    <p>Reading Star Jamsil Campus</p>
+    <div class="input-group">
+      <label>Password</label>
+      <input type="password" id="pwInput" placeholder="••••••••"
+             autocomplete="off" inputmode="numeric" autofocus>
+    </div>
+    <div class="error-msg" id="loginError">Incorrect password. Try again.</div>
+    <button class="btn-primary" id="loginBtn" onclick="doLogin()">Sign In</button>
+  </div>
+</div>
+
+<!-- ══ ADMIN ══ -->
+<div id="adminScreen" style="display:none; min-height:100vh;">
+  <div class="top-bar">
+    <h2>⚙️ RS Daily Admin</h2>
+    <div class="sub">Batch Entry</div>
+  </div>
+
+  <div class="controls">
+    <select id="adminModeSelect" onchange="adminModeChanged()">
+      <option value="attendance">📋 Attendance</option>
+      <option value="homework">📚 Homework</option>
+      <option value="test">📝 Daily Test</option>
+    </select>
+
+    <select id="adminSubjectSelect" style="display:none;" onchange="adminSubjectChanged()">
+      <option value="">— Select subject —</option>
+    </select>
+
+    <div id="adminMaxScoreWrap" class="max-score-row" style="display:none;">
+      <label>Max Score</label>
+      <input
+        type="number"
+        id="adminMaxScore"
+        min="0.5"
+        max="200"
+        step="0.5"
+        placeholder="10"
+        inputmode="decimal">
+    </div>
+
+    <select id="adminClassSelect" onchange="adminClassChanged()">
+      <option value="">— Select class —</option>
+    </select>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div>
+        <div style="font-size:12px;font-weight:700;color:#777;margin-bottom:5px;">START</div>
+        <input type="date" id="adminStartDate" onchange="buildAdminDates()">
+      </div>
+
+      <div>
+        <div style="font-size:12px;font-weight:700;color:#777;margin-bottom:5px;">END</div>
+        <input type="date" id="adminEndDate" onchange="buildAdminDates()">
+      </div>
+    </div>
+
+    <div>
+      <div style="font-size:13px;font-weight:700;color:#555;margin-bottom:8px;">
+        Dates
+      </div>
+
+      <div
+        id="adminDateChips"
+        class="pill-row"
+        style="background:#f8f9fa;border-radius:12px;padding:12px;">
+      </div>
+    </div>
+
+    <label style="
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-size:14px;
+      font-weight:700;
+      color:#555;
+      padding:8px 2px;
+    ">
+      <input
+        type="checkbox"
+        id="adminMissingOnly"
+        checked
+        onchange="renderAdminGrid()"
+        style="width:18px;height:18px;">
+      Show dates with missing entries only
+    </label>
+
+    <button
+      class="btn-primary"
+      id="adminLoadBtn"
+      onclick="loadAdminGrid()">
+      Load Entries
+    </button>
+  </div>
+
+  <div
+    id="adminGridWrap"
+    style="
+      display:none;
+      padding:12px 16px 180px;
+      overflow-x:auto;
+      position:relative;
+      -webkit-overflow-scrolling:touch;
+    ">
+  </div>
+
+  <div
+    id="adminSaveBar"
+    style="
+      display:none;
+      position:fixed;
+      left:0;
+      right:0;
+      bottom:0;
+      background:#fff;
+      border-top:1px solid #ddd;
+      padding:12px 16px;
+      z-index:50;
+    ">
+
+    <div
+      id="adminAttendanceBulkRow"
+      style="display:flex;gap:8px;margin-bottom:8px;">
+      <button
+        class="btn-secondary"
+        onclick="adminFillBlankPresent()">
+        Fill Blanks Present
+      </button>
+
+      <button
+        class="btn-secondary"
+        onclick="adminClearChanges()">
+        Reset
+      </button>
+    </div>
+
+    <button
+      class="btn-primary"
+      id="adminSaveBtn"
+      onclick="saveAdminBatch()">
+      Save Changes
+    </button>
+
+    <button
+      class="btn-secondary"
+      style="width:100%;margin-top:8px;"
+      onclick="adminLogout()">
+      Sign Out
+    </button>
+  </div>
+</div>
+
+<!-- ══ SATURDAY BOOK HUNTERS ══ -->
+<div id="bhSatScreen" style="display:none; min-height:100vh;">
+
+  <div class="bh-tabs">
+    <button
+      class="bh-tab active"
+      id="bhDailyTab"
+      onclick="bhSatSwitchTab('daily')">
+      📚 Daily Board
+    </button>
+
+    <button
+      class="bh-tab"
+      id="bhAnalyticsTab"
+      onclick="bhSatSwitchTab('analytics')">
+      📊 Analytics
+    </button>
+  </div>
+
+
+  <!-- DAILY BOARD -->
+  <div id="bhDailyScreen">
+
+    <div class="top-bar">
+      <h2>📚 Saturday Book Hunters</h2>
+      <div class="sub">Daily Entry / Live Board</div>
+    </div>
+
+    <div class="controls">
+
+      <input
+        type="date"
+        id="bhDate"
+        onchange="bhSatLoadDaily()">
+
+      <div style="
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:10px;
+      ">
+
+        <div>
+          <div style="
+            font-size:12px;
+            font-weight:700;
+            color:#777;
+            margin-bottom:5px;">
+            MAX SCORE
+          </div>
+
+          <input
+            class="bh-text-input"
+            style="width:100%;"
+            type="number"
+            id="bhMaxScore"
+            value="10"
+            min="1"
+            step="0.5"
+            onchange="bhSatRenderDaily()">
+        </div>
+
+        <div>
+          <div style="
+            font-size:12px;
+            font-weight:700;
+            color:#777;
+            margin-bottom:5px;">
+            PASS SCORE
+          </div>
+
+          <input
+            class="bh-text-input"
+            style="width:100%;"
+            type="number"
+            id="bhPassScore"
+            value="7"
+            min="0"
+            step="0.5"
+            onchange="bhSatRenderDaily()">
+        </div>
+
+      </div>
+    </div>
+
+
+    <div
+      id="bhDailyGrid"
+      class="bh-grid-wrap">
+
+      <div class="no-students">
+        Loading...
+      </div>
+    </div>
+
+
+    <div class="submit-bar">
+
+      <div
+        class="summary-line"
+        id="bhDailySummary">
+        —
+      </div>
+
+      <button
+        class="btn-primary"
+        id="bhSaveBtn"
+        onclick="bhSatSaveDaily()">
+        Save Daily Board
+      </button>
+
+      <button
+        class="btn-secondary"
+        style="width:100%;margin-top:8px;"
+        onclick="bhSatLogout()">
+        Sign Out
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <!-- ANALYTICS -->
+  <div
+    id="bhAnalyticsScreen"
+    style="display:none;">
+
+    <div class="top-bar">
+      <h2>📊 Saturday Book Hunters</h2>
+
+      <div
+        class="sub"
+        id="bhAnalyticsRange">
+        Overall
+      </div>
+    </div>
+
+    <div
+      id="bhAnalyticsSummary"
+      class="bh-summary-cards">
+    </div>
+
+    <div
+      id="bhAnalyticsGrid"
+      class="bh-grid-wrap"
+      style="padding-bottom:40px;">
+
+      <div class="no-students">
+        Loading...
+      </div>
+    </div>
+
+    <div style="padding:0 16px 30px;">
+      <button
+        class="btn-secondary"
+        style="width:100%;"
+        onclick="bhSatLogout()">
+        Sign Out
+      </button>
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- ══ APP ══ -->
+<div id="appScreen">
+  <div class="main-tabs" style="grid-template-columns: 1fr 1fr 1fr;">
+    <button class="main-tab active" id="tabDailyLog" onclick="switchMainTab('dailylog')">📋 Daily Log</button>
+    <button class="main-tab"        id="tabDash"     onclick="switchMainTab('dash')">📊 Class Stats</button>
+    <button class="main-tab"        id="tabERS"      onclick="switchMainTab('ers')">📖 e-RS</button>
+  </div>
+
+  <!-- ── DAILY LOG ── -->
+  <div id="dailyLogScreen">
+    <div class="top-bar">
+      <h2 id="topTitle">📋 Attendance</h2>
+      <div class="sub" id="topSubtitle">Select a class to begin</div>
+    </div>
+    <div class="controls-sticky">
+      <div class="pill-row" id="timeFilter">
+        <button class="pill" data-slot="INT" id="intPill" onclick="setTimeSlot('INT')" style="display:none">Intensives</button>
+        <button class="pill" data-slot="P" onclick="setTimeSlot('P')">P Time</button>
+        <button class="pill" data-slot="Q" onclick="setTimeSlot('Q')">Q Time</button>
+        <button class="pill" data-slot="R" onclick="setTimeSlot('R')">R Time</button>
+        <button class="pill" data-slot="ALL" onclick="setTimeSlot('ALL')">All</button>
+      </div>
+      <select id="classSelect" onchange="onClassChange()">
+        <option value="">— Select class —</option>
+      </select>
+
+<div class="pill-row" id="teacherPillRow" style="display:none"></div>
+    </div>
+    <div class="controls">
+      <div class="fn-tabs" id="fnTabs" style="display:none">
+        <button class="fn-tab active" data-fn="attendance" onclick="setFunction('attendance')">📋 Attendance</button>
+        <button class="fn-tab"        data-fn="test"       onclick="setFunction('test')">📝 Daily Test</button>
+        <button class="fn-tab"        data-fn="homework"   onclick="setFunction('homework')">📚 Homework</button>
+      </div>
+      <select id="subjectSelect" style="display:none" onchange="onSubjectChange()">
+        <option value="">— Select subject —</option>
+      </select>
+      <div class="pill-row" id="rSubRow" style="display:none">
+        <button class="pill" data-rsub="" onclick="setRSub('')">R</button>
+        <button class="pill" data-rsub="Vocab" onclick="setRSub('Vocab')">Vocab</button>
+        <button class="pill" data-rsub="Comp" onclick="setRSub('Comp')">Comp</button>
+      </div>
+      <div class="max-score-row" id="maxScoreRow" style="display:none">
+        <label>Max Score</label>
+        <input type="number" id="maxScoreInput" min="0.5" max="200" step="0.5" placeholder="10"
+               inputmode="decimal" oninput="onMaxScoreChange()" onwheel="this.blur()">
+      </div>
+      <div class="avg-display-row" id="avgDisplayRow" style="display:none">
+        <span class="avg-label">Class Avg</span>
+        <span class="avg-value" id="avgValue">—</span>
+      </div>
+      <input type="date" id="datePicker" onchange="onDateChange()">
+      <div class="hw-guide" id="hwGuide" style="display:none">
+        <strong>A</strong> — Excellent &nbsp;|&nbsp; <strong>B</strong> — Acceptable &nbsp;|&nbsp; <strong>C</strong> — Not done
+      </div>
+    </div>
+    <div style="padding: 12px 16px 0;">
+      <button class="btn-secondary" id="allPresentBtn" style="display:none;width:100%;border-radius:12px;" onclick="markAllPresent()">✅ All Present</button>
+      <button class="btn-secondary" id="allABtn" style="display:none;width:100%;border-radius:12px;margin-top:8px;" onclick="markAllA()">✅ All A</button>
+    </div>
+    <div class="list-loading-wrap">
+      <div id="listOverlay" style="display:none" class="list-overlay">
+        <div class="spin-wrap">
+          <span class="spinner" style="display:inline-block"></span>
+          <p>Loading…</p>
+        </div>
+      </div>
+      <div class="student-list" id="studentList">
+        <div class="no-students">Select a class above</div>
+      </div>
+    </div>
+    <div class="spacer-bottom"></div>
+    <div class="submit-bar">
+      <div class="summary-line" id="summaryLine">—</div>
+      <button class="btn-primary" id="submitBtn" onclick="handleMainSubmit()" disabled>Submit</button>
+    </div>
+  </div>
+
+  <!-- ── e-RS ── -->
+  <div id="ersScreen">
+    <div class="ers-controls">
+      <div class="pill-row" id="ersTimeFilter">
+        <button class="pill" data-slot="P" onclick="setErsTimeSlot('P')">P Time</button>
+        <button class="pill" data-slot="Q" onclick="setErsTimeSlot('Q')">Q Time</button>
+        <button class="pill" data-slot="R" onclick="setErsTimeSlot('R')">R Time</button>
+        <button class="pill" data-slot="ALL" onclick="setErsTimeSlot('ALL')">All</button>
+      </div>
+      <select id="ersClassSelect" onchange="onErsClassChange()">
+        <option value="">— Select class —</option>
+      </select>
+      <select id="ersWeekSelect" style="display:none" onchange="loadErsData()">
+        <option value="">— Select week —</option>
+      </select>
+    </div>
+    <div id="ersRatioSection" style="display:none" class="ratio-section">
+      <div class="ratio-title">Class Summary</div>
+      <div class="ratio-row">
+        <div class="ratio-label">
+          <span style="color:#e87722">📖 Fiction</span>
+          <span style="color:#b85000">📚 Nonfiction</span>
+        </div>
+        <div class="ratio-bar">
+          <div class="seg-left fic-color" id="classFicBar" style="width:0%"></div>
+          <div class="seg-right nf-color"></div>
+        </div>
+        <div id="classFicLabel" style="font-size:13px;color:#888;margin-top:4px;text-align:center"></div>
+      </div>
+      <div class="ratio-row">
+        <div class="ratio-label">
+          <span style="color:#7c3aed">📄 Paper</span>
+          <span style="color:#4c1d95">📱 eBook</span>
+        </div>
+        <div class="ratio-bar">
+          <div class="seg-left pb-color" id="classPBBar" style="width:0%"></div>
+          <div class="seg-right eb-color"></div>
+        </div>
+        <div id="classPBLabel" style="font-size:13px;color:#888;margin-top:4px;text-align:center"></div>
+      </div>
+    </div>
+    <div class="ers-student-list" id="ersStudentList">
+      <div class="no-students">Select a class above</div>
+    </div>
+    <div class="ers-spacer"></div>
+  </div>
+<!-- ── ATTENDANCE DASHBOARD ── -->
+  <div id="dashScreen" style="display:none">
+    <div class="ers-controls">
+      <div class="pill-row" id="dashTimeFilter" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:4px;">
+        <button class="pill" data-slot="P" onclick="setDashTimeSlot('P')">P Time</button>
+        <button class="pill" data-slot="Q" onclick="setDashTimeSlot('Q')">Q Time</button>
+        <button class="pill" data-slot="R" onclick="setDashTimeSlot('R')">R Time</button>
+        <button class="pill" data-slot="ALL" onclick="setDashTimeSlot('ALL')">All</button>
+      </div>
+      <select id="dashClassSelect" onchange="onDashClassChange()">
+        <option value="">— Select class —</option>
+      </select>
+      <div id="dashRangeWrap" style="display:none">
+        <label style="font-size:13px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:8px;">Date range</label>
+        <select id="dashRangeSelect" onchange="loadDashData()">
+          <option value="sem" selected>Whole semester</option>
+          <option value="7">Last week</option>
+          <option value="14">Last 2 weeks</option>
+          <option value="21">Last 3 weeks</option>
+          <option value="30">Last month</option>
+          <option value="60">Last 2 months</option>
+        </select>
+      </div>
+    </div>
+    <div class="ers-student-list" id="dashStudentList">
+      <div class="no-students">Select a class above</div>
+    </div>
+    <div class="ers-spacer"></div>
+  </div>
+</div>
+
+<!-- ══ CONFIRM ══ -->
+<div id="confirmScreen">
+  <div class="confirm-sheet">
+    <h3 id="confTitle">Confirm</h3>
+    <div class="conf-sub" id="confSub"></div>
+    <div class="confirm-stats" id="confStats"></div>
+    <div class="confirm-details" id="confDetails"></div>
+    <div class="confirm-btns">
+      <button class="btn-secondary" onclick="hideConfirm()">Go Back</button>
+      <button class="btn-confirm" id="confirmBtn" onclick="doSubmit()">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SUCCESS ══ -->
+<div id="successScreen">
+  <div class="success-icon">✅</div>
+  <h2>Saved!</h2>
+  <p id="successMsg"></p>
+  <button class="btn-primary" style="max-width:240px" onclick="resetAfterSuccess()">New Entry</button>
+</div>
+
+<script>
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbxCkDzYxGVZos60ZC1co9WwPkBeudo_B961rS7NXZEet3RdXhF8l6A6JTkDAG0Wu91lpw/exec';
+const SHOW_INTENSIVES = false; // set to false to hide intensive classes after summer
+
+async function gasCall(action, params) {
+  const url =
+    GAS_URL +
+    '?action=' +
+    encodeURIComponent(action);
+
+  const retryableAction =
+    action === 'attendance_login' ||
+    action.includes('_get');
+
+  const maxAttempts =
+    retryableAction ? 3 : 1;
+  let lastError = null;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain'
+        },
+        body: JSON.stringify(params)
+      });
+
+      const text = await res.text();
+
+      if (!res.ok) {
+        const retryable =
+          res.status === 404 ||
+          res.status === 429 ||
+          res.status === 500 ||
+          res.status === 502 ||
+          res.status === 503 ||
+          res.status === 504;
+
+        if (retryable && attempt < maxAttempts) {
+          await new Promise(resolve =>
+            setTimeout(
+              resolve,
+              attempt === 1 ? 500 : 1200
+            )
+          );
+
+          continue;
+        }
+
+        throw new Error(
+          `HTTP ${res.status}: ${text.slice(0, 300)}`
+        );
+      }
+
+      let data;
+
+      try {
+        data = JSON.parse(text);
+      } catch (err) {
+        if (attempt < maxAttempts) {
+          await new Promise(resolve =>
+            setTimeout(resolve, 500)
+          );
+
+          continue;
+        }
+
+        throw new Error(
+          'Server returned non-JSON response: ' +
+          text.slice(0, 300)
+        );
+      }
+
+      if (data && data.error) {
+        throw new Error(data.error);
+      }
+
+      return data;
+    } catch (err) {
+      lastError = err;
+
+      if (attempt >= maxAttempts) {
+        throw err;
+      }
+
+      await new Promise(resolve =>
+        setTimeout(
+          resolve,
+          attempt === 1 ? 500 : 1200
+        )
+      );
+    }
+  }
+
+  throw lastError ||
+    new Error('Server request failed.');
+}
+// ── State ──────────────────────────────────────────────
+let allClasses  = [];
+let intensiveClasses = [];
+let selectedIntensiveTeacher = '';
+let currentSlot = 'P';
+let currentFn   = 'attendance';
+let studentData = [];
+let existingMap = {};
+let maxScore    = null;
+let ersWeeksLoaded = false;
+let ersWeeks    = [];
+let ersSlot     = 'ALL';
+let dashSlot    = 'ALL';
+let rSubType     = null; // 'Vocab', 'Comp', or null (plain R)
+let sessionExpiry = null; // ms timestamp, set on login
+let attendanceMap = {};   // name → {status, reason} for today's attendance
+let testExistingMap = {};
+
+let studentLoadSeq = 0;
+
+let bhRegStudents = [];
+let bhRegMode = false;
+
+let loginTodayDate = '';
+let loginTodayAttendance = {};
+
+let adminPassword = '';
+let adminClasses  = [];
+let adminGridData = null;
+let adminChanges  = {};
+let adminMode     = 'attendance';
+
+let bhSatPassword   = '';
+let bhSatStudents   = [];
+let bhSatCurrentTab = 'daily';
+
+let bhSatAutosaveTimer = null;
+let bhSatDirty = false;
+
+// ── Init ───────────────────────────────────────────────
+window.onload = () => {
+  document.getElementById('pwInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doLogin();
+  });
+  setInterval(checkSession, 60 * 1000);
+};
+
+function checkSession() {
+  if (!sessionExpiry || Date.now() <= sessionExpiry) return;
+
+  document.getElementById('appScreen').style.display    = 'none';
+  document.getElementById('adminScreen').style.display  = 'none';
+  document.getElementById('bhSatScreen').style.display  = 'none';
+  document.getElementById('loginScreen').style.display  = 'flex';
+  document.getElementById('pwInput').value = '';
+  document.getElementById('loginBtn').disabled = false;
+  document.getElementById('loginBtn').textContent = 'Sign In';
+  document.getElementById('loginError').textContent = 'Session expired. Please sign in again.';
+  document.getElementById('loginError').style.display = 'block';
+  sessionExpiry = null;
+}
+
+function adminLogout() {
+  adminPassword = '';
+
+  document.getElementById('adminScreen').style.display = 'none';
+  document.getElementById('appScreen').style.display   = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+
+  document.getElementById('pwInput').value = '';
+  document.getElementById('loginError').style.display = 'none';
+  document.getElementById('loginBtn').disabled = false;
+  document.getElementById('loginBtn').textContent = 'Sign In';
+
+  sessionExpiry = null;
+}
+
+// ── Login ──────────────────────────────────────────────
+function doLogin() {
+  const pw  = document.getElementById('pwInput').value.trim();
+  const btn = document.getElementById('loginBtn');
+  if (!pw) return;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Signing in...';
+  gasCall('attendance_login', {pw})
+    .then(res => {
+      if (res.ok) {
+        document.getElementById('loginScreen').style.display = 'none';
+
+        if (res.role === 'admin') {
+          adminPassword = pw;
+
+          document.getElementById('appScreen').style.display    = 'none';
+          document.getElementById('bhSatScreen').style.display  = 'none';
+          document.getElementById('adminScreen').style.display  = 'block';
+
+          initAdmin();
+
+          sessionExpiry = Date.now() + 60 * 60 * 1000;
+          return;
+        }
+
+        if (res.role === 'bh_sat') {
+          bhSatPassword = pw;
+
+          document.getElementById('appScreen').style.display    = 'none';
+          document.getElementById('adminScreen').style.display  = 'none';
+          document.getElementById('bhSatScreen').style.display  = 'block';
+
+          bhSatInit();
+
+          sessionExpiry = Date.now() + 60 * 60 * 1000;
+          return;
+        }
+
+        document.getElementById('adminScreen').style.display    = 'none';
+        document.getElementById('bhSatScreen').style.display    = 'none';
+        document.getElementById('appScreen').style.display      = 'block';
+        document.getElementById('dailyLogScreen').style.display = 'block';
+
+        initApp(
+          res.classes,
+          res.intensiveClasses || [],
+          res.todayDate || '',
+          res.todayAttendance || {}
+        );
+
+        sessionExpiry = Date.now() + 60 * 60 * 1000; // 1 hour
+      } else if (res.locked) {        document.getElementById('loginError').textContent =
+          `Too many attempts. Try again in ${res.minsLeft} minute${res.minsLeft > 1 ? 's' : ''}.`;
+        document.getElementById('loginError').style.display = 'block';
+        btn.disabled = false; btn.textContent = 'Sign In';
+      } else {
+        const left = res.remaining;
+        document.getElementById('loginError').textContent =
+          left > 0 ? `Incorrect password. ${left} attempt${left > 1 ? 's' : ''} remaining.` : 'Incorrect password.';
+        document.getElementById('loginError').style.display = 'block';
+        btn.disabled = false; btn.textContent = 'Sign In';
+      }
+    })
+    .catch(err => {
+      console.error('Login error:', err);
+
+      document.getElementById('loginError').textContent =
+        'Server error: ' + (err.message || err);
+
+      document.getElementById('loginError').style.display = 'block';
+
+      btn.disabled = false;
+      btn.textContent = 'Sign In';
+    });
+}
+
+// ── App init ───────────────────────────────────────────
+function initApp(classes, intClasses, todayDate, todayAttendance) {
+  allClasses       = classes;
+  intensiveClasses = SHOW_INTENSIVES ? (intClasses || []) : [];
+
+  loginTodayDate = todayDate || '';
+  loginTodayAttendance = todayAttendance || {};
+  if (SHOW_INTENSIVES && intensiveClasses.length) {
+    document.getElementById('intPill').style.display = 'inline-flex';
+  }
+  const today = new Date();
+  const yyyy  = today.getFullYear();
+  const mm    = String(today.getMonth()+1).padStart(2,'0');
+  const dd    = String(today.getDate()).padStart(2,'0');
+  document.getElementById('datePicker').value = `${yyyy}-${mm}-${dd}`;
+
+  const h = today.getHours();
+  const hm = h * 100 + today.getMinutes();
+  if      (hm < 1620) currentSlot = 'P';
+  else if (hm < 1835) currentSlot = 'Q';
+  else                currentSlot = 'R';
+
+  ersSlot = currentSlot;
+
+  if (getDayFilter(`${yyyy}-${mm}-${dd}`) === 'WEEKEND') {
+    setTimeSlot('ALL');
+    return;
+  }
+  setTimeSlot(currentSlot);
+}
+
+// ── Helpers ────────────────────────────────────────────
+function getClassDay(cls) {
+  if (/매일/.test(cls))   return 'DAILY';
+  if (/월수금/.test(cls)) return 'MWF';
+  if (/화목/.test(cls))   return 'TTH';
+  return 'DAILY';
+}
+
+function getDayFilter(dateStr) {
+  if (!dateStr) return 'ALL';
+  const [y,m,d] = dateStr.split('-').map(Number);
+  const day = new Date(y, m-1, d).getDay();
+  if (day === 0 || day === 6) return 'WEEKEND';
+  if (day === 1 || day === 3 || day === 5) return 'MWF';
+  return 'TTH';
+}
+
+function formatDateDisplay(dateStr) {
+  if (!dateStr) return '';
+  const [y,m,d] = dateStr.split('-');
+  const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  return `${m}/${d} (${days[new Date(Number(y),Number(m)-1,Number(d)).getDay()]})`;
+}
+
+function calcGrade(pct) {
+  if (pct >= 90) return { str: `A · ${pct}%`, cls: 'grade-A' };
+  if (pct >= 80) return { str: `B · ${pct}%`, cls: 'grade-B' };
+  if (pct >= 70) return { str: `C · ${pct}%`, cls: 'grade-C' };
+  return           { str: `D · ${pct}%`, cls: 'grade-D' };
+}
+
+// ── Main tab switch ────────────────────────────────────
+function switchMainTab(tab) {
+  document.getElementById('dailyLogScreen').style.display = tab === 'dailylog' ? 'block' : 'none';
+  document.getElementById('dashScreen').style.display     = tab === 'dash'     ? 'block' : 'none';
+  document.getElementById('ersScreen').style.display      = tab === 'ers'      ? 'block' : 'none';
+  document.getElementById('tabDailyLog').classList.toggle('active', tab === 'dailylog');
+  document.getElementById('tabDash').classList.toggle('active',     tab === 'dash');
+  document.getElementById('tabERS').classList.toggle('active',      tab === 'ers');
+  if (tab === 'ers' && !ersWeeksLoaded) loadErsWeeks();
+  if (tab === 'dash') {
+    document.querySelectorAll('#dashTimeFilter .pill').forEach(b =>
+      b.classList.toggle('active', b.dataset.slot === dashSlot));
+    initDashClasses();
+  }
+}
+
+// ── Time slot (Daily Log) ──────────────────────────────
+function setTimeSlot(slot) {
+  currentSlot = slot;
+  document.querySelectorAll('#timeFilter .pill[data-slot]').forEach(b =>
+    b.classList.toggle('active', b.dataset.slot === slot));
+
+  const dateStr   = document.getElementById('datePicker').value;
+  const dayFilter = getDayFilter(dateStr);
+  if (dayFilter === 'WEEKEND' && slot !== 'INT') return;
+
+  const sel  = document.getElementById('classSelect');
+  const prev = sel.value;
+  sel.innerHTML = '<option value="">— Select class —</option>';
+
+  const sourceClasses = slot === 'INT' ? intensiveClasses : allClasses;
+
+  sourceClasses
+    .filter(c => {
+      if (slot === 'INT') return true;
+      const cd = getClassDay(c.cls);
+      if (cd !== 'DAILY' && cd !== dayFilter) return false;
+      if (slot === 'ALL') return true;
+
+      const base = c.cls.replace(/\(.*\)/, '').trim();
+
+      if (/^GS/i.test(base)) {
+        return slot === 'R';
+      }
+
+      const m = c.cls.match(/[PQR](?=\d)/i);
+      if (m) return m[0].toUpperCase() === slot;
+
+      return cd === 'DAILY';
+    })
+    .forEach(c => {
+      const o = document.createElement('option');
+      o.value = o.textContent = c.cls;
+      sel.appendChild(o);
+    });
+
+  sel.value = allClasses.some(c => c.cls === prev) ? prev : '';
+  if (!sel.value) resetBelowClass();
+  else onClassChange();
+}
+
+// ── Class (Daily Log) ──────────────────────────────────
+function onClassChange() {
+  const cls = document.getElementById('classSelect').value;
+  if (!cls) {
+    resetBelowClass();
+    return;
+  }
+
+  const info =
+    allClasses.find(c => c.cls === cls) ||
+    intensiveClasses.find(c => c.cls === cls);
+
+  if (!info) {
+    resetBelowClass();
+    return;
+  }
+
+  const teacherRow = document.getElementById('teacherPillRow');
+  teacherRow.innerHTML = '';
+  selectedIntensiveTeacher = '';
+
+  if (info.intensive && info.teacherGroups) {
+    teacherRow.style.display = 'flex';
+
+    info.teacherGroups.forEach(group => {
+      const button = document.createElement('button');
+      button.className = 'pill';
+      button.textContent = group.teacher;
+      button.onclick = () => setIntensiveTeacher(group.teacher);
+      teacherRow.appendChild(button);
+    });
+
+    document.getElementById('fnTabs').style.display = 'none';
+    clearStudentList();
+  } else {
+    teacherRow.style.display = 'none';
+    document.getElementById('fnTabs').style.display = 'grid';
+  }
+
+  const subjects = info.subjects || [];
+  const sel  = document.getElementById('subjectSelect');
+  const prev = sel.value;
+
+  sel.innerHTML = '<option value="">— Select subject —</option>';
+
+  subjects.forEach(subject => {
+    const option = document.createElement('option');
+    option.value = option.textContent = subject;
+    sel.appendChild(option);
+  });
+
+  if (subjects.includes(prev)) {
+    sel.value = prev;
+  }
+
+  if (!info.intensive) {
+    setFunction(currentFn);
+  }
+}
+
+function setIntensiveTeacher(teacher) {
+  selectedIntensiveTeacher = teacher;
+
+  document.querySelectorAll('#teacherPillRow .pill').forEach(button => {
+    button.classList.toggle('active', button.textContent === teacher);
+  });
+
+  document.getElementById('fnTabs').style.display = 'grid';
+  setFunction(currentFn);
+}
+
+function resetBelowClass() {
+  document.getElementById('fnTabs').style.display        = 'none';
+  document.getElementById('subjectSelect').style.display = 'none';
+  document.getElementById('maxScoreRow').style.display   = 'none';
+  clearStudentList();
+}
+
+// ── Function tab ───────────────────────────────────────
+function setFunction(fn) {
+  currentFn = fn;
+  bhRegMode = false;
+  bhRegStudents = [];
+
+  document.getElementById(
+    'studentList'
+  ).classList.remove('bh-reg-active');
+
+  document.querySelectorAll('.fn-tab').forEach(b =>
+    b.classList.toggle('active', b.dataset.fn === fn));
+
+  const subSel = document.getElementById('subjectSelect');
+  const maxRow = document.getElementById('maxScoreRow');
+  document.getElementById('topTitle').textContent =
+    fn === 'attendance' ? '📋 Attendance' :
+    fn === 'test'       ? '📝 Daily Test' : '📚 Homework';
+  document.getElementById('submitBtn').textContent =
+    fn === 'attendance' ? 'Submit Attendance' :
+    fn === 'test'       ? 'Submit Test Scores' : 'Submit Homework';
+
+  document.getElementById('hwGuide').style.display = fn === 'homework' ? 'block' : 'none';
+  document.getElementById('avgDisplayRow').style.display = 'none';
+  document.getElementById('allABtn').style.display = 'none';
+
+  if (fn === 'attendance') {
+    subSel.style.display = 'none';
+    maxRow.style.display = 'none';
+    document.getElementById('rSubRow').style.display = 'none';
+    rSubType = null;
+    loadStudentList();
+  } else {
+    subSel.style.display = 'block';
+    maxRow.style.display = fn === 'test' ? 'flex' : 'none';
+    clearStudentList();
+    updateRSubRow();
+    if (subSel.value) loadStudentList();
+  }
+}
+
+function onSubjectChange() {
+  const subj = document.getElementById('subjectSelect').value;
+
+  bhRegMode =
+    currentFn === 'test' &&
+    subj === 'BH';
+
+  if (!subj) {
+    bhRegMode = false;
+    clearStudentList();
+    updateRSubRow();
+    return;
+  }
+
+  if (currentFn === 'test') {
+    maxScore = null;
+    document.getElementById('maxScoreInput').value = '';
+  }
+
+  if (bhRegMode) {
+    document.getElementById('maxScoreRow').style.display = 'none';
+    document.getElementById('rSubRow').style.display = 'none';
+    document.getElementById('avgDisplayRow').style.display = 'none';
+    document.getElementById('allPresentBtn').style.display = 'none';
+    document.getElementById('allABtn').style.display = 'none';
+    document.getElementById('submitBtn').textContent = 'Save Book Hunters';
+
+    loadBookHunters();
+    return;
+  }
+
+  document.getElementById(
+    'studentList'
+  ).classList.remove('bh-reg-active');
+
+  document.getElementById('submitBtn').textContent =
+    currentFn === 'test'
+      ? 'Submit Test Scores'
+      : currentFn === 'homework'
+        ? 'Submit Homework'
+        : 'Submit Attendance';
+
+  updateRSubRow();
+  loadStudentList();
+}
+
+function updateRSubRow() {
+  const subj = document.getElementById('subjectSelect').value;
+  const show = currentFn === 'test' && (subj === 'R' || subj === 'Novel');
+  document.getElementById('rSubRow').style.display = show ? 'flex' : 'none';
+  if (!show) { rSubType = null; }
+  document.querySelectorAll('#rSubRow .pill').forEach(b =>
+    b.classList.toggle('active', b.dataset.rsub === (rSubType || '')));
+}
+
+function setRSub(sub) {
+  rSubType = sub || null;
+  document.querySelectorAll('#rSubRow .pill').forEach(b =>
+    b.classList.toggle('active', b.dataset.rsub === (sub)));
+  if (document.getElementById('classSelect').value) loadStudentList();
+}
+
+function onMaxScoreChange() {
+  const v = parseFloat(document.getElementById('maxScoreInput').value);
+  maxScore = (!isNaN(v) && v > 0) ? v : null;
+  document.querySelectorAll('.max-display').forEach(el => el.textContent = maxScore || '?');
+  updateSummary();
+}
+
+function onDateChange() {
+  setTimeSlot(currentSlot);
+}
+
+// ── Load students ──────────────────────────────────────
+function loadStudentList() {
+  const loadSeq = ++studentLoadSeq;
+
+  const cls  = document.getElementById('classSelect').value;
+  const date = document.getElementById('datePicker').value;
+  const subj = document.getElementById('subjectSelect').value;
+
+  const requestedFn = currentFn;
+  if (!cls || !date) { clearStudentList(); return; }
+  if ((currentFn === 'test' || currentFn === 'homework') && !subj) { clearStudentList(); return; }
+
+    const info =
+    allClasses.find(c => c.cls === cls) ||
+    intensiveClasses.find(c => c.cls === cls);
+
+  if (!info) {
+    clearStudentList();
+    return;
+  }
+
+  let students = info.students || [];
+
+  if (info.intensive) {
+    const teacherGroup = (info.teacherGroups || []).find(
+      group => group.teacher === selectedIntensiveTeacher
+    );
+
+    if (!teacherGroup) {
+      clearStudentList();
+      return;
+    }
+
+    students = teacherGroup.students;
+  }
+
+  let sub = `${cls} · ${formatDateDisplay(date)}`;
+
+  if (info.intensive && selectedIntensiveTeacher) {
+    sub += ` · ${selectedIntensiveTeacher}`;
+  }
+  if (subj) sub += ` · ${subj}`;
+  document.getElementById('topSubtitle').textContent = sub;
+
+  if (currentFn === 'attendance') {
+    existingMap = {};
+
+    const cachedToday =
+      date === loginTodayDate &&
+      Array.isArray(loginTodayAttendance[cls])
+        ? loginTodayAttendance[cls]
+        : null;
+
+    if (cachedToday !== null) {
+      cachedToday.forEach(e => {
+        existingMap[e.name] = e;
+      });
+
+      renderAttendance(students);
+
+      document.getElementById('listOverlay').style.display = 'none';
+      document.getElementById('submitBtn').disabled = false;
+      document.getElementById('allPresentBtn').style.display = 'block';
+
+      return;
+    }
+
+    renderAttendance(students);
+
+    document.getElementById('listOverlay').style.display = 'flex';
+    document.getElementById('submitBtn').disabled = true;
+    document.getElementById('allPresentBtn').style.display = 'none';
+
+    gasCall('attendance_getExisting', {cls, date})
+      .then(existing => {
+        if (
+          loadSeq !== studentLoadSeq ||
+          currentFn !== 'attendance' ||
+          document.getElementById('classSelect').value !== cls ||
+          document.getElementById('datePicker').value !== date
+        ) {
+          return;
+        }
+
+        if (existing && existing.error) {
+          throw new Error(existing.error);
+        }
+
+        if (!Array.isArray(existing)) {
+          throw new Error('Invalid attendance lookup response.');
+        }
+
+        existingMap = {};
+
+        existing.forEach(e => {
+          existingMap[e.name] = e;
+        });
+
+        renderAttendance(students);
+
+        document.getElementById('listOverlay').style.display = 'none';
+        document.getElementById('submitBtn').disabled = false;
+        document.getElementById('allPresentBtn').style.display = 'block';
+      })
+      .catch(err => {
+        console.error('attendance_getExisting error:', err);
+
+        document.getElementById('listOverlay').style.display = 'none';
+        document.getElementById('submitBtn').disabled = true;
+        document.getElementById('allPresentBtn').style.display = 'none';
+
+        alert(
+          'Attendance lookup failed: ' +
+          (err.message || err)
+        );
+      });
+  } else {
+    existingMap = {};
+    attendanceMap = {};
+    renderScoreList(students);
+    document.getElementById('listOverlay').style.display = 'flex';
+    document.getElementById('submitBtn').disabled = true;
+
+    const rawSubj   = document.getElementById('subjectSelect').value;
+    const finalSubj = ((rawSubj === 'R' || rawSubj === 'Novel') && rSubType) ? rawSubj + ' - ' + rSubType : rawSubj;
+    const isRType   = (rawSubj === 'R' || rawSubj === 'Novel') && !rSubType && currentFn === 'test';
+
+    const requestSubjects = currentFn === 'test' && isRType
+      ? [
+          rawSubj,
+          rawSubj + ' - Vocab',
+          rawSubj + ' - Comp'
+        ]
+      : [];
+
+    gasCall('daily_getExisting', {
+      cls,
+      date,
+      type: requestedFn,
+      subject: requestedFn === 'homework' ? subj : finalSubj,
+      subjects: requestSubjects
+    })
+      .then(result => {
+        if (
+          loadSeq !== studentLoadSeq ||
+          currentFn !== requestedFn ||
+          document.getElementById('classSelect').value !== cls ||
+          document.getElementById('datePicker').value !== date ||
+          document.getElementById('subjectSelect').value !== subj
+        ) {
+          return;
+        }
+
+        existingMap   = {};
+        attendanceMap = {};
+
+        (result.attendance || []).forEach(a => {
+          attendanceMap[a.name] = a;
+        });
+
+        if (currentFn === 'homework') {
+          (result.scores[subj] || []).forEach(e => {
+            existingMap[e.name] = {
+              ...e,
+              existing: true
+            };
+          });
+        }
+
+        if (currentFn === 'test') {
+          if (isRType) {
+            const rData     = result.scores[rawSubj] || [];
+            const vocabData = result.scores[rawSubj + ' - Vocab'] || [];
+            const compData  = result.scores[rawSubj + ' - Comp'] || [];
+
+            const combined = {};
+
+            rData.forEach(e => {
+              combined[e.name] = combined[e.name] || {};
+              combined[e.name].R = e;
+            });
+
+            vocabData.forEach(e => {
+              combined[e.name] = combined[e.name] || {};
+              combined[e.name].Vocab = e;
+            });
+
+            compData.forEach(e => {
+              combined[e.name] = combined[e.name] || {};
+              combined[e.name].Comp = e;
+            });
+
+            Object.entries(combined).forEach(([name, subs]) => {
+              const parts = [];
+
+              if (subs.R) {
+                parts.push(`R ${subs.R.score !== null ? subs.R.score : '—'}${subs.R.max ? '/'+subs.R.max : ''}`);
+              }
+
+              if (subs.Vocab) {
+                parts.push(`Vocab ${subs.Vocab.score !== null ? subs.Vocab.score : '—'}${subs.Vocab.max ? '/'+subs.Vocab.max : ''}`);
+              }
+
+              if (subs.Comp) {
+                parts.push(`Comp ${subs.Comp.score !== null ? subs.Comp.score : '—'}${subs.Comp.max ? '/'+subs.Comp.max : ''}`);
+              }
+
+              if (parts.length) {
+                existingMap[name] = {
+                  score: subs.R ? subs.R.score : null,
+                  max:   subs.R ? subs.R.max   : null,
+                  note:  parts.join(' · '),
+                  existing: true,
+                  combinedDisplay: parts.join(' · ')
+                };
+              }
+            });
+          } else {
+            (result.scores[finalSubj] || []).forEach(e => {
+              existingMap[e.name] = e;
+            });
+          }
+        }
+
+        renderScoreList(students);
+      })
+      .catch(err => { console.error('loadStudentList error:', err); })
+      .finally(() => {
+        document.getElementById('listOverlay').style.display = 'none';
+        document.getElementById('submitBtn').disabled = false;
+      });
+  }
+}
+
+function clearStudentList() {
+  document.getElementById('topSubtitle').textContent = 'Select a class to begin';
+  document.getElementById('studentList').innerHTML   = '<div class="no-students">Select a class above</div>';
+  document.getElementById('submitBtn').disabled      = true;
+  document.getElementById('summaryLine').textContent = '—';
+  document.getElementById('allPresentBtn').style.display = 'none';
+  studentData = [];
+}
+
+// ── Attendance render ──────────────────────────────────
+function renderAttendance(students) {
+  studentData = students.map(s => ({
+    name: s.name, nick: s.nick, status: null, reason: '',
+    existingStatus: existingMap[s.name]?.status || null,
+    existingReason: existingMap[s.name]?.reason || ''
+  }));
+
+  const list = document.getElementById('studentList');
+  list.innerHTML = '';
+  if (!studentData.length) {
+    list.innerHTML = '<div class="no-students">No students in this class</div>';
+    document.getElementById('submitBtn').disabled = true;
+    return;
+  }
+
+  studentData.forEach((s, i) => {
+    const card = document.createElement('div');
+    card.className = 'student-card' + (s.existingStatus ? ' existing' : '');
+    card.id = `card-${i}`;
+    card.onclick = () => cycleStatus(i);
+    const existNote = s.existingStatus
+      ? `<div class="existing-label">Already logged: ${s.existingStatus}${s.existingReason ? ' · '+s.existingReason : ''}</div>`
+      : '';
+    card.innerHTML = `
+      <div class="student-top">
+        <div>
+          <div class="student-name">${s.nick||s.name}</div>
+          <div class="student-nick">${s.nick?s.name:''}</div>
+          ${existNote}
+        </div>
+        <div class="status-badge" id="badge-${i}">—</div>
+      </div>
+      <div class="extra-box" id="extra-${i}">
+        <input type="text" placeholder="Reason (optional)"
+               onclick="event.stopPropagation()"
+               oninput="studentData[${i}].reason=this.value">
+      </div>`;
+    list.appendChild(card);
+  });
+
+  document.getElementById('submitBtn').disabled = false;
+  document.getElementById('allPresentBtn').style.display = 
+    currentFn === 'attendance' ? 'block' : 'none';
+  updateSummary();
+}
+
+function markAllA() {
+  studentData.forEach((s, i) => {
+    s.hwGrade = 'A';
+    const row = document.querySelector(`#card-${i} .hw-grade-row`);
+    if (row) {
+      row.querySelectorAll('.hw-grade-btn').forEach(b => b.className = 'hw-grade-btn');
+      row.querySelector('.hw-grade-btn').classList.add('selected-A');
+    }
+  });
+  updateSummary();
+}
+
+function markAllPresent() {
+  studentData.forEach((s, i) => {
+    if (s.status !== 'Present') {
+      s.status = 'Present';
+      const card  = document.getElementById(`card-${i}`);
+      const badge = document.getElementById(`badge-${i}`);
+      const extra = document.getElementById(`extra-${i}`);
+      card.className = 'student-card present';
+      badge.textContent = 'Present';
+      extra.classList.remove('visible');
+      s.reason = '';
+      if (extra.querySelector('input')) extra.querySelector('input').value = '';
+    }
+  });
+  updateSummary();
+}
+
+function cycleStatus(i) {
+  const s = studentData[i];
+  s.status = s.status === null ? 'Present' : s.status === 'Present' ? 'Absent' : s.status === 'Absent' ? 'Late' : null;
+  const card  = document.getElementById(`card-${i}`);
+  const badge = document.getElementById(`badge-${i}`);
+  const extra = document.getElementById(`extra-${i}`);
+  card.className = 'student-card' + (s.status ? ' '+s.status.toLowerCase() : s.existingStatus ? ' existing' : '');
+  badge.textContent = s.status || '—';
+  const need = s.status === 'Absent' || s.status === 'Late';
+  extra.classList.toggle('visible', need);
+  if (!need) { s.reason = ''; extra.querySelector('input').value = ''; }
+  updateSummary();
+}
+
+// ── Regular Book Hunters ───────────────────────────────
+
+function bhRegParseScore(value) {
+  const text =
+    String(value || '').trim();
+
+  if (!text) {
+    return null;
+  }
+
+  const match =
+    text.match(
+      /^(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)$/
+    );
+
+  if (!match) {
+    return false;
+  }
+
+  const score = Number(match[1]);
+  const max = Number(match[2]);
+
+  if (
+    !Number.isFinite(score) ||
+    !Number.isFinite(max) ||
+    score < 0 ||
+    max <= 0 ||
+    score > max
+  ) {
+    return false;
+  }
+
+  return {
+    score,
+    max,
+    pct: Math.round(score / max * 100)
+  };
+}
+
+
+function loadBookHunters() {
+  document.getElementById(
+    'studentList'
+  ).classList.add('bh-reg-active');
+
+  const cls =
+    document.getElementById('classSelect').value;
+
+  const date =
+    document.getElementById('datePicker').value;
+
+  const info =
+    allClasses.find(c => c.cls === cls) ||
+    intensiveClasses.find(c => c.cls === cls);
+
+  if (!cls || !date || !info) {
+    clearStudentList();
+    return;
+  }
+
+  let students = info.students || [];
+
+  if (info.intensive) {
+    const teacherGroup =
+      (info.teacherGroups || []).find(
+        group =>
+          group.teacher === selectedIntensiveTeacher
+      );
+
+    students =
+      teacherGroup
+        ? teacherGroup.students
+        : [];
+  }
+
+  document.getElementById(
+    'topTitle'
+  ).textContent = '📚 Book Hunters';
+
+  document.getElementById(
+    'topSubtitle'
+  ).textContent =
+    `${cls} · ${formatDateDisplay(date)}`;
+
+  document.getElementById(
+    'studentList'
+  ).innerHTML =
+    '<div class="no-students">Loading...</div>';
+
+  document.getElementById(
+    'submitBtn'
+  ).disabled = true;
+
+  gasCall('bhReg_getDaily', {
+    cls,
+    date
+  })
+    .then(result => {
+      const saved =
+        result.scores || {};
+
+      bhRegStudents =
+        students.map(student => ({
+          name: student.name,
+          nick: student.nick,
+          scores:
+            (saved[student.name] || [])
+              .map(score => score.raw)
+        }));
+
+      renderBookHunters();
+    })
+    .catch(err => {
+      console.error(
+        'Book Hunters load error:',
+        err
+      );
+
+      document.getElementById(
+        'studentList'
+      ).innerHTML =
+        '<div class="no-students">' +
+        'Book Hunters load failed' +
+        '</div>';
+    });
+}
+
+
+function renderBookHunters() {
+  const list =
+    document.getElementById('studentList');
+
+  if (!bhRegStudents.length) {
+    list.innerHTML =
+      '<div class="no-students">No students</div>';
+
+    document.getElementById(
+      'summaryLine'
+    ).textContent = '0 books';
+
+    return;
+  }
+
+  let html =
+    '<div class="bh-reg-list">';
+
+  bhRegStudents.forEach(
+    (student, studentIndex) => {
+
+      if (!Array.isArray(student.scores)) {
+        student.scores = [];
+      }
+
+      if (student.scores.length === 0) {
+        student.scores.push('');
+      }
+
+      const bookCount =
+        student.scores.filter(score => {
+          const parsed =
+            bhRegParseScore(score);
+
+          return parsed !== null &&
+                 parsed !== false;
+        }).length;
+
+      html += `
+        <div class="bh-reg-card">
+
+          <div class="bh-reg-head">
+            <div>
+              <div class="student-name">
+                ${bhEscape_(student.nick || student.name)}
+              </div>
+
+              <div class="student-nick">
+                ${
+                  student.nick
+                    ? bhEscape_(student.name)
+                    : ''
+                }
+              </div>
+            </div>
+
+            <div
+              class="bh-reg-count"
+              id="bhRegCount-${studentIndex}">
+              ${bookCount} books
+            </div>
+          </div>
+      `;
+
+      student.scores.forEach(
+        (score, scoreIndex) => {
+
+          const parsed =
+            bhRegParseScore(score);
+
+          const scoreClass =
+            score === ''
+              ? ''
+              : parsed
+                ? 'valid'
+                : 'invalid';
+
+          html += `
+            <div class="bh-reg-score-row">
+
+              <div class="bh-reg-book-label">
+                Book ${scoreIndex + 1}
+              </div>
+
+              <input
+                class="bh-reg-score ${scoreClass}"
+                type="text"
+                inputmode="text"
+                autocomplete="off"
+                placeholder="7/7"
+                value="${bhAttr_(score)}"
+                oninput="
+                  bhRegSetScore(
+                    ${studentIndex},
+                    ${scoreIndex},
+                    this.value,
+                    this
+                  )
+                ">
+
+            </div>
+          `;
+        }
+      );
+
+      if (student.scores.length < 10) {
+        html += `
+          <button
+            class="bh-reg-add"
+            onclick="
+              bhRegAddBook(${studentIndex})
+            ">
+            + Add book
+          </button>
+        `;
+      }
+
+      html += `
+        </div>
+      `;
+    }
+  );
+
+  html += '</div>';
+
+  list.innerHTML = html;
+
+  document.getElementById(
+    'submitBtn'
+  ).disabled = false;
+
+  bhRegUpdateSummary();
+}
+
+
+function bhRegSetScore(
+  studentIndex,
+  scoreIndex,
+  value,
+  input
+) {
+  bhRegStudents[studentIndex]
+    .scores[scoreIndex] = value;
+
+  const parsed =
+    bhRegParseScore(value);
+
+  input.classList.remove(
+    'valid',
+    'invalid'
+  );
+
+  if (String(value).trim()) {
+    input.classList.add(
+      parsed
+        ? 'valid'
+        : 'invalid'
+    );
+  }
+
+  bhRegUpdateStudentCount(
+    studentIndex
+  );
+
+  bhRegUpdateSummary();
+}
+
+
+function bhRegAddBook(studentIndex) {
+  const scores =
+    bhRegStudents[studentIndex].scores;
+
+  if (scores.length >= 10) {
+    return;
+  }
+
+  scores.push('');
+
+  renderBookHunters();
+}
+
+
+function bhRegUpdateStudentCount(studentIndex) {
+  const student =
+    bhRegStudents[studentIndex];
+
+  const count =
+    (student.scores || []).filter(score => {
+      const parsed =
+        bhRegParseScore(score);
+
+      return parsed !== null &&
+             parsed !== false;
+    }).length;
+
+  const el =
+    document.getElementById(
+      `bhRegCount-${studentIndex}`
+    );
+
+  if (el) {
+    el.textContent =
+      `${count} ${count === 1 ? 'book' : 'books'}`;
+  }
+}
+
+
+function bhRegUpdateSummary() {
+  let books = 0;
+
+  bhRegStudents.forEach(student => {
+    books +=
+      (student.scores || []).filter(score => {
+        const parsed =
+          bhRegParseScore(score);
+
+        return parsed !== null &&
+               parsed !== false;
+      }).length;
+  });
+
+  document.getElementById(
+    'summaryLine'
+  ).textContent =
+    `${books} books entered`;
+}
+
+
+// ── Score render ───────────────────────────────────────
+function renderScoreList(students) {
+  studentData = students.map(s => {
+    const ex = existingMap[s.name] || null;
+    return { name: s.name, nick: s.nick, score: ex ? (ex.score ?? null) : null, max: ex ? (ex.max ?? null) : null, note: ex ? ex.note : '', hwGrade: ex ? ex.hwGrade || null : null, existing: !!ex, combinedDisplay: ex ? ex.combinedDisplay || null : null };
+  });
+  const list = document.getElementById('studentList');
+  list.innerHTML = '';
+  if (!studentData.length) {
+    list.innerHTML = '<div class="no-students">No students in this class</div>';
+    document.getElementById('submitBtn').disabled = true;
+    return;
+  }
+  const isTest = currentFn === 'test';
+  studentData.forEach((s, i) => {
+    const card = document.createElement('div');
+    card.className = 'score-card' + (s.existing ? ' filled' : '');
+    card.id = `card-${i}`;
+    const maxDisp = isTest ? `<span class="slash">/</span><span class="max-display">${maxScore||'?'}</span>` : '';
+    const existNote = s.existing
+      ? `<div class="existing-label">Already logged: ${s.combinedDisplay || (currentFn === 'homework' ? (s.hwGrade || '—') : (s.score !== null ? s.score : '—')) + (s.max ? '/'+s.max : '') + (s.note ? ' · '+s.note : '')}</div>`
+      : '';
+    const attTag = attendanceMap[s.name] && attendanceMap[s.name].status !== 'Present'
+      ? `<div class="att-tag ${attendanceMap[s.name].status.toLowerCase()}">${attendanceMap[s.name].status}${attendanceMap[s.name].reason ? ' · '+attendanceMap[s.name].reason : ''}</div>`
+      : '';
+    const scoreVal = s.score !== null ? s.score : '';
+    const noteVal  = s.note || '';
+
+    if (currentFn === 'homework') {
+      const selA = s.hwGrade === 'A' ? 'selected-A' : '';
+      const selB = s.hwGrade === 'B' ? 'selected-B' : '';
+      const selC = s.hwGrade === 'C' ? 'selected-C' : '';
+      card.innerHTML = `
+        <div class="score-top">
+          <div>
+            <div class="student-name">${s.nick||s.name}</div>
+            <div class="student-nick">${s.nick?s.name:''}</div>
+            ${attTag}
+            ${existNote}
+          </div>
+        </div>
+        <div class="hw-grade-row">
+          <button class="hw-grade-btn ${selA}" onclick="setHWGrade(${i},'A',this)">A</button>
+          <button class="hw-grade-btn ${selB}" onclick="setHWGrade(${i},'B',this)">B</button>
+          <button class="hw-grade-btn ${selC}" onclick="setHWGrade(${i},'C',this)">C</button>
+        </div>
+        <div class="score-note">
+          <input type="text" placeholder="Note (optional)" value="${noteVal}"
+                 oninput="studentData[${i}].note=this.value" onclick="event.stopPropagation()">
+        </div>`;
+    } else {
+      card.innerHTML = `
+        <div class="score-top">
+          <div>
+            <div class="student-name">${s.nick||s.name}</div>
+            <div class="student-nick">${s.nick?s.name:''}</div>
+            ${attTag}
+            ${existNote}
+          </div>
+          <div class="score-grade" id="grade-${i}">—</div>
+        </div>
+        <div class="score-inputs">
+          <input type="number" min="0" max="200" step="0.5" placeholder="Score" inputmode="decimal"
+                 value="${scoreVal}" oninput="setScore(${i},this.value)" onclick="event.stopPropagation()" onwheel="this.blur()">
+          ${maxDisp}
+        </div>
+        <div class="score-note">
+          <input type="text" placeholder="Note (optional)" value="${noteVal}"
+                 oninput="studentData[${i}].note=this.value" onclick="event.stopPropagation()">
+        </div>`;
+      }
+    list.appendChild(card);
+    if (currentFn !== 'homework' && s.score !== null) setScore(i, s.score);
+  });
+  document.getElementById('submitBtn').disabled = false;
+  document.getElementById('allABtn').style.display = currentFn === 'homework' ? 'block' : 'none';
+  updateSummary();
+}
+
+function setScore(i, val) {
+  const v = val === '' ? null : parseFloat(val);
+  studentData[i].score = (v === null || isNaN(v)) ? null : v;
+  const card  = document.getElementById(`card-${i}`);
+  const grade = document.getElementById(`grade-${i}`);
+  if (studentData[i].score === null) {
+    card.className = 'score-card'; grade.className = 'score-grade'; grade.textContent = '—';
+    updateSummary(); return;
+  }
+  card.className = 'score-card filled';
+  if (currentFn === 'test' && !maxScore) {
+    grade.className = 'score-grade'; grade.textContent = studentData[i].score;
+  } else {
+    const pct = currentFn === 'test' && maxScore
+      ? Math.round(studentData[i].score / maxScore * 100)
+      : Math.min(100, Math.round(studentData[i].score));
+    const g = calcGrade(pct);
+    grade.className = `score-grade ${g.cls}`; grade.textContent = g.str;
+  }
+  updateSummary();
+}
+
+function setHWGrade(i, grade, btn) {
+  const row = btn.closest('.hw-grade-row');
+  if (studentData[i].hwGrade === grade) {
+    studentData[i].hwGrade = null;
+    row.querySelectorAll('.hw-grade-btn').forEach(b => b.className = 'hw-grade-btn');
+  } else {
+    studentData[i].hwGrade = grade;
+    row.querySelectorAll('.hw-grade-btn').forEach(b => b.className = 'hw-grade-btn');
+    btn.classList.add('selected-' + grade);
+  }
+  updateSummary();
+}
+
+
+  
+// ── Summary ────────────────────────────────────────────
+function updateSummary() {
+  if (currentFn === 'attendance') {
+    const touched = studentData.filter(s => s.status !== null);
+    const p = touched.filter(s => s.status==='Present').length;
+    const a = touched.filter(s => s.status==='Absent').length;
+    const l = touched.filter(s => s.status==='Late').length;
+    const u = studentData.length - touched.length;
+    const parts = [];
+    if (p) parts.push(`${p} present`);
+    if (a) parts.push(`${a} absent`);
+    if (l) parts.push(`${l} late`);
+    if (u) parts.push(`${u} untouched`);
+    document.getElementById('summaryLine').textContent = parts.join(' · ') || '—';
+  } else if (currentFn === 'homework') {
+    const filled = studentData.filter(s => s.hwGrade !== null).length;
+    document.getElementById('summaryLine').textContent = `${filled} / ${studentData.length} entered`;
+  } else {
+    const filled = studentData.filter(s => s.score !== null);
+    document.getElementById('summaryLine').textContent = `${filled.length} / ${studentData.length} entered`;
+    const avgRow = document.getElementById('avgDisplayRow');
+    const avgVal = document.getElementById('avgValue');
+    if (filled.length > 0 && maxScore) {
+      const avg = filled.reduce((sum, s) => sum + s.score, 0) / filled.length;
+      const avgPct = Math.round(avg / maxScore * 100);
+      avgVal.textContent = `${avg.toFixed(1)} / ${maxScore}  (${avgPct}%)`;
+      avgRow.style.display = 'flex';
+    } else if (filled.length > 0) {
+      const avg = filled.reduce((sum, s) => sum + s.score, 0) / filled.length;
+      avgVal.textContent = avg.toFixed(1);
+      avgRow.style.display = 'flex';
+    } else {
+      avgRow.style.display = 'none';
+    }
+  }
+}
+
+// ── Confirm ────────────────────────────────────────────
+
+function handleMainSubmit() {
+  if (bhRegMode) {
+    bhRegSave();
+    return;
+  }
+
+  showConfirm();
+}
+
+
+function bhRegSave() {
+  const cls =
+    document.getElementById('classSelect').value;
+
+  const date =
+    document.getElementById('datePicker').value;
+
+  const btn =
+    document.getElementById('submitBtn');
+
+  for (const student of bhRegStudents) {
+    for (const score of student.scores || []) {
+      const text =
+        String(score || '').trim();
+
+      if (
+        text &&
+        !bhRegParseScore(text)
+      ) {
+        alert(
+          `${student.nick || student.name}: ` +
+          `enter the score as 7/7 or 3/5.`
+        );
+
+        return;
+      }
+    }
+  }
+
+  btn.disabled = true;
+
+  btn.innerHTML =
+    '<span class="spinner"></span> Saving...';
+
+  gasCall('bhReg_saveDaily', {
+    cls,
+    date,
+    entries: bhRegStudents
+  })
+    .then(() => {
+      btn.textContent = 'Saved ✓';
+
+      setTimeout(() => {
+        btn.disabled = false;
+        btn.textContent = 'Save Book Hunters';
+
+        loadBookHunters();
+      }, 700);
+    })
+    .catch(err => {
+      alert(
+        'Book Hunters save error: ' +
+        (err.message || err)
+      );
+
+      btn.disabled = false;
+      btn.textContent = 'Save Book Hunters';
+    });
+}
+
+
+function showConfirm() {
+  const cls  = document.getElementById('classSelect').value;
+  const date = document.getElementById('datePicker').value;
+  const subj = document.getElementById('subjectSelect').value;
+  document.getElementById('confTitle').textContent =
+    currentFn === 'attendance' ? 'Confirm Attendance' :
+    currentFn === 'test'       ? 'Confirm Test Scores' : 'Confirm Homework';
+  document.getElementById('confSub').textContent =
+    `${cls} · ${formatDateDisplay(date)}` + (subj ? ` · ${subj}` : '');
+  const statsEl = document.getElementById('confStats');
+  const detailsEl = document.getElementById('confDetails');
+  if (currentFn === 'attendance') {
+    const t = studentData.filter(s => s.status !== null);
+    const p = t.filter(s=>s.status==='Present').length;
+    const a = t.filter(s=>s.status==='Absent').length;
+    const l = t.filter(s=>s.status==='Late').length;
+    statsEl.innerHTML = `
+      <div class="conf-stat p"><div class="num">${p}</div><div class="lbl">Present</div></div>
+      <div class="conf-stat a"><div class="num">${a}</div><div class="lbl">Absent</div></div>
+      <div class="conf-stat l"><div class="num">${l}</div><div class="lbl">Late</div></div>`;
+    detailsEl.innerHTML = t.filter(s=>s.status!=='Present')
+      .map(s=>`${s.status==='Absent'?'🔴':'🟡'} ${s.nick||s.name}${s.reason?' — '+s.reason:''}`)
+      .join('<br>') || '<span style="color:#bbb">All present</span>';
+  } else if (currentFn === 'homework') {
+    const filled = studentData.filter(s => s.hwGrade);
+    statsEl.innerHTML = `
+      <div class="conf-stat s"><div class="num">${filled.length}/${studentData.length}</div><div class="lbl">Entered</div></div>`;
+    detailsEl.innerHTML = filled.map(s =>
+      `${s.nick||s.name}: ${s.hwGrade}${s.note?' — '+s.note:''}`
+    ).join('<br>') || '<span style="color:#bbb">No grades entered</span>';
+  } else {
+    const filled = studentData.filter(s => s.score !== null);
+    const avgPct = filled.length ? Math.round(filled.reduce((sum,s) => {
+      const p = currentFn==='test' && maxScore ? (s.score/maxScore*100) : Math.min(100,s.score);
+      return sum + p;
+    }, 0) / filled.length) : null;
+    statsEl.innerHTML = `
+      <div class="conf-stat s"><div class="num">${filled.length}/${studentData.length}</div><div class="lbl">Entered</div></div>
+      <div class="conf-stat p"><div class="num">${avgPct!==null?avgPct+'%':'—'}</div><div class="lbl">Avg</div></div>`;
+    detailsEl.innerHTML = filled.map(s => {
+      const pct = currentFn==='test' && maxScore ? Math.round(s.score/maxScore*100) : Math.min(100,Math.round(s.score));
+      return `${s.nick||s.name}: ${s.score}${currentFn==='test'&&maxScore?'/'+maxScore:''} (${pct}%)${s.note?' — '+s.note:''}`;
+    }).join('<br>') || '<span style="color:#bbb">No scores entered</span>';
+  }
+  document.getElementById('confirmScreen').classList.add('visible');
+}
+
+function hideConfirm() {
+  document.getElementById('confirmScreen').classList.remove('visible');
+}
+
+// ── Submit ─────────────────────────────────────────────
+function doSubmit() {
+  const cls  = document.getElementById('classSelect').value;
+  const date = document.getElementById('datePicker').value;
+  const subj = document.getElementById('subjectSelect').value;
+  const classInfo =
+    allClasses.find(c => c.cls === cls) ||
+    intensiveClasses.find(c => c.cls === cls) ||
+    {};
+
+  const hr = classInfo.intensive
+    ? selectedIntensiveTeacher
+    : classInfo.hr || '';
+  const btn  = document.getElementById('confirmBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Saving...';
+    const onOk = () => {
+    btn.disabled = false;
+    btn.textContent = 'Saved ✓';
+    btn.style.background = '#2e7d32';
+
+    setTimeout(() => {
+      hideConfirm();
+      btn.textContent = 'Confirm';
+      btn.style.background = '';
+      resetAfterSuccess();
+    }, 1500);
+  };
+  const onErr = err => {
+    alert('Error saving: ' + (err.message||err));
+    btn.disabled = false; btn.textContent = 'Confirm';
+  };
+  if (currentFn === 'attendance') {
+    const entries = studentData.filter(s=>s.status!==null)
+      .map(s=>({name:s.name,nick:s.nick,status:s.status,reason:s.reason}));
+
+    gasCall('attendance_submit', {cls,date,hr,entries})
+      .then(result => {
+        if (date === loginTodayDate) {
+          const byName = {};
+
+          (loginTodayAttendance[cls] || []).forEach(e => {
+            byName[e.name] = e;
+          });
+
+          entries.forEach(e => {
+            byName[e.name] = e;
+          });
+
+          loginTodayAttendance[cls] = Object.values(byName);
+        }
+
+        onOk(result);
+      })
+      .catch(onErr);
+  } else if (currentFn === 'test') {
+    const entries = studentData.filter(s=>s.score!==null||s.note).map(s => {
+      const pct = (s.score!==null && maxScore) ? Math.round(s.score/maxScore*100) : null;
+      const g   = pct!==null ? calcGrade(pct).str.split(' ·')[0] : null;
+      return {name:s.name,nick:s.nick,score:s.score,max:maxScore,pct,grade:g,note:s.note};
+    });
+    const finalSubj = ((subj === 'R' || subj === 'Novel') && rSubType) ? subj + ' - ' + rSubType : subj;
+    gasCall('test_submit', {cls,date,hr,subject:finalSubj,entries}).then(onOk).catch(onErr);
+  } else {
+    const entries = studentData.filter(s=>s.hwGrade||s.note).map(s => {
+      return {name:s.name,nick:s.nick,hwGrade:s.hwGrade||null,note:s.note};
+    });
+    gasCall('homework_submit', {cls,date,hr,subject:subj,entries}).then(onOk).catch(onErr);
+  }
+}
+
+function resetAfterSuccess() {
+  existingMap = {};
+  attendanceMap = {};
+  clearStudentList();
+
+  const cls = document.getElementById('classSelect').value;
+
+  if (cls) {
+    if (currentFn === 'attendance') {
+      loadStudentList();
+    } else {
+      const subj = document.getElementById('subjectSelect').value;
+      if (subj) loadStudentList();
+    }
+  }
+}
+
+// ── Saturday Book Hunters ──────────────────────────────
+
+function bhSatInit() {
+  const d = new Date();
+
+  document.getElementById('bhDate').value =
+    d.getFullYear() + '-' +
+    String(d.getMonth() + 1).padStart(2, '0') + '-' +
+    String(d.getDate()).padStart(2, '0');
+
+  bhSatDirty = false;
+
+  bhSatSwitchTab('daily');
+
+  if (bhSatAutosaveTimer) {
+    clearInterval(bhSatAutosaveTimer);
+  }
+
+  bhSatAutosaveTimer = setInterval(() => {
+    if (
+      bhSatCurrentTab === 'daily' &&
+      bhSatDirty
+    ) {
+      bhSatAutosave();
+    }
+  }, 5 * 60 * 1000);
+}
+
+
+function bhSatLogout() {
+  bhSatPassword = '';
+  bhSatStudents = [];
+  bhSatDirty = false;
+
+  if (bhSatAutosaveTimer) {
+    clearInterval(bhSatAutosaveTimer);
+    bhSatAutosaveTimer = null;
+  }
+
+  document.getElementById('bhSatScreen').style.display = 'none';
+  document.getElementById('adminScreen').style.display = 'none';
+  document.getElementById('appScreen').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+
+  document.getElementById('pwInput').value = '';
+  document.getElementById('loginError').style.display = 'none';
+
+  sessionExpiry = null;
+}
+
+
+function bhSatSwitchTab(tab) {
+  bhSatCurrentTab = tab;
+
+  document
+    .getElementById('bhDailyTab')
+    .classList.toggle(
+      'active',
+      tab === 'daily'
+    );
+
+  document
+    .getElementById('bhAnalyticsTab')
+    .classList.toggle(
+      'active',
+      tab === 'analytics'
+    );
+
+  document.getElementById('bhDailyScreen').style.display =
+    tab === 'daily'
+      ? 'block'
+      : 'none';
+
+  document.getElementById('bhAnalyticsScreen').style.display =
+    tab === 'analytics'
+      ? 'block'
+      : 'none';
+
+  if (tab === 'daily') {
+    bhSatLoadDaily();
+  } else {
+    bhSatLoadAnalytics();
+  }
+}
+
+
+function bhSatLoadDaily() {
+  const date =
+    document.getElementById('bhDate').value;
+
+  const wrap =
+    document.getElementById('bhDailyGrid');
+
+  if (!date) return;
+
+  wrap.innerHTML =
+    '<div class="no-students">Loading...</div>';
+
+  gasCall('bhSat_getDaily', {
+    pw: bhSatPassword,
+    date
+  })
+    .then(result => {
+      bhSatStudents =
+        result.students || [];
+
+      bhSatDirty = false;
+
+      bhSatRenderDaily();
+    })
+    .catch(err => {
+      wrap.innerHTML =
+        '<div class="no-students">Error: ' +
+        bhEscape_(err.message || err) +
+        '</div>';
+    });
+}
+
+
+function bhSatRenderDaily() {
+  const wrap =
+    document.getElementById('bhDailyGrid');
+
+  if (!bhSatStudents.length) {
+    wrap.innerHTML =
+      '<div class="no-students">' +
+      'No active students in BH_SAT_ROSTER' +
+      '</div>';
+
+    document.getElementById(
+      'bhDailySummary'
+    ).textContent = '0 students';
+
+    return;
+  }
+
+  const maxScore =
+    Number(
+      document.getElementById(
+        'bhMaxScore'
+      ).value
+    ) || 10;
+
+  const passScore =
+    Number(
+      document.getElementById(
+        'bhPassScore'
+      ).value
+    );
+
+  const maxBooks = 10;
+
+  let html = `
+    <table class="bh-table">
+
+      <thead>
+        <tr>
+          <th class="bh-student-col">
+            Student
+          </th>
+
+          <th>Att</th>
+          <th>Progress</th>
+  `;
+
+  for (let book = 0; book < maxBooks; book++) {
+    html += `
+      <th>B${book + 1}</th>
+    `;
+  }
+
+  html += `
+          <th>Today</th>
+          <th>Avg</th>
+          <th>Attitude</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+
+      <tbody>
+  `;
+
+
+  bhSatStudents.forEach(
+    (student, rowIndex) => {
+
+      if (!student.daily) {
+        student.daily = {
+          attendance: '',
+          attendanceNote: '',
+          attitude: '',
+          progress: '',
+          progressNote: '',
+          note: ''
+        };
+      }
+
+      if (!Array.isArray(student.scores)) {
+        student.scores = [];
+      }
+
+      const daily = student.daily;
+      const scores = student.scores;
+
+      const validScores =
+        scores.filter(score =>
+          score.score !== null &&
+          score.score !== undefined &&
+          score.score !== ''
+        );
+
+      const scoreTotal =
+        validScores.reduce(
+          (sum, score) =>
+            sum + Number(score.score || 0),
+          0
+        );
+
+      const avg =
+        validScores.length
+          ? Math.round(
+              scoreTotal /
+              validScores.length /
+              maxScore *
+              100
+            )
+          : null;
+
+
+      html += `
+        <tr>
+
+          <td class="bh-student-col">
+
+            <strong>
+              ${bhEscape_(
+                student.nick ||
+                student.name
+              )}
+            </strong>
+
+            <div style="
+              font-size:11px;
+              color:#999;
+              font-weight:400;
+            ">
+              ${
+                student.nick
+                  ? bhEscape_(student.name)
+                  : ''
+              }
+            </div>
+
+          </td>
+
+
+          <td>
+
+            <select
+              class="bh-att-select"
+              onchange="
+                bhSatStudents[
+                  ${rowIndex}
+                ].daily.attendance =
+                  this.value;
+                bhSatDirty = true;
+              ">
+
+              <option
+                value=""
+                ${
+                  !daily.attendance
+                    ? 'selected'
+                    : ''
+                }>
+                —
+              </option>
+
+              <option
+                value="Present"
+                ${
+                  daily.attendance ===
+                  'Present'
+                    ? 'selected'
+                    : ''
+                }>
+                P
+              </option>
+
+              <option
+                value="Absent"
+                ${
+                  daily.attendance ===
+                  'Absent'
+                    ? 'selected'
+                    : ''
+                }>
+                A
+              </option>
+
+              <option
+                value="Late"
+                ${
+                  daily.attendance ===
+                  'Late'
+                    ? 'selected'
+                    : ''
+                }>
+                L
+              </option>
+
+            </select>
+
+          </td>
+
+
+          <td>
+
+            <input
+              class="bh-progress-input"
+              type="text"
+              placeholder="2D [9]"
+              value="${
+                bhAttr_(
+                  daily.progress || ''
+                )
+              }"
+              oninput="
+                bhSatStudents[
+                  ${rowIndex}
+                ].daily.progress =
+                  this.value;
+                bhSatDirty = true;
+              ">
+
+          </td>
+      `;
+
+
+      for (
+        let bookIndex = 0;
+        bookIndex < maxBooks;
+        bookIndex++
+      ) {
+        const scoreObj =
+          scores[bookIndex] || {
+            score: null,
+            max: maxScore,
+            note: ''
+          };
+
+        const value =
+          scoreObj.score === null ||
+          scoreObj.score === undefined
+            ? ''
+            : scoreObj.score;
+
+        let scoreClass = '';
+
+        if (value !== '') {
+          scoreClass =
+            Number(value) >= passScore
+              ? 'bh-score-pass'
+              : 'bh-score-fail';
+        }
+
+        html += `
+          <td>
+
+            <input
+              class="
+                bh-score-input
+                ${scoreClass}
+              "
+              type="number"
+              min="0"
+              max="${maxScore}"
+              step="0.5"
+              value="${value}"
+              title="${
+                bhAttr_(
+                  scoreObj.note || ''
+                )
+              }"
+              oninput="
+                bhSatSetScore(
+                  ${rowIndex},
+                  ${bookIndex},
+                  this.value,
+                  this
+                )
+              ">
+
+          </td>
+        `;
+      }
+
+
+      html += `
+          <td>
+            <strong id="bhToday-${rowIndex}">
+              ${validScores.length}
+            </strong>
+          </td>
+
+          <td>
+            <strong id="bhAvg-${rowIndex}">
+              ${
+                avg === null
+                  ? '—'
+                  : avg + '%'
+              }
+            </strong>
+          </td>
+
+          <td>
+
+            <select
+              class="bh-att-select"
+              onchange="
+                bhSatStudents[
+                  ${rowIndex}
+                ].daily.attitude =
+                  this.value;
+                bhSatDirty = true;
+              ">
+
+              <option
+                value=""
+                ${
+                  !daily.attitude
+                    ? 'selected'
+                    : ''
+                }>
+                —
+              </option>
+
+              <option
+                value="A"
+                ${
+                  daily.attitude === 'A'
+                    ? 'selected'
+                    : ''
+                }>
+                A
+              </option>
+
+              <option
+                value="B"
+                ${
+                  daily.attitude === 'B'
+                    ? 'selected'
+                    : ''
+                }>
+                B
+              </option>
+
+              <option
+                value="C"
+                ${
+                  daily.attitude === 'C'
+                    ? 'selected'
+                    : ''
+                }>
+                C
+              </option>
+
+            </select>
+
+          </td>
+
+          <td>
+
+            <input
+              class="bh-text-input"
+              type="text"
+              placeholder="Notes"
+              value="${
+                bhAttr_(
+                  daily.note || ''
+                )
+              }"
+              oninput="
+                bhSatStudents[
+                  ${rowIndex}
+                ].daily.note =
+                  this.value;
+                bhSatDirty = true;
+              ">
+
+          </td>
+
+        </tr>
+      `;
+    }
+  );
+
+
+  html += `
+      </tbody>
+    </table>
+  `;
+
+  wrap.innerHTML = html;
+
+  bhSatUpdateDailySummary();
+}
+
+
+function bhSatSetScore(
+  studentIndex,
+  bookIndex,
+  value,
+  input
+) {
+  const student = bhSatStudents[studentIndex];
+
+  if (!Array.isArray(student.scores)) {
+    student.scores = [];
+  }
+
+  const maxScore =
+    Number(document.getElementById('bhMaxScore').value) || 10;
+
+  const passScore =
+    Number(document.getElementById('bhPassScore').value);
+
+  while (student.scores.length <= bookIndex) {
+    student.scores.push({
+      score: null,
+      max: maxScore,
+      note: ''
+    });
+  }
+
+  student.scores[bookIndex].score =
+    value === ''
+      ? null
+      : Number(value);
+
+  student.scores[bookIndex].max =
+    maxScore;
+
+  bhSatDirty = true;
+
+  input.classList.remove(
+    'bh-score-pass',
+    'bh-score-fail'
+  );
+
+  if (value !== '') {
+    input.classList.add(
+      Number(value) >= passScore
+        ? 'bh-score-pass'
+        : 'bh-score-fail'
+    );
+  }
+
+  bhSatUpdateStudentStats(studentIndex);
+  bhSatUpdateDailySummary();
+}
+
+
+function bhSatUpdateStudentStats(studentIndex) {
+  const student = bhSatStudents[studentIndex];
+
+  const maxScore =
+    Number(document.getElementById('bhMaxScore').value) || 10;
+
+  const validScores =
+    (student.scores || []).filter(score =>
+      score.score !== null &&
+      score.score !== undefined &&
+      score.score !== ''
+    );
+
+  const today = validScores.length;
+
+  const avg =
+    today > 0
+      ? Math.round(
+          validScores.reduce(
+            (sum, score) => sum + Number(score.score || 0),
+            0
+          ) /
+          today /
+          maxScore *
+          100
+        )
+      : null;
+
+  const todayEl =
+    document.getElementById(`bhToday-${studentIndex}`);
+
+  const avgEl =
+    document.getElementById(`bhAvg-${studentIndex}`);
+
+  if (todayEl) {
+    todayEl.textContent = today;
+  }
+
+  if (avgEl) {
+    avgEl.textContent =
+      avg === null
+        ? '—'
+        : avg + '%';
+  }
+}
+
+
+function bhSatUpdateDailySummary() {
+  let books = 0;
+
+  bhSatStudents.forEach(student => {
+    books +=
+      (student.scores || [])
+        .filter(score =>
+          score.score !== null &&
+          score.score !== undefined &&
+          score.score !== ''
+        )
+        .length;
+  });
+
+  document.getElementById(
+    'bhDailySummary'
+  ).textContent =
+    `${bhSatStudents.length} students · ` +
+    `${books} books today`;
+}
+
+
+function bhSatAutosave() {
+  const date =
+    document.getElementById(
+      'bhDate'
+    ).value;
+
+  if (!date || !bhSatDirty) {
+    return;
+  }
+
+  const maxScore =
+    Number(
+      document.getElementById(
+        'bhMaxScore'
+      ).value
+    ) || 10;
+
+  const passScore =
+    Number(
+      document.getElementById(
+        'bhPassScore'
+      ).value
+    );
+
+  gasCall('bhSat_saveDaily', {
+    pw: bhSatPassword,
+    date,
+    maxScore,
+    passScore,
+    entries: bhSatStudents
+  })
+    .then(() => {
+      bhSatDirty = false;
+
+      const summary =
+        document.getElementById(
+          'bhDailySummary'
+        );
+
+      if (summary) {
+        summary.textContent +=
+          ' · Autosaved';
+
+        setTimeout(() => {
+          bhSatUpdateDailySummary();
+        }, 1500);
+      }
+    })
+    .catch(err => {
+      console.error(
+        'Saturday BH autosave failed:',
+        err
+      );
+    });
+}
+
+
+function bhSatSaveDaily() {
+  const date =
+    document.getElementById(
+      'bhDate'
+    ).value;
+
+  const maxScore =
+    Number(
+      document.getElementById(
+        'bhMaxScore'
+      ).value
+    ) || 10;
+
+  const passScore =
+    Number(
+      document.getElementById(
+        'bhPassScore'
+      ).value
+    );
+
+  const btn =
+    document.getElementById(
+      'bhSaveBtn'
+    );
+
+  if (!date) {
+    return;
+  }
+
+  btn.disabled = true;
+
+  btn.innerHTML =
+    '<span class="spinner"></span> Saving...';
+
+  gasCall('bhSat_saveDaily', {
+    pw: bhSatPassword,
+    date,
+    maxScore,
+    passScore,
+    entries: bhSatStudents
+  })
+    .then(() => {
+      bhSatDirty = false;
+
+      btn.textContent =
+        'Saved ✓';
+
+      setTimeout(() => {
+        btn.disabled = false;
+        btn.textContent =
+          'Save Daily Board';
+
+        bhSatLoadDaily();
+      }, 700);
+    })
+    .catch(err => {
+      alert(
+        'Saturday BH save error: ' +
+        (err.message || err)
+      );
+
+      btn.disabled = false;
+
+      btn.textContent =
+        'Save Daily Board';
+    });
+}
+
+
+function bhSatLoadAnalytics() {
+  const summary =
+    document.getElementById(
+      'bhAnalyticsSummary'
+    );
+
+  const wrap =
+    document.getElementById(
+      'bhAnalyticsGrid'
+    );
+
+  summary.innerHTML = '';
+
+  wrap.innerHTML =
+    '<div class="no-students">' +
+    'Loading...' +
+    '</div>';
+
+  gasCall('bhSat_getAnalytics', {
+    pw: bhSatPassword
+  })
+    .then(result => {
+
+      document.getElementById(
+        'bhAnalyticsRange'
+      ).textContent =
+        result.startDate &&
+        result.endDate
+          ? (
+              result.startDate +
+              ' → ' +
+              result.endDate
+            )
+          : 'No saved data yet';
+
+
+      summary.innerHTML = `
+
+        <div class="bh-summary-card">
+          <div class="num">
+            ${result.totalBooks || 0}
+          </div>
+
+          <div class="lbl">
+            Total Books
+          </div>
+        </div>
+
+
+        <div class="bh-summary-card">
+          <div class="num">
+            ${result.avgBooks || 0}
+          </div>
+
+          <div class="lbl">
+            Avg / Student
+          </div>
+        </div>
+
+
+        <div class="bh-summary-card">
+          <div class="num">
+            ${
+              result.passRate === null
+                ? '—'
+                : result.passRate + '%'
+            }
+          </div>
+
+          <div class="lbl">
+            Pass Rate
+          </div>
+        </div>
+      `;
+
+
+      let html = `
+        <table class="bh-table">
+
+          <thead>
+            <tr>
+              <th class="bh-student-col">
+                Student
+              </th>
+
+              <th>Sessions</th>
+              <th>Attendance</th>
+              <th>Books</th>
+              <th>Pass</th>
+              <th>Pass Rate</th>
+              <th>Avg Score</th>
+              <th>Current Progress</th>
+              <th>Progress History</th>
+            </tr>
+          </thead>
+
+          <tbody>
+      `;
+
+
+      (result.students || [])
+        .forEach(student => {
+
+          html += `
+            <tr>
+
+              <td class="bh-student-col">
+
+                <strong>
+                  ${bhEscape_(
+                    student.nick ||
+                    student.name
+                  )}
+                </strong>
+
+                <div style="
+                  font-size:11px;
+                  color:#999;
+                  font-weight:400;
+                ">
+                  ${
+                    student.nick
+                      ? bhEscape_(
+                          student.name
+                        )
+                      : ''
+                  }
+                </div>
+
+              </td>
+
+
+              <td>
+                ${student.sessions}
+              </td>
+
+
+              <td>
+                ${student.attended}/
+                ${student.sessions}
+
+                ${
+                  student.attendancePct === null
+                    ? ''
+                    : (
+                        ' (' +
+                        student.attendancePct +
+                        '%)'
+                      )
+                }
+              </td>
+
+
+              <td>
+                <strong>
+                  ${student.books}
+                </strong>
+              </td>
+
+
+              <td>
+                ${student.pass}
+              </td>
+
+
+              <td>
+                ${
+                  student.passRate === null
+                    ? '—'
+                    : student.passRate + '%'
+                }
+              </td>
+
+
+              <td>
+                ${
+                  student.avgScore === null
+                    ? '—'
+                    : student.avgScore + '%'
+                }
+              </td>
+
+
+              <td>
+                ${bhEscape_(
+                  student.progress || '—'
+                )}
+              </td>
+
+
+              <td style="
+                text-align:left;
+                min-width:260px;
+                white-space:normal;
+                line-height:1.6;
+              ">
+                ${
+                  student.progressHistory &&
+                  student.progressHistory.length
+                    ? student.progressHistory
+                        .map(item => {
+                          const parts =
+                            item.date.split('-');
+
+                          const shortDate =
+                            parts.length === 3
+                              ? parts[1] + '/' + parts[2]
+                              : item.date;
+
+                          return (
+                            '<div>' +
+                            bhEscape_(shortDate) +
+                            ' — ' +
+                            bhEscape_(item.progress) +
+                            '</div>'
+                          );
+                        })
+                        .join('')
+                    : '—'
+                }
+              </td>
+
+            </tr>
+          `;
+        });
+
+
+      html += `
+          </tbody>
+        </table>
+      `;
+
+      wrap.innerHTML = html;
+    })
+    .catch(err => {
+      wrap.innerHTML =
+        '<div class="no-students">' +
+        bhEscape_(err.message || err) +
+        '</div>';
+    });
+}
+
+
+function bhEscape_(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+
+function bhAttr_(value) {
+  return bhEscape_(value);
+}
+
+
+// ── Admin Attendance Batch ─────────────────────────────
+function initAdmin() {
+  const today = new Date();
+
+  const end = new Date(today);
+  const start = new Date(today);
+  start.setDate(start.getDate() - 13);
+
+  const fmt = d =>
+    `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+
+  document.getElementById('adminStartDate').value = fmt(start);
+  document.getElementById('adminEndDate').value   = fmt(end);
+
+  adminClasses = [];
+
+  const sel = document.getElementById('adminClassSelect');
+  sel.innerHTML = '<option value="">Loading classes...</option>';
+  sel.disabled = true;
+
+  buildAdminDates();
+
+  gasCall('admin_getOptions', {
+    pw: adminPassword
+  })
+    .then(classes => {
+      adminClasses = classes || [];
+
+      sel.innerHTML = '<option value="">— Select class —</option>';
+
+      adminClasses.forEach(c => {
+        const option = document.createElement('option');
+        option.value = c.cls;
+        option.textContent = c.cls;
+        sel.appendChild(option);
+      });
+    })
+    .catch(err => {
+      console.error('admin_getOptions error:', err);
+      sel.innerHTML = '<option value="">Error loading classes</option>';
+    })
+    .finally(() => {
+      sel.disabled = false;
+    });
+}
+
+
+function adminModeChanged() {
+  adminMode = document.getElementById('adminModeSelect').value;
+
+  const subjectSelect = document.getElementById('adminSubjectSelect');
+  const maxWrap = document.getElementById('adminMaxScoreWrap');
+
+  subjectSelect.style.display =
+    adminMode === 'attendance' ? 'none' : 'block';
+
+  maxWrap.style.display =
+    adminMode === 'test' ? 'flex' : 'none';
+
+  populateAdminSubjects();
+
+  adminGridData = null;
+  adminChanges = {};
+
+  document.getElementById('adminGridWrap').style.display = 'none';
+  document.getElementById('adminSaveBar').style.display = 'none';
+}
+
+
+function adminSubjectChanged() {
+  adminGridData = null;
+  adminChanges = {};
+
+  document.getElementById('adminGridWrap').style.display = 'none';
+  document.getElementById('adminSaveBar').style.display = 'none';
+}
+
+
+function populateAdminSubjects() {
+  const cls = document.getElementById('adminClassSelect').value;
+  const sel = document.getElementById('adminSubjectSelect');
+
+  sel.innerHTML = '<option value="">— Select subject —</option>';
+
+  if (!cls || adminMode === 'attendance') return;
+
+  const info = adminClasses.find(c => c.cls === cls);
+  if (!info) return;
+
+  const subjects = [];
+
+  (info.subjects || []).forEach(subject => {
+    subjects.push(subject);
+
+    if (subject === 'R' || subject === 'Novel') {
+      subjects.push(subject + ' - Vocab');
+      subjects.push(subject + ' - Comp');
+    }
+  });
+
+  [...new Set(subjects)].forEach(subject => {
+    const option = document.createElement('option');
+    option.value = subject;
+    option.textContent = subject;
+    sel.appendChild(option);
+  });
+}
+
+
+function adminClassChanged() {
+  adminGridData = null;
+  adminChanges = {};
+
+  document.getElementById('adminGridWrap').style.display = 'none';
+  document.getElementById('adminSaveBar').style.display = 'none';
+
+  populateAdminSubjects();
+  buildAdminDates();
+}
+
+
+function buildAdminDates() {
+  const startStr = document.getElementById('adminStartDate').value;
+  const endStr   = document.getElementById('adminEndDate').value;
+  const cls      = document.getElementById('adminClassSelect').value;
+
+  const wrap = document.getElementById('adminDateChips');
+  wrap.innerHTML = '';
+
+  if (!startStr || !endStr) return;
+
+  const start = new Date(startStr + 'T00:00:00');
+  const end   = new Date(endStr + 'T00:00:00');
+
+  if (start > end) return;
+
+  let allowedDays = [1, 2, 3, 4, 5];
+
+  if (/월수금/.test(cls)) {
+    allowedDays = [1, 3, 5];
+  } else if (/화목/.test(cls)) {
+    allowedDays = [2, 4];
+  }
+
+  const d = new Date(start);
+  let count = 0;
+
+  while (d <= end && count < 31) {
+    const day = d.getDay();
+
+    if (allowedDays.includes(day)) {
+      const yyyy = d.getFullYear();
+      const mm   = String(d.getMonth()+1).padStart(2,'0');
+      const dd   = String(d.getDate()).padStart(2,'0');
+      const key  = `${yyyy}-${mm}-${dd}`;
+
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'pill active';
+      btn.dataset.date = key;
+      btn.textContent = formatDateDisplay(key);
+
+      btn.onclick = () => {
+        btn.classList.toggle('active');
+      };
+
+      wrap.appendChild(btn);
+    }
+
+    d.setDate(d.getDate() + 1);
+    count++;
+  }
+}
+
+
+function getAdminSelectedDates() {
+  return Array.from(
+    document.querySelectorAll('#adminDateChips .pill.active')
+  ).map(btn => btn.dataset.date);
+}
+
+
+function loadAdminGrid() {
+  const cls     = document.getElementById('adminClassSelect').value;
+  const subject = document.getElementById('adminSubjectSelect').value;
+  const dates   = getAdminSelectedDates();
+
+  if (!cls) {
+    alert('Select a class.');
+    return;
+  }
+
+  if (adminMode !== 'attendance' && !subject) {
+    alert('Select a subject.');
+    return;
+  }
+
+  if (!dates.length) {
+    alert('Select at least one date.');
+    return;
+  }
+
+  const action =
+    adminMode === 'attendance'
+      ? 'admin_getAttendanceGrid'
+      : adminMode === 'homework'
+        ? 'admin_getHomeworkGrid'
+        : 'admin_getTestGrid';
+
+  const btn = document.getElementById('adminLoadBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Loading...';
+
+  gasCall(action, {
+    pw: adminPassword,
+    cls,
+    subject,
+    dates
+  })
+    .then(data => {
+      if (data.error) throw new Error(data.error);
+
+      adminGridData = {
+        mode: adminMode,
+        cls,
+        subject,
+        dates,
+        hr: data.hr || '',
+        students: data.students || [],
+        existing: data.existing || {},
+        attendance: data.attendance || {},
+        ignoredDates: data.ignoredDates || []
+      };
+
+      adminChanges = {};
+
+      renderAdminGrid();
+    })
+    .catch(err => {
+      alert('Admin load error: ' + (err.message || err));
+    })
+    .finally(() => {
+      btn.disabled = false;
+      btn.textContent = 'Load Entries';
+    });
+}
+
+
+function getAdminVisibleDates() {
+  if (!adminGridData) return [];
+
+  const ignoredDates =
+    new Set(adminGridData.ignoredDates || []);
+
+  const validDates =
+    adminGridData.dates.filter(date => {
+      if (
+        adminGridData.mode === 'homework' &&
+        ignoredDates.has(date)
+      ) {
+        return false;
+      }
+
+      return true;
+    });
+
+  const missingOnly =
+    document.getElementById('adminMissingOnly')?.checked;
+
+  if (!missingOnly) {
+    return validDates;
+  }
+
+  return validDates.filter(date => {
+    return adminGridData.students.some(student => {
+      const key = date + '|' + student.name;
+
+      return !adminGridData.existing[key];
+    });
+  });
+}
+
+
+function renderAdminGrid() {
+  const wrap = document.getElementById('adminGridWrap');
+
+  if (!adminGridData) {
+    wrap.style.display = 'none';
+    return;
+  }
+
+  const students = adminGridData.students;
+  const existing = adminGridData.existing;
+  const dates = getAdminVisibleDates();
+
+  if (!dates.length) {
+    wrap.innerHTML =
+      '<div class="no-students">✅ No missing dates in this range</div>';
+
+    wrap.style.display = 'block';
+    document.getElementById('adminSaveBar').style.display = 'none';
+    return;
+  }
+
+  let html = `
+    <table style="
+      border-collapse:separate;
+      border-spacing:0;
+      width:max-content;
+      min-width:100%;
+      background:#fff;
+      border-radius:12px;
+      overflow:visible;
+      box-shadow:0 2px 8px rgba(0,0,0,0.06);
+    ">
+      <thead>
+        <tr>
+          <th style="
+            position:sticky;
+            left:0;
+            top:0;
+            z-index:6;
+            background:#f3f5f8;
+            padding:10px;
+            min-width:130px;
+            width:130px;
+            max-width:130px;
+            border-bottom:1px solid #ddd;
+            border-right:2px solid #ddd;
+            box-shadow:4px 0 6px -6px rgba(0,0,0,0.35);
+          ">
+            Student
+          </th>
+  `;
+
+    dates.forEach(date => {
+    const allPresentButton = adminMode === 'attendance'
+      ? `
+        <button
+          type="button"
+          onclick="event.stopPropagation(); adminFillDatePresent('${date}')"
+          style="
+            margin-top:6px;
+            padding:4px 7px;
+            border:1px solid #c8d6c9;
+            border-radius:6px;
+            background:#e8f5e9;
+            color:#2e7d32;
+            font-size:10px;
+            font-weight:700;
+            cursor:pointer;
+          ">
+          All P
+        </button>
+      `
+      : '';
+
+    html += `
+      <th style="
+        position:sticky;
+        top:0;
+        z-index:5;
+        background:#f3f5f8;
+        padding:8px 6px;
+        min-width:92px;
+        border-bottom:1px solid #ddd;
+        font-size:12px;
+      ">
+        <div>${formatDateDisplay(date)}</div>
+        ${allPresentButton}
+      </th>
+    `;
+  });
+
+  html += `
+        </tr>
+      </thead>
+      <tbody>
+  `;
+
+  students.forEach((student, rowIndex) => {
+    html += `
+      <tr>
+        <td style="
+          position:sticky;
+          left:0;
+          z-index:4;
+          background:#fff;
+          padding:10px;
+          min-width:130px;
+          width:130px;
+          max-width:130px;
+          border-bottom:1px solid #eee;
+          border-right:2px solid #ddd;
+          box-shadow:4px 0 6px -6px rgba(0,0,0,0.35);
+          font-weight:700;
+        ">
+          ${student.nick || student.name}
+          <div style="font-size:11px;color:#999;font-weight:400;">
+            ${student.nick ? student.name : ''}
+          </div>
+        </td>
+    `;
+
+    dates.forEach((date, colIndex) => {
+      const key = date + '|' + student.name;
+      const saved = existing[key] || null;
+      const current = adminChanges[key] || saved || null;
+
+      if (adminMode === 'attendance') {
+        const status = current ? current.status : '';
+        const reason = current ? (current.reason || '') : '';
+        const showReason = status === 'Absent' || status === 'Late';
+
+        html += `
+          <td
+            style="
+              padding:8px;
+              border-bottom:1px solid #eee;
+              border-left:1px solid #eee;
+              text-align:center;
+              font-weight:700;
+              min-width:110px;
+              ${adminAttendanceCellStyle(status, !!saved)}
+            ">
+            <div
+              onclick="cycleAdminAttendance('${date}',${rowIndex})"
+              style="
+                cursor:pointer;
+                padding:6px 4px;
+              ">
+              ${adminAttendanceShort(status)}
+            </div>
+
+            ${showReason ? `
+              <input
+                type="text"
+                placeholder="Reason"
+                value="${adminEscapeAttr(reason)}"
+                onclick="event.stopPropagation()"
+                oninput="setAdminAttendanceReason('${date}',${rowIndex},this.value)"
+                style="
+                  width:100%;
+                  margin-top:4px;
+                  padding:6px;
+                  border:1px solid #ddd;
+                  border-radius:6px;
+                  font-size:12px !important;
+                  background:#fff;
+                ">
+            ` : ''}
+          </td>
+        `;
+      }
+      if (adminMode === 'homework') {
+        const grade = current ? current.hwGrade : '';
+
+        const attendance =
+          adminGridData.attendance?.[key] || null;
+
+        const attendanceStatus =
+          attendance
+            ? attendance.status || ''
+            : '';
+
+        const isAbsent =
+          attendanceStatus === 'Absent';
+
+        const attendanceLabel =
+          attendanceStatus === 'Present'
+            ? '<div style="font-size:10px;color:#2e7d32;margin-top:4px;">P</div>'
+            : attendanceStatus === 'Absent'
+              ? '<div style="font-size:10px;color:#c62828;margin-top:4px;">ABSENT</div>'
+              : attendanceStatus === 'Late'
+                ? '<div style="font-size:10px;color:#e65100;margin-top:4px;">LATE</div>'
+                : '<div style="font-size:10px;color:#bbb;margin-top:4px;">—</div>';
+
+        html += `
+          <td
+            ${isAbsent ? '' : `onclick="cycleAdminHomework('${date}',${rowIndex})"`}
+            style="
+              padding:8px;
+              border-bottom:1px solid #eee;
+              border-left:1px solid #eee;
+              text-align:center;
+              cursor:${isAbsent ? 'default' : 'pointer'};
+              font-weight:700;
+              min-width:92px;
+              ${isAbsent ? 'background:#fff5f5;color:#c62828;' : ''}
+            ">
+            ${isAbsent ? '—' : (grade || '—')}
+            ${attendanceLabel}
+          </td>
+        `;
+      }
+
+      if (adminMode === 'test') {
+        const score =
+          current && current.score !== null
+            ? current.score
+            : '';
+
+        const attendance =
+          adminGridData.attendance?.[key] || null;
+
+        const attendanceStatus =
+          attendance
+            ? attendance.status || ''
+            : '';
+
+        const isAbsent =
+          attendanceStatus === 'Absent';
+
+        const attendanceLabel =
+          attendanceStatus === 'Present'
+            ? '<div style="font-size:10px;color:#2e7d32;margin-top:4px;text-align:center;">P</div>'
+            : attendanceStatus === 'Absent'
+              ? '<div style="font-size:10px;color:#c62828;margin-top:4px;text-align:center;">ABSENT</div>'
+              : attendanceStatus === 'Late'
+                ? '<div style="font-size:10px;color:#e65100;margin-top:4px;text-align:center;">LATE</div>'
+                : '<div style="font-size:10px;color:#bbb;margin-top:4px;text-align:center;">—</div>';
+
+        html += `
+          <td style="
+            padding:6px;
+            border-bottom:1px solid #eee;
+            border-left:1px solid #eee;
+            min-width:92px;
+            ${isAbsent ? 'background:#fff5f5;' : ''}
+          ">
+            ${
+              isAbsent
+                ? `
+                  <div style="
+                    height:36px;
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                    color:#c62828;
+                    font-weight:700;
+                  ">
+                    —
+                  </div>
+                `
+                : `
+                  <input
+                    type="number"
+                    value="${score}"
+                    step="0.5"
+                    style="
+                      width:72px;
+                      padding:8px;
+                      text-align:center;
+                      border:1px solid #ddd;
+                      border-radius:7px;
+                    "
+                    onchange="setAdminTestScore('${date}',${rowIndex},this.value)">
+                `
+            }
+
+            ${attendanceLabel}
+          </td>
+        `;
+      }
+    });
+
+    html += '</tr>';
+  });
+
+  html += `
+      </tbody>
+    </table>
+  `;
+
+  wrap.innerHTML = html;
+  wrap.style.display = 'block';
+
+  document.getElementById('adminSaveBar').style.display = 'block';
+
+  document.getElementById('adminAttendanceBulkRow').style.display =
+    adminMode === 'attendance' ? 'flex' : 'none';
+
+  updateAdminSaveButton();
+}
+
+
+function adminAttendanceShort(status) {
+  if (status === 'Present') return 'P';
+  if (status === 'Absent')  return 'A';
+  if (status === 'Late')    return 'L';
+  return '—';
+}
+
+
+function adminAttendanceCellStyle(status, existing) {
+  if (status === 'Present') {
+    return 'background:#e8f5e9;color:#2e7d32;';
+  }
+
+  if (status === 'Absent') {
+    return 'background:#ffebee;color:#c62828;';
+  }
+
+  if (status === 'Late') {
+    return 'background:#fff3e0;color:#e65100;';
+  }
+
+  if (existing) {
+    return 'background:#f5f5f5;color:#888;';
+  }
+
+  return 'background:#fff;color:#bbb;';
+}
+
+
+function cycleAdminAttendance(date, rowIndex) {
+  if (!adminGridData) return;
+
+  const student = adminGridData.students[rowIndex];
+  const key = date + '|' + student.name;
+
+  const saved = adminGridData.existing[key] || null;
+  const current = adminChanges[key] || saved || null;
+  const status = current ? current.status : '';
+  const reason = current ? (current.reason || '') : '';
+
+  let next = 'Present';
+
+  if (status === 'Present') next = 'Absent';
+  else if (status === 'Absent') next = 'Late';
+  else if (status === 'Late') next = '';
+
+  if (!next) {
+    delete adminChanges[key];
+  } else {
+    adminChanges[key] = {
+      date,
+      name: student.name,
+      nick: student.nick || '',
+      status: next,
+      reason: next === 'Present' ? '' : reason
+    };
+  }
+
+  renderAdminGrid();
+}
+
+function adminEscapeAttr(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+
+function setAdminAttendanceReason(date, rowIndex, value) {
+  if (!adminGridData) return;
+
+  const student = adminGridData.students[rowIndex];
+  const key = date + '|' + student.name;
+
+  const saved = adminGridData.existing[key] || null;
+  const current = adminChanges[key] || saved || null;
+
+  if (!current || (current.status !== 'Absent' && current.status !== 'Late')) {
+    return;
+  }
+
+  adminChanges[key] = {
+    date,
+    name: student.name,
+    nick: student.nick || '',
+    status: current.status,
+    reason: value
+  };
+
+  updateAdminSaveButton();
+}
+
+
+function adminFillDatePresent(date) {
+  if (!adminGridData) return;
+
+  adminGridData.students.forEach(student => {
+    const key = date + '|' + student.name;
+
+    adminChanges[key] = {
+      date,
+      name: student.name,
+      nick: student.nick || '',
+      status: 'Present',
+      reason: ''
+    };
+  });
+
+  renderAdminGrid();
+}
+
+
+function cycleAdminHomework(date, rowIndex) {
+  const student = adminGridData.students[rowIndex];
+  const key = date + '|' + student.name;
+
+  const attendance =
+    adminGridData.attendance?.[key];
+
+  if (
+    attendance &&
+    attendance.status === 'Absent'
+  ) {
+    return;
+  }
+
+  const saved = adminGridData.existing[key] || null;
+  const current = adminChanges[key] || saved || null;
+  const grade = current ? current.hwGrade : '';
+
+  let next = 'A';
+
+  if (grade === 'A') next = 'B';
+  else if (grade === 'B') next = 'C';
+  else if (grade === 'C') next = '';
+
+  if (!next) {
+    delete adminChanges[key];
+  } else {
+    adminChanges[key] = {
+      date,
+      name: student.name,
+      nick: student.nick || '',
+      hwGrade: next,
+      note: ''
+    };
+  }
+
+  renderAdminGrid();
+}
+
+
+function setAdminTestScore(date, rowIndex, value) {
+  const student = adminGridData.students[rowIndex];
+  const key = date + '|' + student.name;
+
+  const attendance =
+    adminGridData.attendance?.[key];
+
+  if (
+    attendance &&
+    attendance.status === 'Absent'
+  ) {
+    return;
+  }
+
+  if (value === '') {
+    delete adminChanges[key];
+    updateAdminSaveButton();
+    return;
+  }
+
+  const score = parseFloat(value);
+  if (!Number.isFinite(score)) return;
+
+  const max = parseFloat(
+    document.getElementById('adminMaxScore').value
+  );
+
+  adminChanges[key] = {
+    date,
+    name: student.name,
+    nick: student.nick || '',
+    score,
+    max: Number.isFinite(max) ? max : null,
+    note: ''
+  };
+
+  updateAdminSaveButton();
+}
+
+
+function adminFillBlankPresent() {
+  if (!adminGridData) return;
+
+  adminGridData.students.forEach(student => {
+    adminGridData.dates.forEach(date => {
+      const key = date + '|' + student.name;
+
+      if (adminGridData.existing[key]) return;
+      if (adminChanges[key]) return;
+
+      adminChanges[key] = {
+        date,
+        name: student.name,
+        nick: student.nick || '',
+        status: 'Present',
+        reason: ''
+      };
+    });
+  });
+
+  renderAdminGrid();
+}
+
+
+function adminClearChanges() {
+  adminChanges = {};
+  renderAdminGrid();
+}
+
+
+function updateAdminSaveButton() {
+  const btn = document.getElementById('adminSaveBtn');
+  if (!btn) return;
+
+  const count = Object.keys(adminChanges).length;
+
+  btn.textContent = count
+    ? `Save Changes (${count})`
+    : 'Save Changes';
+}
+
+
+function saveAdminBatch() {
+  if (!adminGridData) return;
+
+  const changes = Object.values(adminChanges);
+
+  if (!changes.length) {
+    alert('No changes to save.');
+    return;
+  }
+
+  let action;
+
+  if (adminMode === 'attendance') {
+    action = 'admin_saveAttendanceBatch';
+  } else if (adminMode === 'homework') {
+    action = 'admin_saveHomeworkBatch';
+  } else {
+    action = 'admin_saveTestBatch';
+  }
+
+  const btn = document.getElementById('adminSaveBtn');
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Saving...';
+
+  gasCall(action, {
+    pw: adminPassword,
+    cls: adminGridData.cls,
+    hr: adminGridData.hr,
+    subject: adminGridData.subject || '',
+    changes
+  })
+    .then(result => {
+      if (result.error) throw new Error(result.error);
+
+      adminChanges = {};
+
+      loadAdminGrid();
+    })
+    .catch(err => {
+      alert('Admin save error: ' + (err.message || err));
+    })
+    .finally(() => {
+      btn.disabled = false;
+      updateAdminSaveButton();
+    });
+}
+  
+// ── e-RS ───────────────────────────────────────────────
+function setErsTimeSlot(slot) {
+  ersSlot = slot;
+  document.querySelectorAll('#ersTimeFilter .pill').forEach(b =>
+    b.classList.toggle('active', b.dataset.slot === slot));
+  populateErsClasses();
+  document.getElementById('ersWeekSelect').style.display = 'none';
+  document.getElementById('ersRatioSection').style.display = 'none';
+  document.getElementById('ersStudentList').innerHTML = '<div class="no-students">Loading...</div>';
+}
+
+function loadErsWeeks() {
+  gasCall('ers_getWeeks', {})
+    .then(weeks => {
+      ersWeeks = weeks;
+      ersWeeksLoaded = true;
+      populateErsClasses();
+      // If a class is already selected, load its data automatically
+      if (document.getElementById('ersClassSelect').value) {
+        onErsClassChange();
+      }
+    })
+    .catch(() => {});
+}
+
+function populateErsClasses() {
+  const sel = document.getElementById('ersClassSelect');
+  const prev = sel.value;
+  sel.innerHTML = '<option value="">— Select class —</option>';
+  allClasses
+    .filter(c => {
+      if (!ersSlot || ersSlot === 'ALL') return true;
+
+      const base = c.cls.replace(/\(.*\)/, '').trim();
+
+      if (/^GS/i.test(base)) {
+        return ersSlot === 'R';
+      }
+
+      const m = c.cls.match(/[PQR](?=\d)/i);
+      return m && m[0].toUpperCase() === ersSlot;
+    })
+    .forEach(c => {
+      const o = document.createElement('option');
+      o.value = o.textContent = c.cls;
+      sel.appendChild(o);
+    });
+  if (allClasses.some(c => c.cls === prev)) sel.value = prev;
+  else sel.value = '';
+}
+
+function setDashTimeSlot(slot) {
+  dashSlot = slot;
+  document.querySelectorAll('#dashTimeFilter .pill').forEach(b =>
+    b.classList.toggle('active', b.dataset.slot === slot));
+  initDashClasses();
+}
+
+function onErsClassChange() {
+  const cls = document.getElementById('ersClassSelect').value;
+  if (!cls) {
+    document.getElementById('ersWeekSelect').style.display = 'none';
+    document.getElementById('ersRatioSection').style.display = 'none';
+    document.getElementById('ersStudentList').innerHTML = '<div class="no-students">Select a class above</div>';
+    return;
+  }
+  const wSel = document.getElementById('ersWeekSelect');
+  wSel.innerHTML = '<option value="">— Select week —</option>';
+  ersWeeks.forEach(w => {
+    const o = document.createElement('option');
+    o.value = w.key; o.textContent = w.label;
+    wSel.appendChild(o);
+  });
+  const defaultWeek = ersWeeks.find(w => w.isDefault) || ersWeeks[ersWeeks.length - 1];
+  if (defaultWeek) wSel.value = defaultWeek.key;
+  wSel.style.display = 'block';
+  loadErsData();
+}
+
+function loadErsData() {
+  const cls     = document.getElementById('ersClassSelect').value;
+  const weekKey = document.getElementById('ersWeekSelect').value;
+  if (!cls || !weekKey) return;
+  document.getElementById('ersStudentList').innerHTML = '<div class="no-students">Loading...</div>';
+  gasCall('ers_getData', { cls, weekKey })
+    .then(data => renderErsData(data))
+    .catch(() => {
+      document.getElementById('ersStudentList').innerHTML = '<div class="no-students">Error loading data</div>';
+    });
+}
+
+function renderErsData(data) {
+  const { students, classFic, classNF, classPB, classEB } = data;
+  const totalFN = classFic + classNF;
+  const totalPE = classPB + classEB;
+  const ficPct  = totalFN ? Math.round(classFic / totalFN * 100) : 0;
+  const pbPct   = totalPE ? Math.round(classPB  / totalPE * 100) : 0;
+
+  document.getElementById('classFicBar').style.width = ficPct + '%';
+  document.getElementById('classFicLabel').textContent =
+    totalFN ? `Fiction ${classFic} (${ficPct}%) · Nonfiction ${classNF} (${100-ficPct}%)` : 'No data';
+  document.getElementById('classPBBar').style.width = pbPct + '%';
+  document.getElementById('classPBLabel').textContent =
+    totalPE ? `Paper ${classPB} (${pbPct}%) · eBook ${classEB} (${100-pbPct}%)` : 'No data';
+  document.getElementById('ersRatioSection').style.display = 'block';
+
+  const list = document.getElementById('ersStudentList');
+  list.innerHTML = '';
+
+  if (!students || !students.length) {
+    list.innerHTML = '<div class="no-students">No data for this week</div>';
+    return;
+  }
+
+  students.forEach(s => {
+    const hasAlert = s.alert && s.alert.trim();
+    const noErs    = s.books === 0;
+    const card     = document.createElement('div');
+    card.className = 'ers-card' + (hasAlert ? ' has-alert' : '') + (noErs ? ' no-ers' : '');
+
+    const totalFNs = s.fic + s.nf;
+    const totalPEs = s.pb  + s.eb;
+    const sFicPct  = totalFNs ? Math.round(s.fic / totalFNs * 100) : 0;
+    const sPbPct   = totalPEs ? Math.round(s.pb  / totalPEs * 100) : 0;
+
+    const alertParts = [];
+    if (s.alert.includes('No eRS'))    alertParts.push('📭 No e-RS');
+    if (s.alert.includes('Binge'))     alertParts.push('⚡ Binge Reading');
+    if (s.alert.includes('Book Loop')) alertParts.push(s.alert.includes('🔴') ? '🔴 Book Loop' : '🟡 Book Loop');
+
+    const ficBar = totalFNs ? `<div class="ers-ratio-bar">
+      <div class="seg-left fic-color" style="width:${sFicPct}%"></div>
+      <div class="seg-right nf-color"></div>
+    </div>` : '';
+    const pbBar = totalPEs ? `<div class="ers-ratio-bar">
+      <div class="seg-left pb-color" style="width:${sPbPct}%"></div>
+      <div class="seg-right eb-color"></div>
+    </div>` : '';
+    const alertHtml = hasAlert ? `<div class="ers-alert">${alertParts.join(' · ')||s.alert}${s.alertDetail ? '<br><span style="font-size:12px;opacity:0.8">' + s.alertDetail + '</span>' : ''}</div>` : '';
+
+    card.innerHTML = `
+      <div class="ers-card-top">
+        <div>
+          <div class="ers-name">${s.nick||s.name}</div>
+          <div class="ers-korean">${s.nick?s.name:''} · ${s.days}일</div>
+        </div>
+        <div class="ers-cum">누적 ${s.cum}</div>
+      </div>
+      <div class="ers-stats">
+        <div class="ers-stat"><div class="val">${s.books}</div><div class="lbl">Books</div></div>
+        <div class="ers-stat"><div class="val">${s.pass}</div><div class="lbl">Pass</div></div>
+        <div class="ers-stat"><div class="val" style="color:#e87722">${s.fic}</div><div class="lbl">Fiction</div></div>
+        <div class="ers-stat"><div class="val" style="color:#b85000">${s.nf}</div><div class="lbl">Nonfic</div></div>
+        <div class="ers-stat"><div class="val" style="color:#7c3aed">${s.pb}</div><div class="lbl">PBook</div></div>
+        <div class="ers-stat"><div class="val" style="color:#4c1d95">${s.eb}</div><div class="lbl">eBook</div></div>
+      </div>
+      ${ficBar}${pbBar}${alertHtml}`;
+    list.appendChild(card);
+  });
+}
+
+// ── Attendance Dashboard ───────────────────────────────
+function initDashClasses() {
+  const sel  = document.getElementById('dashClassSelect');
+  const prev = sel.value;
+  sel.innerHTML = '<option value="">— Select class —</option>';
+  allClasses
+    .filter(c => {
+      if (dashSlot === 'ALL') return true;
+
+      const base = c.cls.replace(/\(.*\)/, '').trim();
+
+      if (/^GS/i.test(base)) {
+        return dashSlot === 'R';
+      }
+
+      const m = c.cls.match(/[PQR](?=\d)/i);
+      if (m) return m[0].toUpperCase() === dashSlot;
+
+      return true;
+    })
+    .forEach(c => {
+      const o = document.createElement('option');
+      o.value = o.textContent = c.cls;
+      sel.appendChild(o);
+    });
+  if (allClasses.some(c => c.cls === prev)) sel.value = prev;
+  if (sel.value) onDashClassChange();
+}
+
+function onDashClassChange() {
+  const cls = document.getElementById('dashClassSelect').value;
+  if (!cls) {
+    document.getElementById('dashRangeWrap').style.display = 'none';
+    document.getElementById('dashStudentList').innerHTML = '<div class="no-students">Select a class above</div>';
+    return;
+  }
+  document.getElementById('dashRangeWrap').style.display = 'block';
+  loadDashData();
+}
+
+function loadDashData() {
+  const cls   = document.getElementById('dashClassSelect').value;
+  const range = document.getElementById('dashRangeSelect').value;
+  if (!cls) return;
+
+  document.getElementById('dashStudentList').innerHTML = '<div class="no-students">Loading...</div>';
+
+  const today = new Date();
+  const tz    = 'Asia/Seoul';
+  const fmt   = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const endStr = fmt(today);
+  let startStr;
+
+  if (range === 'sem') {
+    // Will be resolved server-side using getSemesterRange_
+    startStr = 'sem';
+  } else {
+    const start = new Date(today);
+    start.setDate(today.getDate() - parseInt(range));
+    startStr = fmt(start);
+  }
+
+  Promise.all([
+    gasCall('attendance_getDashboard', {cls, start: startStr, end: endStr}),
+    gasCall('dashboard_getTestData',   {cls, start: startStr, end: endStr})
+  ])
+    .then(([attData, testData]) => renderDashData(attData, testData))
+    .catch(() => {
+      document.getElementById('dashStudentList').innerHTML = '<div class="no-students">Error loading data</div>';
+    });
+}
+
+function renderDashData(data, testData) {
+  const list = document.getElementById('dashStudentList');
+  list.innerHTML = '';
+
+  if (!data.students || !data.students.length) {
+    list.innerHTML = '<div class="no-students">No attendance data for this range</div>';
+    return;
+  }
+
+  // Build test lookup by name
+  const testMap = {};
+  if (testData && testData.students) {
+    testData.students.forEach(s => { testMap[s.name] = s.scores; });
+  }
+  const subjects = (testData && testData.subjects) || [];
+
+  // Update range select to show semester label on 'sem' option
+  const rangeEl = document.getElementById('dashRangeSelect');
+  Array.from(rangeEl.options).forEach(o => {
+    if (o.value === 'sem') o.textContent = `Whole semester (${data.semesterLabel})`;
+  });
+
+  data.students.forEach(s => {
+    const card = document.createElement('div');
+    card.className = 'dash-card' + (s.alert ? ' alert' : '');
+
+    const rateColor = s.rate === null ? '' : s.rate >= 80 ? 'good' : s.rate >= 60 ? 'warn' : 'bad';
+    const rateDisp  = s.rate !== null ? s.rate + '%' : '—';
+
+    const reasonsHtml = s.reasons.length
+      ? '<div class="dash-reasons">' +
+        s.reasons.map(r => `${r.date} · ${r.status}${r.reason ? ' — ' + r.reason : ''}`).join('<br>') +
+        '</div>'
+      : '';
+
+    const alertTag = s.alert
+      ? '<span class="dash-alert-tag">⚠️ Low attendance</span>'
+      : '';
+
+    card.innerHTML = `
+      <div class="dash-card-top">
+        <div>
+          <div class="ers-name">${s.nick||s.name}</div>
+          <div class="ers-korean">${s.nick ? s.name : ''}</div>
+          ${alertTag}
+        </div>
+        <div class="dash-rate ${rateColor}">${rateDisp}</div>
+      </div>
+      <div class="dash-stats">
+        <div class="dash-stat"><div class="val">${s.total}</div><div class="lbl">Sessions</div></div>
+        <div class="dash-stat"><div class="val" style="color:#2e7d32">${s.present}</div><div class="lbl">Present</div></div>
+        <div class="dash-stat"><div class="val" style="color:#c62828">${s.absent}</div><div class="lbl">Absent</div></div>
+      </div>
+      ${s.late > 0 ? `<div style="font-size:13px;color:#e65100;margin-bottom:6px;">🔵 Late: ${s.late}</div>` : ''}
+      ${reasonsHtml}
+      ${(() => {
+        const scores = testMap[s.name];
+        if (!scores || !subjects.length) return '';
+        const rows = subjects.map(subj => {
+          const d = scores[subj];
+          if (!d) return `<div class="dash-test-row"><span class="dash-test-subj">${subj}</span><span class="dash-test-avg" style="color:#ccc">—</span></div>`;
+          const color = d.avg >= 90 ? '#2e7d32' : d.avg >= 80 ? '#1565c0' : d.avg >= 70 ? '#e65100' : '#c62828';
+          return `<div class="dash-test-row"><span class="dash-test-subj">${subj}</span><span class="dash-test-avg" style="color:${color}">${d.avg}%</span></div>`;
+        }).join('');
+        return `<div class="dash-test-section">${rows}</div>`;
+      })()}`;
+
+    list.appendChild(card);
+  });
+}  
+</script>
+</body>
+</html>

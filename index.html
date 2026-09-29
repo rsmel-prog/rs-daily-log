@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 093</title>
+  <title>RS Daily App 094</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -1119,7 +1119,10 @@
 
 <script>
 const GAS_URL = 'https://rs-daily-api.naeun-p95.workers.dev';
-const SHOW_INTENSIVES = false; // set to false to hide intensive classes after summer
+
+const SHOW_INTENSIVES = false; // false = hide intensive classes
+const SHOW_CLASS_STATS = false; // false = turn off Class Stats
+const ENABLE_ADMIN = false;     // false = turn off Admin
 
 async function gasCall(action, params) {
   const url =

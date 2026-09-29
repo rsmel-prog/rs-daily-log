@@ -941,8 +941,7 @@
 
 
 <!-- ══ APP ══ -->
-<div id="appScreen">
-  <div class="main-tabs" style="grid-template-columns: 1fr 1fr 1fr;">
+  <div class="main-tabs" id="mainTabs" style="grid-template-columns: 1fr 1fr 1fr;">
     <button class="main-tab active" id="tabDailyLog" onclick="switchMainTab('dailylog')">📋 Daily Log</button>
     <button class="main-tab"        id="tabDash"     onclick="switchMainTab('dash')">📊 Class Stats</button>
     <button class="main-tab"        id="tabERS"      onclick="switchMainTab('ers')">📖 e-RS</button>
@@ -1308,6 +1307,16 @@ function doLogin() {
         document.getElementById('loginScreen').style.display = 'none';
 
         if (res.role === 'admin') {
+          if (!ENABLE_ADMIN) {
+            document.getElementById('loginScreen').style.display = 'flex';
+            document.getElementById('loginError').textContent =
+              'Admin is temporarily disabled.';
+            document.getElementById('loginError').style.display = 'block';
+            document.getElementById('loginBtn').disabled = false;
+            document.getElementById('loginBtn').textContent = 'Sign In';
+            return;
+          }
+
           adminPassword = pw;
 
           document.getElementById('appScreen').style.display    = 'none';
@@ -1373,6 +1382,7 @@ function doLogin() {
 
 // ── App init ───────────────────────────────────────────
 function initApp(classes, intClasses, todayDate, todayAttendance) {
+  switchmaintab('dailylog');
   allClasses       = classes;
   intensiveClasses = SHOW_INTENSIVES ? (intClasses || []) : [];
 
@@ -1435,14 +1445,26 @@ function calcGrade(pct) {
 
 // ── Main tab switch ────────────────────────────────────
 function switchMainTab(tab) {
+  if (tab === 'dash' && !SHOW_CLASS_STATS) {
+    tab = 'dailylog';
+  }
+
+  document.getElementById('tabDash').style.display =
+    SHOW_CLASS_STATS ? '' : 'none';
+
+  document.getElementById('mainTabs').style.gridTemplateColumns =
+    SHOW_CLASS_STATS ? '1fr 1fr 1fr' : '1fr 1fr';
+
   document.getElementById('dailyLogScreen').style.display = tab === 'dailylog' ? 'block' : 'none';
   document.getElementById('dashScreen').style.display     = tab === 'dash'     ? 'block' : 'none';
   document.getElementById('ersScreen').style.display      = tab === 'ers'      ? 'block' : 'none';
   document.getElementById('tabDailyLog').classList.toggle('active', tab === 'dailylog');
   document.getElementById('tabDash').classList.toggle('active',     tab === 'dash');
   document.getElementById('tabERS').classList.toggle('active',      tab === 'ers');
+
   if (tab === 'ers' && !ersWeeksLoaded) loadErsWeeks();
-  if (tab === 'dash') {
+
+  if (tab === 'dash' && SHOW_CLASS_STATS) {
     document.querySelectorAll('#dashTimeFilter .pill').forEach(b =>
       b.classList.toggle('active', b.dataset.slot === dashSlot));
     initDashClasses();

@@ -78,7 +78,7 @@
 
     /* ── APP ── */
     #appScreen { display: none; }
-    #dailyLogScreen { display: none; }
+    #dailyLogScreen { display: block; }
     #ersScreen { display: none; }
     #bhSatScreen { display: none; }
 
@@ -941,9 +941,9 @@
 
 
 <!-- ══ APP ══ -->
-  <div class="main-tabs" id="mainTabs" style="grid-template-columns: 1fr 1fr 1fr;">
+  <div class="main-tabs" id="mainTabs" style="grid-template-columns: 1fr 1fr;">
     <button class="main-tab active" id="tabDailyLog" onclick="switchMainTab('dailylog')">📋 Daily Log</button>
-    <button class="main-tab"        id="tabDash"     onclick="switchMainTab('dash')">📊 Class Stats</button>
+    <button class="main-tab"        id="tabDash"     onclick="switchMainTab('dash')" style="display:none;">📊 Class Stats</button>
     <button class="main-tab"        id="tabERS"      onclick="switchMainTab('ers')">📖 e-RS</button>
   </div>
 

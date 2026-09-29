@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 094</title>
+  <title>RS Daily App 095</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -1382,7 +1382,19 @@ function doLogin() {
 
 // ── App init ───────────────────────────────────────────
 function initApp(classes, intClasses, todayDate, todayAttendance) {
-  switchmaintab('dailylog');
+  document.getElementById('dailyLogScreen').style.display = 'block';
+  document.getElementById('dashScreen').style.display = 'none';
+  document.getElementById('ersScreen').style.display = 'none';
+
+  document.getElementById('tabDailyLog').classList.add('active');
+  document.getElementById('tabERS').classList.remove('active');
+
+  document.getElementById('tabDash').style.display =
+    SHOW_CLASS_STATS ? '' : 'none';
+
+  document.getElementById('mainTabs').style.gridTemplateColumns =
+    SHOW_CLASS_STATS ? '1fr 1fr 1fr' : '1fr 1fr';
+
   allClasses       = classes;
   intensiveClasses = SHOW_INTENSIVES ? (intClasses || []) : [];
 

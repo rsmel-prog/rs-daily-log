@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 098</title>
+  <title>RS Daily App 099</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -1030,7 +1030,7 @@
       <select id="ersClassSelect" onchange="onErsClassChange()">
         <option value="">— Select class —</option>
       </select>
-      <select id="ersWeekSelect" style="display:none" onchange="loadErsData()">
+      <select id="ersWeekSelect" style="display:none" onchange="loadErsClasses()">
         <option value="">— Select week —</option>
       </select>
     </div>
@@ -1229,6 +1229,7 @@ let existingMap = {};
 let maxScore    = null;
 let ersWeeksLoaded = false;
 let ersWeeks    = [];
+let ersClasses  = [];
 let ersSlot     = 'ALL';
 let dashSlot    = 'ALL';
 let rSubType     = null; // 'Vocab', 'Comp', or null (plain R)
@@ -4655,55 +4656,7 @@ function saveAdminBatch() {
 }
   
 // ── e-RS ───────────────────────────────────────────────
-function setErsTimeSlot(slot) {
-  ersSlot = slot;
-  document.querySelectorAll('#ersTimeFilter .pill').forEach(b =>
-    b.classList.toggle('active', b.dataset.slot === slot));
-  populateErsClasses();
-  document.getElementById('ersWeekSelect').style.display = 'none';
-  document.getElementById('ersRatioSection').style.display = 'none';
-  document.getElementById('ersStudentList').innerHTML = '<div class="no-students">Loading...</div>';
-}
-
-function loadErsWeeks() {
-  gasCall('ers_getWeeks', {})
-    .then(weeks => {
-      ersWeeks = weeks;
-      ersWeeksLoaded = true;
-      populateErsClasses();
-      // If a class is already selected, load its data automatically
-      if (document.getElementById('ersClassSelect').value) {
-        onErsClassChange();
-      }
-    })
-    .catch(() => {});
-}
-
-function populateErsClasses() {
-  const sel = document.getElementById('ersClassSelect');
-  const prev = sel.value;
-  sel.innerHTML = '<option value="">— Select class —</option>';
-  allClasses
-    .filter(c => {
-      if (!ersSlot || ersSlot === 'ALL') return true;
-
-      const base = c.cls.replace(/\(.*\)/, '').trim();
-
-      if (/^GS/i.test(base)) {
-        return ersSlot === 'R';
-      }
-
-      const m = c.cls.match(/[PQR](?=\d)/i);
-      return m && m[0].toUpperCase() === ersSlot;
-    })
-    .forEach(c => {
-      const o = document.createElement('option');
-      o.value = o.textContent = c.cls;
-      sel.appendChild(o);
-    });
-  if (allClasses.some(c => c.cls === prev)) sel.value = prev;
-  else sel.value = '';
-}
+<select id="ersWeekSelect" style="display:none" onchange="loadErsClasses()">
 
 function setDashTimeSlot(slot) {
   dashSlot = slot;
@@ -4712,26 +4665,132 @@ function setDashTimeSlot(slot) {
   initDashClasses();
 }
 
+function loadErsWeeks() {
+  gasCall('ers_getWeeks', {})
+    .then(weeks => {
+      ersWeeks = weeks || [];
+      ersWeeksLoaded = true;
+
+      const wSel = document.getElementById('ersWeekSelect');
+
+      wSel.innerHTML =
+        '<option value="">— Select week —</option>';
+
+      ersWeeks.forEach(w => {
+        const o = document.createElement('option');
+        o.value = w.key;
+        o.textContent = w.label;
+        wSel.appendChild(o);
+      });
+
+      const defaultWeek =
+        ersWeeks.find(w => w.isDefault) ||
+        ersWeeks[ersWeeks.length - 1];
+
+      if (defaultWeek) {
+        wSel.value = defaultWeek.key;
+        wSel.style.display = 'block';
+        loadErsClasses();
+      } else {
+        wSel.style.display = 'none';
+        document.getElementById('ersStudentList').innerHTML =
+          '<div class="no-students">No e-RS data available</div>';
+      }
+    })
+    .catch(err => {
+      console.error('ers_getWeeks error:', err);
+
+      document.getElementById('ersStudentList').innerHTML =
+        '<div class="no-students">Error loading e-RS weeks</div>';
+    });
+}
+
+
+function loadErsClasses() {
+  const weekKey =
+    document.getElementById('ersWeekSelect').value;
+
+  if (!weekKey) return;
+
+  document.getElementById('ersRatioSection').style.display =
+    'none';
+
+  document.getElementById('ersStudentList').innerHTML =
+    '<div class="no-students">Loading...</div>';
+
+  gasCall('ers_getClasses', { weekKey })
+    .then(classes => {
+      ersClasses = classes || [];
+      populateErsClasses();
+
+      document.getElementById('ersStudentList').innerHTML =
+        '<div class="no-students">Select a class above</div>';
+    })
+    .catch(err => {
+      console.error('ers_getClasses error:', err);
+
+      document.getElementById('ersStudentList').innerHTML =
+        '<div class="no-students">Error loading classes</div>';
+    });
+}
+
+
+function populateErsClasses() {
+  const sel = document.getElementById('ersClassSelect');
+  const prev = sel.value;
+
+  sel.innerHTML =
+    '<option value="">— Select class —</option>';
+
+  ersClasses
+    .filter(cls => {
+      if (!ersSlot || ersSlot === 'ALL') return true;
+
+      const base =
+        cls.replace(/\(.*\)/, '').trim();
+
+      if (/^GS/i.test(base)) {
+        return ersSlot === 'R';
+      }
+
+      const m = cls.match(/[PQR](?=\d)/i);
+
+      return m &&
+        m[0].toUpperCase() === ersSlot;
+    })
+    .forEach(cls => {
+      const o = document.createElement('option');
+
+      o.value = cls;
+      o.textContent = cls;
+
+      sel.appendChild(o);
+    });
+
+  if (ersClasses.includes(prev)) {
+    sel.value = prev;
+  } else {
+    sel.value = '';
+  }
+}
+
+
 function onErsClassChange() {
-  const cls = document.getElementById('ersClassSelect').value;
+  const cls =
+    document.getElementById('ersClassSelect').value;
+
   if (!cls) {
-    document.getElementById('ersWeekSelect').style.display = 'none';
-    document.getElementById('ersRatioSection').style.display = 'none';
-    document.getElementById('ersStudentList').innerHTML = '<div class="no-students">Select a class above</div>';
+    document.getElementById('ersRatioSection').style.display =
+      'none';
+
+    document.getElementById('ersStudentList').innerHTML =
+      '<div class="no-students">Select a class above</div>';
+
     return;
   }
-  const wSel = document.getElementById('ersWeekSelect');
-  wSel.innerHTML = '<option value="">— Select week —</option>';
-  ersWeeks.forEach(w => {
-    const o = document.createElement('option');
-    o.value = w.key; o.textContent = w.label;
-    wSel.appendChild(o);
-  });
-  const defaultWeek = ersWeeks.find(w => w.isDefault) || ersWeeks[ersWeeks.length - 1];
-  if (defaultWeek) wSel.value = defaultWeek.key;
-  wSel.style.display = 'block';
+
   loadErsData();
-}
+}  
 
 function loadErsData() {
   const cls     = document.getElementById('ersClassSelect').value;

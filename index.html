@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 101</title>
+  <title>RS Daily App 102</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -4663,6 +4663,28 @@ function setDashTimeSlot(slot) {
     b.classList.toggle('active', b.dataset.slot === slot));
   initDashClasses();
 }
+
+
+function setErsTimeSlot(slot) {
+  ersSlot = slot;
+
+  document.querySelectorAll('#ersTimeFilter .pill').forEach(b =>
+    b.classList.toggle(
+      'active',
+      b.dataset.slot === slot
+    )
+  );
+
+  populateErsClasses();
+
+  document.getElementById('ersRatioSection').style.display = 'none';
+
+  document.getElementById('ersStudentList').innerHTML =
+    '<div class="no-students">Select a class above</div>';
+}
+
+
+function loadErsWeeks() {
 
 function loadErsWeeks() {
   gasCall('ers_getWeeks', {})

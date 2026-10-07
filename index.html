@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 103</title>
+  <title>RS Daily App 104</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -4877,7 +4877,7 @@ function renderErsData(data) {
           <div class="ers-name">${s.nick||s.name}</div>
           <div class="ers-korean">${s.nick?s.name:''} · ${s.days}일</div>
         </div>
-        <div class="ers-cum">${s.books} this week</div>
+        <div class="ers-cum">학기누적 ${s.cum || 0}</div>
       </div>
       <div class="ers-stats">
         <div class="ers-stat"><div class="val">${s.books}</div><div class="lbl">Books</div></div>

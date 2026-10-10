@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 104</title>
+  <title>RS Daily App 105</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -1749,6 +1749,16 @@ function loadStudentList() {
     }
 
     students = teacherGroup.students;
+  }
+
+  if (currentFn === 'test') {
+    students = [...students].sort((a, b) =>
+      String(a.nick || a.name).localeCompare(
+        String(b.nick || b.name),
+        'en',
+        { sensitivity: 'base' }
+      )
+    );
   }
 
   let sub = `${cls} · ${formatDateDisplay(date)}`;

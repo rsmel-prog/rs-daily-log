@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 105</title>
+  <title>RS Daily App 106</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -356,7 +356,7 @@
     .pill.active   { background: #4a6cf7; border-color: #4a6cf7; color: #fff; }
     .pill:disabled { opacity: 0.4; cursor: not-allowed; }
 
-    .fn-tabs { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
+    .fn-tabs { display: grid; grid-template-columns: repeat(2,1fr); gap: 8px; }
     .fn-tab {
       padding: 14px 6px; border: 2px solid #e0e0e0; border-radius: 12px;
       font-size: 14px; font-weight: 700; background: #fff; color: #555;
@@ -951,7 +951,7 @@
   <!-- ── DAILY LOG ── -->
   <div id="dailyLogScreen">
     <div class="top-bar">
-      <h2 id="topTitle">📋 Attendance</h2>
+      <h2 id="topTitle">📝 Daily Test</h2>
       <div class="sub" id="topSubtitle">Select a class to begin</div>
     </div>
     <div class="controls-sticky">
@@ -970,9 +970,8 @@
     </div>
     <div class="controls">
       <div class="fn-tabs" id="fnTabs" style="display:none">
-        <button class="fn-tab active" data-fn="attendance" onclick="setFunction('attendance')">📋 Attendance</button>
-        <button class="fn-tab"        data-fn="test"       onclick="setFunction('test')">📝 Daily Test</button>
-        <button class="fn-tab"        data-fn="homework"   onclick="setFunction('homework')">📚 Homework</button>
+        <button class="fn-tab active" data-fn="test" onclick="setFunction('test')">📝 Daily Test</button>
+        <button class="fn-tab" data-fn="homework" onclick="setFunction('homework')">📚 Homework</button>
       </div>
       <select id="subjectSelect" style="display:none" onchange="onSubjectChange()">
         <option value="">— Select subject —</option>
@@ -1223,7 +1222,7 @@ let allClasses  = [];
 let intensiveClasses = [];
 let selectedIntensiveTeacher = '';
 let currentSlot = 'P';
-let currentFn   = 'attendance';
+let currentFn   = 'test';
 let studentData = [];
 let existingMap = {};
 let maxScore    = null;
@@ -1603,6 +1602,8 @@ function resetBelowClass() {
 
 // ── Function tab ───────────────────────────────────────
 function setFunction(fn) {
+  if (fn !== 'test' && fn !== 'homework') return;
+
   currentFn = fn;
   bhRegMode = false;
   bhRegStudents = [];
@@ -1616,30 +1617,26 @@ function setFunction(fn) {
 
   const subSel = document.getElementById('subjectSelect');
   const maxRow = document.getElementById('maxScoreRow');
-  document.getElementById('topTitle').textContent =
-    fn === 'attendance' ? '📋 Attendance' :
-    fn === 'test'       ? '📝 Daily Test' : '📚 Homework';
-  document.getElementById('submitBtn').textContent =
-    fn === 'attendance' ? 'Submit Attendance' :
-    fn === 'test'       ? 'Submit Test Scores' : 'Submit Homework';
 
-  document.getElementById('hwGuide').style.display = fn === 'homework' ? 'block' : 'none';
+  document.getElementById('topTitle').textContent =
+    fn === 'test' ? '📝 Daily Test' : '📚 Homework';
+
+  document.getElementById('submitBtn').textContent =
+    fn === 'test' ? 'Submit Test Scores' : 'Submit Homework';
+
+  document.getElementById('hwGuide').style.display =
+    fn === 'homework' ? 'block' : 'none';
+
   document.getElementById('avgDisplayRow').style.display = 'none';
   document.getElementById('allABtn').style.display = 'none';
 
-  if (fn === 'attendance') {
-    subSel.style.display = 'none';
-    maxRow.style.display = 'none';
-    document.getElementById('rSubRow').style.display = 'none';
-    rSubType = null;
-    loadStudentList();
-  } else {
-    subSel.style.display = 'block';
-    maxRow.style.display = fn === 'test' ? 'flex' : 'none';
-    clearStudentList();
-    updateRSubRow();
-    if (subSel.value) loadStudentList();
-  }
+  subSel.style.display = 'block';
+  maxRow.style.display = fn === 'test' ? 'flex' : 'none';
+
+  clearStudentList();
+  updateRSubRow();
+
+  if (subSel.value) loadStudentList();
 }
 
 function onSubjectChange() {
@@ -2416,7 +2413,23 @@ function bhRegUpdateSummary() {
 
 // ── Score render ───────────────────────────────────────
 function renderScoreList(students) {
-  studentData = students.map(s => {
+  const orderedStudents = currentFn === 'test'
+    ? [...students].sort((a, b) => {
+        const aName = String(a.nick || a.name || '').trim();
+        const bName = String(b.nick || b.name || '').trim();
+
+        return aName.localeCompare(
+          bName,
+          'en',
+          {
+            sensitivity: 'base',
+            numeric: true
+          }
+        );
+      })
+    : students;
+
+  studentData = orderedStudents.map(s => {
     const ex = existingMap[s.name] || null;
     return { name: s.name, nick: s.nick, score: ex ? (ex.score ?? null) : null, max: ex ? (ex.max ?? null) : null, note: ex ? ex.note : '', hwGrade: ex ? ex.hwGrade || null : null, existing: !!ex, combinedDisplay: ex ? ex.combinedDisplay || null : null };
   });

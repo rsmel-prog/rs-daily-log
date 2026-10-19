@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 107</title>
+  <title>RS Daily App 108</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -1399,33 +1399,41 @@ function adminLogout() {
 }
 
 // ── Daily Test Average page ────────────────────────────
-function avgInit(classes) {
-  avgClasses = classes || [];
-
+function avgInit() {
   const sel = document.getElementById('avgClassSelect');
 
   sel.innerHTML =
-    '<option value="">— Select class —</option>';
-
-  avgClasses.forEach(item => {
-    const cls =
-      typeof item === 'string'
-        ? item
-        : item.cls;
-
-    if (!cls) return;
-
-    const option =
-      document.createElement('option');
-
-    option.value = cls;
-    option.textContent = cls;
-
-    sel.appendChild(option);
-  });
+    '<option value="">Loading classes...</option>';
 
   document.getElementById('avgStudentList').innerHTML =
-    '<div class="no-students">Select a class above</div>';
+    '<div class="no-students">Choose a class after loading</div>';
+
+  gasCall('avg_getClasses', {
+    pw: avgPassword
+  })
+    .then(classes => {
+      avgClasses = classes || [];
+
+      sel.innerHTML =
+        '<option value="">— Select class —</option>';
+
+      avgClasses.forEach(item => {
+        const cls = item.cls;
+
+        if (!cls) return;
+
+        const option = document.createElement('option');
+        option.value = cls;
+        option.textContent = cls;
+        sel.appendChild(option);
+      });
+    })
+    .catch(err => {
+      sel.innerHTML =
+        '<option value="">Failed to load classes</option>';
+
+      console.error('avg_getClasses error:', err);
+    });
 }
 
 
@@ -1647,7 +1655,7 @@ function doLogin() {
           document.getElementById('bhSatScreen').style.display  = 'none';
           document.getElementById('avgScreen').style.display    = 'block';
 
-          avgInit(res.classes || []);
+          avgInit();
 
           sessionExpiry = Date.now() + 60 * 60 * 1000;
           return;

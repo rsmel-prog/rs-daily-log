@@ -4762,10 +4762,20 @@ function loadErsClasses() {
   gasCall('ers_getClasses', { weekKey })
     .then(classes => {
       ersClasses = classes || [];
+
       populateErsClasses();
 
-      document.getElementById('ersStudentList').innerHTML =
-        '<div class="no-students">Select a class above</div>';
+      const cls =
+        document.getElementById('ersClassSelect').value;
+
+      // If the previously selected class exists
+      // in this week, load it automatically.
+      if (cls) {
+        loadErsData();
+      } else {
+        document.getElementById('ersStudentList').innerHTML =
+          '<div class="no-students">Select a class above</div>';
+      }
     })
     .catch(err => {
       console.error('ers_getClasses error:', err);

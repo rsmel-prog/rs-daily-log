@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 106</title>
+  <title>RS Daily App 107</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -591,6 +591,72 @@
     #successScreen h2 { font-size: 26px; font-weight: 700; margin-bottom: 10px; }
     #successScreen p  { font-size: 17px; color: #888; margin-bottom: 36px; white-space: pre-line; }
 
+    /* ── DAILY TEST AVERAGES ── */
+    .avg-list {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 14px 16px 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .avg-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .avg-student-name {
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .avg-student-korean {
+      margin-top: 2px;
+      margin-bottom: 12px;
+      font-size: 13px;
+      color: #888;
+    }
+
+    .avg-table-wrap {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .avg-table {
+      width: 100%;
+      min-width: max-content;
+      border-collapse: collapse;
+    }
+
+    .avg-table th,
+    .avg-table td {
+      border: 1px solid #e8e8e8;
+      padding: 10px 12px;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .avg-table th {
+      background: #f5f7fa;
+      font-size: 12px;
+      color: #666;
+    }
+
+    .avg-table td {
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .avg-table th:first-child,
+    .avg-table td:first-child {
+      text-align: left;
+    }
+
     .spinner {
       display: inline-block; width: 20px; height: 20px;
       border: 3px solid rgba(255,255,255,0.4); border-top-color: #fff;
@@ -772,6 +838,39 @@
       Sign Out
     </button>
   </div>
+</div>
+
+<!-- ══ DAILY TEST AVERAGES ══ -->
+<div id="avgScreen" style="display:none; min-height:100vh;">
+
+  <div class="top-bar">
+    <h2>📊 Daily Test Averages</h2>
+    <div class="sub">Current Semester</div>
+  </div>
+
+  <div class="controls">
+    <select
+      id="avgClassSelect"
+      onchange="avgLoadData()">
+      <option value="">— Select class —</option>
+    </select>
+  </div>
+
+  <div id="avgStudentList" class="avg-list">
+    <div class="no-students">
+      Select a class above
+    </div>
+  </div>
+
+  <div style="padding:0 16px 30px;max-width:900px;margin:0 auto;">
+    <button
+      class="btn-secondary"
+      style="width:100%;"
+      onclick="avgLogout()">
+      Sign Out
+    </button>
+  </div>
+
 </div>
 
 <!-- ══ SATURDAY BOOK HUNTERS ══ -->
@@ -1250,6 +1349,9 @@ let adminGridData = null;
 let adminChanges  = {};
 let adminMode     = 'attendance';
 
+let avgPassword = '';
+let avgClasses  = [];
+
 let bhSatPassword   = '';
 let bhSatStudents   = [];
 let bhSatCurrentTab = 'daily';
@@ -1271,6 +1373,7 @@ function checkSession() {
   document.getElementById('appScreen').style.display    = 'none';
   document.getElementById('adminScreen').style.display  = 'none';
   document.getElementById('bhSatScreen').style.display  = 'none';
+  document.getElementById('avgScreen').style.display    = 'none';
   document.getElementById('loginScreen').style.display  = 'flex';
   document.getElementById('pwInput').value = '';
   document.getElementById('loginBtn').disabled = false;
@@ -1294,6 +1397,198 @@ function adminLogout() {
 
   sessionExpiry = null;
 }
+
+// ── Daily Test Average page ────────────────────────────
+function avgInit(classes) {
+  avgClasses = classes || [];
+
+  const sel = document.getElementById('avgClassSelect');
+
+  sel.innerHTML =
+    '<option value="">— Select class —</option>';
+
+  avgClasses.forEach(item => {
+    const cls =
+      typeof item === 'string'
+        ? item
+        : item.cls;
+
+    if (!cls) return;
+
+    const option =
+      document.createElement('option');
+
+    option.value = cls;
+    option.textContent = cls;
+
+    sel.appendChild(option);
+  });
+
+  document.getElementById('avgStudentList').innerHTML =
+    '<div class="no-students">Select a class above</div>';
+}
+
+
+function avgLoadData() {
+  const cls =
+    document.getElementById('avgClassSelect').value;
+
+  const wrap =
+    document.getElementById('avgStudentList');
+
+  if (!cls) {
+    wrap.innerHTML =
+      '<div class="no-students">Select a class above</div>';
+    return;
+  }
+
+  wrap.innerHTML =
+    '<div class="no-students">Loading...</div>';
+
+  gasCall('avg_getData', {
+    pw: avgPassword,
+    cls
+  })
+    .then(avgRenderData)
+    .catch(err => {
+      console.error('avg_getData error:', err);
+
+      wrap.innerHTML =
+        '<div class="no-students">' +
+        avgEscapeHtml(err.message || err) +
+        '</div>';
+    });
+}
+
+
+function avgRenderData(data) {
+  const wrap =
+    document.getElementById('avgStudentList');
+
+  const subjects =
+    data.subjects || [];
+
+  const students =
+    data.students || [];
+
+  if (!students.length) {
+    wrap.innerHTML =
+      '<div class="no-students">No students found</div>';
+    return;
+  }
+
+  if (!subjects.length) {
+    wrap.innerHTML =
+      '<div class="no-students">No Daily Test scores found for this class</div>';
+    return;
+  }
+
+  const headerHtml = [
+    '<th>Test Type</th>',
+    ...subjects.map(subject =>
+      `<th>${avgEscapeHtml(subject)}</th>`
+    ),
+    '<th>Avg</th>'
+  ].join('');
+
+  wrap.innerHTML = students.map(student => {
+    const scoreCells = subjects.map(subject => {
+      const value =
+        student.scores
+          ? student.scores[subject]
+          : null;
+
+      return `<td>${avgFormat(value)}</td>`;
+    }).join('');
+
+    return `
+      <div class="avg-card">
+        <div class="avg-student-name">
+          ${avgEscapeHtml(student.nick || student.name)}
+        </div>
+
+        <div class="avg-student-korean">
+          ${student.nick
+            ? avgEscapeHtml(student.name)
+            : ''}
+        </div>
+
+        <div class="avg-table-wrap">
+          <table class="avg-table">
+            <thead>
+              <tr>
+                ${headerHtml}
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr>
+                <td>Daily Test</td>
+                ${scoreCells}
+                <td>${avgFormat(student.avg)}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+
+function avgFormat(value) {
+  if (
+    value === null ||
+    value === undefined ||
+    value === ''
+  ) {
+    return '—';
+  }
+
+  const n = Number(value);
+
+  if (!Number.isFinite(n)) {
+    return '—';
+  }
+
+  return Number.isInteger(n)
+    ? String(n)
+    : n.toFixed(1);
+}
+
+
+function avgEscapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+
+function avgLogout() {
+  avgPassword = '';
+  avgClasses = [];
+
+  document.getElementById('avgScreen').style.display =
+    'none';
+
+  document.getElementById('loginScreen').style.display =
+    'flex';
+
+  document.getElementById('pwInput').value = '';
+
+  document.getElementById('loginError').style.display =
+    'none';
+
+  document.getElementById('loginBtn').disabled = false;
+  document.getElementById('loginBtn').textContent =
+    'Sign In';
+
+  sessionExpiry = null;
+}
+
 
 // ── Login ──────────────────────────────────────────────
 function doLogin() {
@@ -1335,6 +1630,7 @@ function doLogin() {
 
           document.getElementById('appScreen').style.display    = 'none';
           document.getElementById('adminScreen').style.display  = 'none';
+          document.getElementById('avgScreen').style.display    = 'none';
           document.getElementById('bhSatScreen').style.display  = 'block';
 
           bhSatInit();
@@ -1343,6 +1639,21 @@ function doLogin() {
           return;
         }
 
+        if (res.role === 'avg') {
+          avgPassword = pw;
+
+          document.getElementById('appScreen').style.display    = 'none';
+          document.getElementById('adminScreen').style.display  = 'none';
+          document.getElementById('bhSatScreen').style.display  = 'none';
+          document.getElementById('avgScreen').style.display    = 'block';
+
+          avgInit(res.classes || []);
+
+          sessionExpiry = Date.now() + 60 * 60 * 1000;
+          return;
+        }
+
+        document.getElementById('avgScreen').style.display      = 'none';
         document.getElementById('adminScreen').style.display    = 'none';
         document.getElementById('bhSatScreen').style.display    = 'none';
         document.getElementById('appScreen').style.display      = 'block';

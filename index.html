@@ -7,7 +7,7 @@
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>RS Daily App 110</title>
+  <title>RS Daily App 111</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     input, select, textarea { font-size: 16px !important; }
@@ -1825,6 +1825,10 @@ function setTimeSlot(slot) {
       if (slot === 'ALL') return true;
 
       const base = c.cls.replace(/\(.*\)/, '').trim();
+
+      if (/^K7A$/i.test(base)) {
+        return slot === 'Q';
+      }
 
       if (/^GS/i.test(base)) {
         return slot === 'R';
@@ -5150,11 +5154,14 @@ function populateErsClasses() {
     .filter(cls => {
       if (!ersSlot || ersSlot === 'ALL') return true;
 
-      const base =
-        cls.replace(/\(.*\)/, '').trim();
+      const base = c.cls.replace(/\(.*\)/, '').trim();
+
+      if (/^K7A$/i.test(base)) {
+        return slot === 'Q';
+      }
 
       if (/^GS/i.test(base)) {
-        return ersSlot === 'R';
+        return slot === 'R';
       }
 
       const m = cls.match(/[PQR](?=\d)/i);
@@ -5289,8 +5296,12 @@ function initDashClasses() {
 
       const base = c.cls.replace(/\(.*\)/, '').trim();
 
+      if (/^K7A$/i.test(base)) {
+        return slot === 'Q';
+      }
+
       if (/^GS/i.test(base)) {
-        return dashSlot === 'R';
+        return slot === 'R';
       }
 
       const m = c.cls.match(/[PQR](?=\d)/i);
